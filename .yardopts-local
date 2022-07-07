@@ -1,0 +1,66 @@
+#
+# Only put options in `.yardopts` that are commonly reusable to
+# multiple projects.  Options and file-lists which are extremely
+# project-specific should be stored in this .yardopts-local file.
+# (Such as `--title="Project Title"`, or the decision as to whether
+# markdown should be handled by Yard or perhaps by something else
+# like Pandoc.)
+#
+# For one thing, manually processing this file allows us to
+# do things like, I don't know, *embed comments* in it.
+#
+# Format:
+#
+# Comment lines start with ^[[:space:]]*#
+# End-of-line comments start with any token matching ^#
+#
+# All detectable comments are stripped before processing further.
+#
+# Other line formats (regex):
+#
+#   ^[[:space:]]*-[[:space:]]*$
+#	A line containing just a single dash, this indicates that any
+#	filespecs that follow are 'extra' files in Yard terms, and the
+#	dash and those filespecs will retain their position at the end
+#	of the command line.
+#
+#   ^[[:space:]]*--?[-[:alnum:]]
+#	This pattern indicates that the line contains an option for
+#	the Yard command.  It will be collected with other options and
+#	their order maintained.
+#
+#   ^[[:space:]][^-#]
+#	Lines matching this pattern are filespecs for Yard to parse.
+#	Extended globbing (`\*\*`) is permitted.
+#
+# The final command line is built from
+#
+#	[options] [filespecs] [-] [extra-filespecs]
+#
+--charset=utf-8
+--verbose
+#--list
+--no-cache
+--title='Text Adventure Framework (TAF) Gem'
+--private		# Change to expose private elements
+#--markup-provider=commonmarker
+--markup=markdown	# Remove this line if you want to use pandoc
+#
+# List this file FIRST as it defines macros used by multiple source
+# files.
+#
+config/macros.yard
+#
+# Other source files.
+#
+lib/**/*.rb
+features/**/*.rb
+#
+# Marker for 'extra' files, and the list of same.
+#
+-
+*.md
+
+# Local Variables:
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:
