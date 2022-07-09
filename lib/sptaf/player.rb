@@ -15,28 +15,13 @@
 #++
 # frozen_string_literal: true
 
-require_relative('version')
-require_relative('classmethods')
-require_relative('container')
-require_relative('exceptions')
+require('rubygems')
+require('versionomy')
 
 # @!macro ModuleDoc
 module TAF
 
-  module Location
 
-    class << self
-
-      def included(klass)
-        klass.include(::TAF::Container)
-      end                       # def included
-
-    end                         # module Location eigenclass
-
-    nil
-  end                           # module Location
-
-  nil
 end                             # module TAF
 
 # Local Variables:

@@ -18,10 +18,13 @@
 require_relative('sptaf/version')
 require_relative('sptaf/exceptions')
 require_relative('sptaf/classmethods')
+require_relative('sptaf/thing')
 require_relative('sptaf/container')
 require_relative('sptaf/location')
+require_relative('sptaf/game')
+require_relative('sptaf/player')
 
-# @!macro ModuleDoc
+# @!macro TAFDoc
 module TAF
 
   unless ((RUBY_ENGINE == 'ruby') \
@@ -32,36 +35,18 @@ module TAF
     exit(1)
   end                           # Ruby version check
 
-  module Thing
+  class << self
 
-    class << self
+    #
+    def included(klass)
+      debugger
+      klass.eval("include ::TAF::Thing")
+    end                         # def included
 
-      include ::TAF::Thing::ClassMethods
-      
-      def included(klass)
-        klass.extend(::TAF::Thing::ClassMethods)
-      end
+    nil
+  end                           # module TAF eigenclass
 
-    end
-
-    extend ::TAF::Thing::ClassMethods
-
-    class Description < ::String
-
-      def wordwrap(right_margin: 72, indent: 0, bullets: %q[o * •])
-        return self
-      end                       # def wordwrap
-
-    end                         # class Description
-
-    attr_accessor(:slug)
-    attr_accessor(:name)
-    attr_accessor(:desc)
-    attr_accessor(:shortdesc)
-    flag(:static)
-    
-  end                           # module Thing
-
+  nil
 end                             # module TAF
 
 # Local Variables:

@@ -15,28 +15,45 @@
 #++
 # frozen_string_literal: true
 
-require_relative('version')
-require_relative('classmethods')
+require('rubygems')
+require('byebug')
+require_relative('thing')
 require_relative('container')
-require_relative('exceptions')
+require_relative('location')
+
 
 # @!macro ModuleDoc
 module TAF
 
-  module Location
+  #
+  class Game
 
-    class << self
+    include(::TAF::Thing)
 
-      def included(klass)
-        klass.include(::TAF::Container)
-      end                       # def included
+    #
+    attr_accessor(:all_objects)
 
-    end                         # module Location eigenclass
+    #
+    def items
+      return self.all_objects.select { |o| o.kind_of?(::TAF::Item) }
+    end                         # def items
 
-    nil
-  end                           # module Location
+    #
+    def locations
+      return self.all_objects.select { |o| o.kind_of?(::TAF::Location) }
+    end                         # def locations
 
-  nil
+    def initialize(*args, **kwargs)
+      warn('[%s] initialize running' % [ self.class.name ])
+      self.game		= self
+      self.all_objects	= ::TAF::Inventory.new(game:	self,
+                                               owner:	self,
+                                               master:	true)
+      super
+    end
+
+  end                           # class Game
+
 end                             # module TAF
 
 # Local Variables:
