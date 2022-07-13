@@ -39,6 +39,66 @@ module TAF
   end                           # class ErrorBase
 
   #
+  class NotGameElement < ErrorBase
+
+    #
+    def initialize(*args, **kwargs)
+      arg		= args[0]
+      if (arg.kind_of?(String))
+        msg		= arg
+      else
+        objtype		= arg.class.name
+        msg		= 'not a game object: %s:%s' \
+                          % [objtype, arg.to_s]
+      end
+      self._set_message(msg)
+    end                         # def initialize
+
+    nil
+  end                           # class NotGameElement
+
+  #
+  class NoObjectOwner < ErrorBase
+
+    #
+    def initialize(*args, **kwargs)
+      arg		= args[0]
+      if (arg.kind_of?(String))
+        msg		= arg
+      else
+        objtype		= arg.class.name
+        msg		= 'no owner specified on creation of: %s:%s' \
+                          % [objtype, arg.to_s]
+      end
+      self._set_message(msg)
+    end                         # def initialize
+
+    nil
+  end                           # class NoObjectOwner
+
+  #
+  class KeyObjectMismatch < ErrorBase
+
+    #
+    def initialize(oslug=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
+      oslug		= args[0] || kwargs[:slug]
+      obj		= args[1] || kwargs[:object]
+      ckobj		= args[2] || kwargs[:ckobject]
+      iname		= args[3] || kwargs[:inventory_name]
+
+      msg		= ("value for key '%s' in %s fails to match: " \
+                          + "%s:'%s' instead of %s:'%s'") \
+                          % [oslug.to_s,
+                             iname,
+                             (ckobj.name || ckobj.slug).to_s,
+                             (obj.name || obj.slug).to_s]
+      self._set_message(msg)
+    end                         # def initialize
+
+    nil
+  end                           # class KeyObjectMismatch
+
+  #
   class NoGameContext < ErrorBase
 
     #
@@ -73,6 +133,118 @@ module TAF
 
     nil
   end                           # class SettingLocked
+
+  #
+  class ImmovableObject < ErrorBase
+
+    #
+    def initialize(*args, **kwargs)
+      arg	= args[0]
+      if (arg.kind_of?(String))
+        msg	= arg
+      else
+        obj	= args[0]
+        objtype	= obj.class.name.sub(%r!^.*::!, '')
+        name	= obj.name || obj.slug
+        if (name)
+          msg	= "%s object '%s' is static and cannot be relocated" \
+                  % [objtype, name]
+        else
+          msg	= "%s object is static and cannot be relocated" \
+                  % [objtype]
+        end
+      end
+      self._set_message(msg)
+    end                         # def initialize
+
+    nil
+  end                           # class ImmovableObject
+
+  #
+  class MasterInventory < ErrorBase
+
+    #
+    def initialize(*args, **kwargs)
+      arg	= args[0]
+      if (arg.kind_of?(String))
+        msg	= arg
+      else
+        obj	= args[0]
+        objtype	= obj.class.name.sub(%r!^.*::!, '')
+        name	= obj.name || obj.slug
+        if (name)
+          msg	= ("cannot remove %s object '%s' from " \
+                  + 'the master inventory') \
+                  % [objtype, name]
+        else
+          msg	= "cannot remove %s object from the master inventory" \
+                  % [objtype]
+        end
+      end
+      self._set_message(msg)
+    end                         # def initialize
+
+    nil
+  end                           # class MasterInventory
+
+  #
+  class HasNoInventory < ErrorBase
+    
+    #
+    def initialize(*args, **kwargs)
+      if ((args.count == 1) && args[0].kind_of?(String))
+        msg		= args[0]
+      elsif (args[0].kind_of?(::TAF::Thing))
+        name		= args[0].name || args[0].slug.to_s
+        case(args.count)
+        when 0
+          msg		= 'object has no inventory'
+        when 1
+          msg		= ("%s object '%s' has no inventory") \
+                          % [args[0].class.name,name]
+        else
+          msg		= 'unforeseen arguments to exception: %s' \
+                          % args.inspect
+        end                     # case(args.count)
+      end
+      self._set_message(msg)
+    end                         # def initialize
+
+    nil
+  end                           # class HasNoInventory
+
+  #
+  class AlreadyInInventory < ErrorBase
+    
+    #
+    def initialize(*args, **kwargs)
+      type		= self.class.name.sub(%r!^.*Duplicate!, '')
+      if ((args.count >= 1) && args[0].kind_of?(String))
+        msg		= args[0]
+      elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(::TAF::Thing) })
+        case(args.count)
+        when 0
+          msg		= 'object already in inventory'
+        when 1
+          msg		= ("%s object '%s' already in inventory") \
+                          % [args[0].class.name,
+                             (args[0].name || args[0].slug).to_s]
+        when 2
+          msg		= ("%s object '%s' already in inventory, " \
+                           + 'cannot add %s with same slug') \
+                          % [args[0].class.name,
+                             (args[0].name || args[0].slug).to_s,
+                             args[1].class.name]
+        else
+          msg		= 'unforeseen arguments to exception: %s' \
+                          % args.inspect
+        end                     # case(args.count)
+      end
+      self._set_message(msg)
+    end                         # def initialize
+
+    nil
+  end                           # class AlreadyInInventory
 
   #
   class DuplicateObject < ErrorBase

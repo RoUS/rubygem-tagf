@@ -69,6 +69,21 @@ module TAF
     ONCE_AND_DONE	= %i[ game slug owner ]
 
     #
+    def raise_exception(exc_class, *args, **kwargs)
+      kwargs[:levels]	||= 1
+      bt		= caller
+      #
+      # Add ourself to what's being elided.
+      #
+      (kwargs[:levels] + 1).times { bt.pop }
+      kwargs.delete(:levels)
+      exc		= exc_class.new(exc_class, *args, **kwargs)
+      exc.set_backtrace(bt)
+      raise(exc)
+    end                         # def raise_exception
+    private(:raise_exception)
+
+    #
     def has_inventory?
       return self.respond_to?(:inventory) ? true : false
     end                         # def has_inventory?
@@ -81,11 +96,41 @@ module TAF
     end                         # def is_container?
 
     #
+    flag(:in_setup)
+
+    #
+    def object_setup(&block)
+      self.in_setup!
+      yield(self)
+      self.in_setup	= false
+      return self
+    end                         # def object_setup
+
+    #
+    # Move the associated object from one object's inventory to
+    # another's.
+    #
+    def move_to(*args, **kwargs)
+      if (self.owner.inventory.master?)
+        self.raise_exception(MasterInventory, self, kwargs)
+      end
+      if (self.static?)
+        self.raise_exception(ImmovableObject, self, kwargs)
+      end
+      newowner		= args[0] unless (newowner = kwargs[:owner])
+      self.owner.inventory.delete(self.slug)
+      newowner.inventory.add(self)
+    end                         # def move_to
+
+    #
     def initialize(*args, **kwargs)
       warn('[TAF::Thing] initialize running')
-      bt		= caller
-      bt.pop
-      @slug		||= self.object_id
+      @slug		||= kwargs[:slug] || self.object_id
+      if (self.owner.nil? \
+          && ((! kwargs.key?(:owner)) \
+              || kwargs[:owner].nil?))
+        self.raise_exception(NoObjectOwner, self)
+      end
       kwargs.each do |attrib,newval|
         attrib		= attrib.to_sym
         attrib_s	= attrib.to_s
@@ -98,9 +143,7 @@ module TAF
         if (ONCE_AND_DONE.include?(attrib) \
             && (! curval.nil?) \
             && (newval != curval))
-          exc		= ::TAF::SettingLocked.new(attrib)
-          exc.set_backtrace(bt)
-          raise(exc)
+          self.raise_exception(SettingLocked, attrib)
         end
         if (self.respond_to?(attrib_setter))
           self.send(attrib_setter, newval)
@@ -108,17 +151,15 @@ module TAF
           self.instance_variable_set(attrib_ivar, newval)
         end
       end                       # kwargs.each
-      
-      if (@game.nil? && @owner.respond_to?(:game))
+      debugger
+      if (self.game.nil? && self.owner.respond_to?(:game))
         @game			||= self.owner.game
       end
       unless (self.respond_to?(:game) && (! self.game.nil?))
-        exc		= ::TAF::NoGameContext.new
-        bt		= caller
-        bt.pop
-        exc.set_backtrace(bt)
-        raise(exc)
+        self.raise_exception(NoGameContext)
       end
+      self.game.add(self) unless (self.game.in_setup?)
+      self.owner.add(self) unless (self.owner.in_setup?)
     end                         # def initialize
 
     nil

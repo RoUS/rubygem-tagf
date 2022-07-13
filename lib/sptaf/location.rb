@@ -20,21 +20,50 @@ require_relative('classmethods')
 require_relative('container')
 require_relative('exceptions')
 
-# @!macro ModuleDoc
+# @!macro TAFDoc
 module TAF
 
-  module Location
+  # @!macro LocationMixinDoc
+  module LocationMixin
 
     class << self
 
       def included(klass)
-        klass.include(::TAF::Container)
+        klass.include(::TAF::ContainerMixin)
       end                       # def included
 
-    end                         # module Location eigenclass
+    end                         # module LocationMixin eigenclass
+
+    attr_accessor(:paths)
+
+    #
+    def initialize(*args, **kwargs)
+      warn('[TAF::LocationMixin] initialize')
+      self.paths	||= {}
+      super
+    end                         # def initialize
 
     nil
-  end                           # module Location
+  end                           # module LocationMixin
+
+  #
+  class Location
+
+    include(::TAF::Thing)
+    include(::TAF::LocationMixin)
+
+    #
+    def initialize(*args, **kwargs)
+      self.object_setup do
+        warn('[%s] initialize' % [self.class.name])
+        self.inventory	= ::TAF::Inventory.new(game:	self,
+                                               owner:	self)
+        super
+      end
+    end                         # def initialize
+
+    nil
+  end                           # class Location
 
   nil
 end                             # module TAF

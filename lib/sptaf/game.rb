@@ -29,31 +29,78 @@ module TAF
   class Game
 
     include(::TAF::Thing)
-
+    include(::TAF::ContainerMixin)
     #
-    attr_accessor(:all_objects)
+    attr_accessor(:inventory)
 
     #
     def items
-      return self.all_objects.select { |o| o.kind_of?(::TAF::Item) }
+      return self.inventory.select { |o| o.kind_of?(::TAF::Item) }
     end                         # def items
 
     #
     def locations
-      return self.all_objects.select { |o| o.kind_of?(::TAF::Location) }
+      return self.inventory.select { |o| o.kind_of?(::TAF::Location) }
     end                         # def locations
 
+    #
+    # @todo
+    #   * Really need to mutex or threadlock the inventories..
+    #
+    def change_slug(obj=nil, oldslug=nil, newslug=nil, **kwargs)
+      obj		||= kwargs[:object]
+      oldslug		||= kwargs[:oldslug]
+      newslug		||= kwargs[:newslug]
+      unless (obj.respond_to?(:slug))
+        self.raise_exception(NotGameElement, obj)
+      end
+      g			= self.game
+      inventories	= g.inventory.select { |o|
+        o.kind_of?(::TAF::Inventory) && o.keys.include?(oldslug)
+      }
+      inventories.unshift(self.game.inventory)
+      inventories_edited = []
+      if (inventories.empty?)
+        warn("No inventories found containing slug '%s'" % [oldslug])
+      else
+        obj.instance_variable_set(:@slug, newslug)
+        inventories.each do |i|
+          ckobj		= i[oldslug]
+          if (ckobj != obj)
+            self.raise_exception(KeyObjectMismatch,
+                                 oldslug,
+                                 obj,
+                                 ckobj,
+                                 i.name)
+          end
+          i.delete(oldslug)
+          i.add(obj)
+          inventories_edited <<	i
+        end                     # inventories.each do
+      end
+      obj.instance_variable_set(:@slug, newslug)
+      return inventories_edited
+    end                         # def change_slug
+
+    #
     def initialize(*args, **kwargs)
-      warn('[%s] initialize running' % [ self.class.name ])
-      self.game		= self
-      self.all_objects	= ::TAF::Inventory.new(game:	self,
+      self.object_setup do
+        warn('[%s] initialize running' % [ self.class.name ])
+        self.game	= self
+        self.owner	= self
+        self.static!
+        self.inventory	= ::TAF::Inventory.new(game:	self,
                                                owner:	self,
                                                master:	true)
-      super
-    end
+        super
+      end                       # self.object_setup
+      self.add(self)
+    end                         # def initialize
 
+    nil
   end                           # class Game
 
+  nil
 end                             # module TAF
 
 # Local Variables:
