@@ -15,33 +15,49 @@
 #++
 # frozen_string_literal: true
 
-require_relative('version')
-require_relative('classmethods')
-require_relative('container')
-require_relative('exceptions')
+require_relative('../sptaf')
+require('byebug')
 
-# @!macro TAFDoc
+# @!macro doc.TAF
 module TAF
 
-  # @!macro LocationMixinDoc
+  # @!macro doc.LocationMixin
   module LocationMixin
 
+    # @!macro doc.LocationMixin.eigenclass
     class << self
 
+      #
       def included(klass)
-        klass.include(::TAF::ContainerMixin)
+        warn('TAF::LocationMixin<included> called for %s' % klass.name)
+        warn('TAF::LocationMixin<included> extending ::TAF::ClassMethods::Thing')
+        klass.extend(::TAF::ClassMethods::Thing)
       end                       # def included
 
     end                         # module LocationMixin eigenclass
 
+    include(::TAF::ContainerMixin)
+
+    #
     attr_accessor(:paths)
 
     #
     def initialize(*args, **kwargs)
-      warn('[TAF::LocationMixin] initialize')
+      warn('%s->[%s] initialising' % [self.class.name, 'TAF::LocationMixin'])
+      debugger
       self.paths	||= {}
       super
     end                         # def initialize
+
+    #
+    def initialize_location(*args, **kwargs)
+      warn('[%s] %s' % [self.class.name, __method__.to_s])
+      self.object_setup do
+        self.initialize_container(*args, **kwargs)
+        self.inventory	= ::TAF::Inventory.new(game:	self,
+                                               owned_by: self)
+      end
+    end                         # def initialize_location
 
     nil
   end                           # module LocationMixin
@@ -49,18 +65,7 @@ module TAF
   #
   class Location
 
-    include(::TAF::Thing)
     include(::TAF::LocationMixin)
-
-    #
-    def initialize(*args, **kwargs)
-      self.object_setup do
-        warn('[%s] initialize' % [self.class.name])
-        self.inventory	= ::TAF::Inventory.new(game:	self,
-                                               owner:	self)
-        super
-      end
-    end                         # def initialize
 
     nil
   end                           # class Location

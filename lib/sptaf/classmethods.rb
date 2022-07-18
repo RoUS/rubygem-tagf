@@ -15,16 +15,37 @@
 #++
 # frozen_string_literal: true
 
+require_relative('../sptaf')
 require('ostruct')
 require('byebug')
 
-# @!macro ModuleDoc
+# @!macro doc.TAF
 module TAF
 
+  # @!macro doc.ClassMethods
   module ClassMethods
 
+    include(::TAF)
+    include(::TAF::Exceptions)
+
+    #
+    def method_missing(methsym, *args, **kwargs)
+      case(methsym)
+      when :initialize_container
+        return ::TAF::ContainerMixin.initialize_container(*args, **kwargs)
+      when :initialize_location
+        return ::TAF::LocationMixin.initialize_location(*args, **kwargs)
+      when :initialize_thing
+        return ::TAF::Thing.initialize_thing(*args, **kwargs)
+      else
+        return super
+      end
+    end                         # def method_missing
+
+    # @!macro doc.ClassMethods.Thing
     module Thing
 
+      #
       def _decompose_attrib(attrib_p, default=nil)
         strval		= attrib_p.to_s.sub(%r![^_[:alnum:]]*$!, '')
         pieces		= OpenStruct.new(
@@ -40,6 +61,7 @@ module TAF
       end
       protected(:_decompose_attrib)
 
+      #
       def _inivaluate_attrib(default, *args, **kwargs)
         unless ((argc = args.count).zero?)
           #
@@ -60,6 +82,7 @@ module TAF
       end
       protected(:_inivaluate_attrib)
 
+      #
       def flag(*args, **kwargs)
         kwargs		= _inivaluate_attrib(false, *args, **kwargs)
         kwargs.each do |attrib,default|
@@ -90,6 +113,7 @@ module TAF
         nil
       end                       # def flag
 
+      #
       def iattr_accessor(*args, **kwargs)
         attrmethod	= __method__.to_s
         kwargs		= _inivaluate_attrib(0, *args, **kwargs)

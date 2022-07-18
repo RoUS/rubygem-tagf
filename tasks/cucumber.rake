@@ -15,32 +15,12 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
-
-# @!macro doc.TAF
-module TAF
-
-  #
-  class Player
-
-    include(::TAF::ContainerMixin)
-
-    #
-    def initialize(*args, **kwargs)
-      warn('%s->[%s] initialising' % [self.class.name, 'TAF::Player'])
-      debugger
-      super
-    end                         # def initialize
-
-    nil
-  end                           # class Player
-
-  nil
-end                             # module TAF
+require('cucumber/rake/task')
+Cucumber::Rake::Task.new(:features)
 
 # Local Variables:
 # mode: ruby
 # indent-tabs-mode: nil
+# page-delimiter: "^[[:space:]]*#\\(--\\|\\+\\+\\)"
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
 # End:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #--
 # Copyright © 2022 Ken Coar
 #
@@ -15,29 +16,8 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
-
-# @!macro doc.TAF
-module TAF
-
-  #
-  class Player
-
-    include(::TAF::ContainerMixin)
-
-    #
-    def initialize(*args, **kwargs)
-      warn('%s->[%s] initialising' % [self.class.name, 'TAF::Player'])
-      debugger
-      super
-    end                         # def initialize
-
-    nil
-  end                           # class Player
-
-  nil
-end                             # module TAF
+require('rspec/core/rake_task')
+RSpec::Core::RakeTask.new(:spec)
 
 # Local Variables:
 # mode: ruby

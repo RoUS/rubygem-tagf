@@ -15,29 +15,29 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+#
+# Namespace for locally-defined tasks.
+#
+namespace(:local) do
 
-# @!macro doc.TAF
-module TAF
+  namespace(:emacs) do
 
-  #
-  class Player
+    desc('Generate TAGS file for use by Emacs')
+    task(:tags) do
+      ctags_opts	= %i[
+        -e
+        --Ruby-kinds=-f
+        -o TAGS
+        -R
+        --exclude=vendor/*
+        .
+      ]
+      system('ctags ' + ctags_opts.join(' '))
+    end
 
-    include(::TAF::ContainerMixin)
+  end                           # namespace(:emacs) do
 
-    #
-    def initialize(*args, **kwargs)
-      warn('%s->[%s] initialising' % [self.class.name, 'TAF::Player'])
-      debugger
-      super
-    end                         # def initialize
-
-    nil
-  end                           # class Player
-
-  nil
-end                             # module TAF
+end                             # namespace(:local) do
 
 # Local Variables:
 # mode: ruby

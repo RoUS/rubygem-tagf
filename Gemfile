@@ -14,7 +14,6 @@
 # permissions and limitations under the License.
 #++
 # frozen_string_literal: true
-#
 
 source('https://rubygems.org/')
 require('versionomy')
@@ -24,9 +23,18 @@ require('versionomy')
 # remarkably stupid about gems needed *by* the gemspec.
 #
 # gemspec
+#
+# Use the following to install `versionomy` into the `vendor` subtree
+# so Bundler can find and use it:
+#
+#	gem install \
+#	    --no-user-install \
+#	    --install-dir vendor/bundle/ruby/3.0.0 \
+#	    versionomy
+#
 
 RUBY_ENGINE     = 'ruby' unless (defined?(RUBY_ENGINE))
-ruby('>= 2.0')
+ruby('>= 2.7')
 
 # Add dependencies required to use your gem here.
 # Example:
@@ -34,8 +42,11 @@ ruby('>= 2.0')
 
 group(:default, :development, :test) do
   gem('bundler',	'>= 1.0.7')
-  gem('exceptable',
+  gem('sptaf',
       path:		'.')
+  gem('ostruct')
+  gem('psych')
+  gem('yaml')
   gem('versionomy')
 end
 

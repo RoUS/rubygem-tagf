@@ -15,23 +15,33 @@
 #++
 # frozen_string_literal: true
 
-require('rubygems')
+require_relative('../sptaf')
 require('byebug')
-require_relative('thing')
-require_relative('container')
-require_relative('location')
 
-
-# @!macro ModuleDoc
+# @!macro doc.TAF
 module TAF
 
   #
   class Game
 
-    include(::TAF::Thing)
     include(::TAF::ContainerMixin)
+
     #
     attr_accessor(:inventory)
+
+    #
+    def load(*args, **kwargs)
+      @elements		= {}
+      if ((loadfile = kwargs[:file]).nil?)
+        raise_exception(NoLoadFile)
+      end
+      begin
+        @elements	= YAML.load(File.read(loadfile))
+      rescue StandardError => e
+        raise_exception(BadLoadFile, file: loadfile, exception: e)
+      end
+      return @elements
+    end                         # def load
 
     #
     def items
@@ -84,16 +94,23 @@ module TAF
 
     #
     def initialize(*args, **kwargs)
+      warn('[%s] %s' % [self.class.name, __method__.to_s])
       self.object_setup do
-        warn('[%s] initialize running' % [ self.class.name ])
         self.game	= self
-        self.owner	= self
+        self.owned_by	= self
         self.static!
+=begin
         self.inventory	= ::TAF::Inventory.new(game:	self,
-                                               owner:	self,
+                                               owned_by: self,
                                                master:	true)
-        super
+=end
       end                       # self.object_setup
+      self.initialize_thing(*args, **kwargs)
+      self.initialize_container(*args, **kwargs)
+      debugger
+      self.add_inventory(game:		self,
+                         owned_by:	self,
+                         master:	true)
       self.add(self)
     end                         # def initialize
 

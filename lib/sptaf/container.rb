@@ -15,14 +15,13 @@
 #++
 # frozen_string_literal: true
 
-require_relative('version')
-require_relative('thing')
-require_relative('classmethods')
-require_relative('exceptions')
+require_relative('../sptaf')
+require('byebug')
 
-# @!macro ModuleDoc
+# @!macro doc.TAF
 module TAF
 
+  #
   class Inventory
 
     include(::TAF::Thing)
@@ -36,10 +35,29 @@ module TAF
     #
     def name
       text		= "Inventory for %s '%s'" \
-                          % [self.owner.class.name,
-                             (self.owner.name || self.owner.slug).to_s]
+                          % [self.owned_by.class.name,
+                             (self.owned_by.name || self.owned_by.slug).to_s]
       return text
     end                         # def name
+
+    #
+    def subordinate_inventories
+      results		= [ self ]
+      self.select { |o| o.has_inventory? }.each do |i|
+        results		|= i.subordinate_inventories
+      end
+      return results.flatten.uniq
+    end                         # def subordinate_inventories
+
+    #
+    def include?(arg, **kwargs)
+      ilist		= [ self ]
+      if (kwargs[:recurse])
+        ilist		|= self.subordinate_inventories
+      end
+      ilist		= ilist.select { |i| i.contains_item?(arg) }
+      return ilist
+    end                         # def include?
 
     #
     def keys
@@ -47,28 +65,46 @@ module TAF
     end
 
     #
-    def [](*args)
-      return @contents.send(:[], *args)
+    def select(&block)
+      results		= @contents.values.select(block)
+      return results
+    end
+
+    #
+    def [](*args, **kwargs)
+      if (kwargs[:select] == :objects)
+        results		= @contents.values.send(:[], *args).compact
+      else
+        results		= @contents.send(:[], *args).compact
+      end
+      return results
     end
 
     #
     def []=(*args)
+      gameobjs		= args.select { |o| o.kind_of?(::TAF::Thing) }
+      unless ((args - gameobjs).empty?)
+        self.raise_exception(NotGameElement,
+                             'only game elements ' \
+                             + 'can be put in inventories')
+      end
       return @contents.send(:[]=, *args)
-    end
+    end                         # def []=
 
     #
-    def initialize(*args, **kwargs)
+    def initialize_container(*args, **kwargs)
+      warn('[%s] %s' % [self.class.name, __method__.to_s])
+      debugger
       self.object_setup do
         @contents	= {}
-        if (owned_by = kwargs[:owner])
+        if (owned_by = kwargs[:owned_by])
           @slug		= '%s[%s].inventory' \
                           % [owned_by.class.name,
                              (owned_by.name || owned_by.slug).to_s]
         end
         @master		= kwargs[:master] ? true : false
-        super
       end                       # self.object_setup do
-    end                         # def initialize
+    end                         # def initialize_container
 
     #
     def push(obj)
@@ -98,6 +134,7 @@ module TAF
       unless (arg.class.ancestors.include?(::TAF::Thing))
         self.raise_exception(NotGameObject, arg)
       end
+      debugger
       key		= arg.slug
       if (@contents.keys.include?(key))
         oldobj		= @contents[key]
@@ -118,21 +155,24 @@ module TAF
     nil
   end                           # class Inventory
 
-  # @!macro ContainMixinDoc
+  # @!macro doc.ContainerMixin
   module ContainerMixin
 
-    #
+    # @!macro doc.ContainerMixin.eigenclass
     class << self
 
       #
       def included(klass)
-        klass.include(::TAF::Thing)
+        warn('TAF::ContainerMixin<included> called for %s' % klass.name)
+        warn('TAF::ContainerMixin<included> extending ::TAF::ClassMethods::Thing')
+        klass.extend(::TAF::ClassMethods::Thing)
       end                       # def included
 
       nil
-    end                         # module Container eigenclass
+    end                         # module ContainerMixin eigenclass
 
-    extend ::TAF::ClassMethods::Thing
+    include(::TAF)
+    include(::TAF::Thing)
 
     #
     flag(:allow_containers)
@@ -198,16 +238,18 @@ module TAF
 
   class Container
 
+    include(::TAF)
     include(::TAF::Thing)
     include(::TAF::ContainerMixin)
 
     #
     def initialize(*args, **kwargs)
+      warn('[%s]%s initialising' % [ __class__.name, self.class.name ])
       self.object_setup do
         args		= args.dup
         self.game	||= kwargs[:game]
-        if (kwargs[:owner] && kwargs[:owner].respond_to?(:game))
-          self.game	||= kwargs[:owner].game
+        if (kwargs[:owned_by] && kwargs[:owned_by].respond_to?(:game))
+          self.game	||= kwargs[:owned_by].game
         end
         unless (self.game \
                 || (args[0].kind_of?(::TAF::Game) \
@@ -220,13 +262,14 @@ module TAF
       # We're a container, so create our own inventory and add it to
       # our, erm, inventory.
       #
-      self.inventory	= Inventory.new(game: self.game, owner: self)
+      debugger
+      self.inventory	= Inventory.new(game: self.game, owned_by: self)
       self.add(self.inventory)
       #
       # Add this object to our owner's inventory.
       #
-      if (self.owner && self.owner.has_inventory?)
-        self.owner.add(self)
+      if (self.owned_by && self.owned_by.has_inventory?)
+        self.owned_by.add(self)
       end
     end                         # def initialize
 

@@ -15,10 +15,9 @@
 #++
 # frozen_string_literal: true
 
-require('rubygems')
 require('versionomy')
 
-# @!macro ModuleDoc
+# @!macro doc.TAF
 module TAF
 
   #

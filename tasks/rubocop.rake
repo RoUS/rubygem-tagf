@@ -15,29 +15,11 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('rubocop/rake_task')
+namespace(:doc) do
+  RuboCop::RakeTask.new
+end
 
-# @!macro doc.TAF
-module TAF
-
-  #
-  class Player
-
-    include(::TAF::ContainerMixin)
-
-    #
-    def initialize(*args, **kwargs)
-      warn('%s->[%s] initialising' % [self.class.name, 'TAF::Player'])
-      debugger
-      super
-    end                         # def initialize
-
-    nil
-  end                           # class Player
-
-  nil
-end                             # module TAF
 
 # Local Variables:
 # mode: ruby
