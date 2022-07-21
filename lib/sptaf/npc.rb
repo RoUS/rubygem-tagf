@@ -22,15 +22,14 @@ require('byebug')
 module TAF
 
   #
-  class Player
+  class NPC
 
     include(::TAF::ActorMixin)
 
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      @breadcrumbs	= []
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_actor(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
     end                         # def initialize
 

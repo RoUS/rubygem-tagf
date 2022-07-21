@@ -41,6 +41,40 @@ module TAF
     end                         # def name
 
     #
+    def initialize(**kwargs)
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      @contents		= {}
+      unless (owned_by = kwargs[:owned_by])
+        raise_exception(NoObjectOwner, self)
+      end
+      #
+      # Use the inventory key of the owner to make navigation
+      # simpler.
+      #
+      @slug		= '%s[%s].inventory' \
+                          % [owned_by.class.name,
+                             owned_by.slug.to_s]
+      @master		= kwargs[:master] ? true : false
+      self.initialize_thing([], **kwargs)
+    end                         # def initialize
+
+    #
+    def inspect
+      result		= ('#<%s:"%s" ' \
+                           + ' game="%s"' \
+                           + ', name="%s"' \
+                           + ', %i item(s)' \
+                           + '>') \
+                          % [
+        self.class.name,
+        self.slug.to_s,
+        self.game.slug.to_s,
+        self.name.to_s,
+        @contents.size
+      ]
+      return result
+    end                         # def inspect
+    #
     def subordinate_inventories
       results		= [ self ]
       self.select { |o| o.has_inventory? }.each do |i|
@@ -66,16 +100,16 @@ module TAF
 
     #
     def select(&block)
-      results		= @contents.values.select(block)
+      results		= @contents.values.select(&block)
       return results
     end
 
     #
     def [](*args, **kwargs)
       if (kwargs[:select] == :objects)
-        results		= @contents.values.send(:[], *args).compact
+        results		= @contents.values.send(:[], *args)
       else
-        results		= @contents.send(:[], *args).compact
+        results		= @contents.send(:[], *args)
       end
       return results
     end
@@ -90,21 +124,6 @@ module TAF
       end
       return @contents.send(:[]=, *args)
     end                         # def []=
-
-    #
-    def initialize_container(*args, **kwargs)
-      warn('[%s] %s' % [self.class.name, __method__.to_s])
-      debugger
-      self.object_setup do
-        @contents	= {}
-        if (owned_by = kwargs[:owned_by])
-          @slug		= '%s[%s].inventory' \
-                          % [owned_by.class.name,
-                             (owned_by.name || owned_by.slug).to_s]
-        end
-        @master		= kwargs[:master] ? true : false
-      end                       # self.object_setup do
-    end                         # def initialize_container
 
     #
     def push(obj)
@@ -134,7 +153,6 @@ module TAF
       unless (arg.class.ancestors.include?(::TAF::Thing))
         self.raise_exception(NotGameObject, arg)
       end
-      debugger
       key		= arg.slug
       if (@contents.keys.include?(key))
         oldobj		= @contents[key]
@@ -162,10 +180,19 @@ module TAF
     class << self
 
       #
+      # @return [void]
+      #
       def included(klass)
-        warn('TAF::ContainerMixin<included> called for %s' % klass.name)
-        warn('TAF::ContainerMixin<included> extending ::TAF::ClassMethods::Thing')
-        klass.extend(::TAF::ClassMethods::Thing)
+        whoami		= '%s eigenclass.%s' \
+                          % [self.name, __method__.to_s]
+        warn('%s called for %s' \
+             % [whoami, klass.name])
+        [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
+          warn('%s extending %s with %s' \
+               % [whoami, klass.name, xmodule.name])
+          klass.extend(xmodule)
+        end
+        return nil
       end                       # def included
 
       nil
@@ -181,42 +208,80 @@ module TAF
     attr_accessor(:inventory)
 
     # overload
-    def items_max=(int)
-      unless (int.kind_of?(Integer))
-        raise(ArgumentError,
-              __method__.to_s + ' requires an integer')
-      end
-      @items_max	= int
-    end
+    int_reader(:items_max)
     # overload
-    def items_max
-      return (@items_max ||= 0)
-    end                         # def items_max
+    def items_max=(arg)
+      unless (arg.kind_of?(Integer))
+        raise(ArgumentError,
+              __method__.to_s \
+              + ' requires an integer')
+      end
+      @items_max	= arg
+    end                         # def items_max=
 
     #
-    def items_current
-      return (@items_current ||= 0)
-    end                         # items_current
+    int_reader(:items_current)
+    # overload
+    def items_current=(arg)
+      unless (arg.kind_of?(Integer))
+        raise(ArgumentError,
+              __method__.to_s \
+              + ' requires an integer')
+      end
+      @items_current	= arg
+    end                         # def items_current=
 
     #
-    def mass_max
-      return (@mass_max ||= 0)
-    end                         # def mass_max
+    float_reader(:mass_max)
+    # overload
+    def mass_max=(arg)
+      unless (arg.kind_of?(Numeric))
+        raise(ArgumentError,
+              __method__.to_s \
+              + ' requires a float or something coercible')
+      end
+      @mass_max		= Float(arg)
+    end                         # def mass_max=
 
     #
-    def mass_current
-      return (@mass_current ||= 0)
-    end                         # mass_current
+    float_reader(:mass_current)
+    # overload
+    def mass_current=(arg)
+      unless (arg.kind_of?(Numeric))
+        raise(ArgumentError,
+              __method__.to_s \
+              + ' requires a float or something coercible')
+      end
+      @mass_current		= Float(arg)
+    end                         # def max_current=
 
     #
-    def volume_max
-      return (@volume_max ||= 0)
-    end                         # def volume_max
+    float_reader(:volume_current)
+    # overload
+    def volume_current=(arg)
+      unless (arg.kind_of?(Numeric))
+        raise(ArgumentError,
+              __method__.to_s \
+              + ' requires a float or something coercible')
+      end
+      @volume_current	= Float(arg)
+    end                         # def volume_current=
 
     #
-    def volume_current
-      return (@volume_current ||= 0)
-    end                         # volume_current
+    float_reader(:volume_max)
+    # overload
+    def volume_max=(arg)
+      unless (arg.kind_of?(Numeric))
+        raise(ArgumentError,
+              __method__.to_s \
+              + ' requires a float or something coercible')
+      end
+      @volume_max	= Float(arg)
+    end                         # def volume_max=
+
+
+    #
+    float_reader(:volume_current)
 
     def contains_item?(*args, **kwargs)
 
@@ -227,11 +292,12 @@ module TAF
       unless (self.respond_to?(:inventory))
         self.raise_exception(HasNoInventory, self)
       end
-      if (self.game.in_setup?)
-        return nil
-      end
       return self.inventory.add(arg, **kwargs)
     end                         # def add(arg, **kwargs)
+
+    #
+    def initialize_container(*args, **kwargs)
+    end                         # def initialize_container
 
     nil
   end                           # module ContainerMixin
@@ -244,25 +310,22 @@ module TAF
 
     #
     def initialize(*args, **kwargs)
-      warn('[%s]%s initialising' % [ __class__.name, self.class.name ])
-      self.object_setup do
-        args		= args.dup
-        self.game	||= kwargs[:game]
-        if (kwargs[:owned_by] && kwargs[:owned_by].respond_to?(:game))
-          self.game	||= kwargs[:owned_by].game
-        end
-        unless (self.game \
-                || (args[0].kind_of?(::TAF::Game) \
-                    && (self.game ||= args[0].game)))
-          self.raise_exception(NoGameContext)
-        end
-        super
-      end                       # self.object_setup
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      self.initialize_thing(*args, **kwargs)
+      args		= args.dup
+      self.game		||= kwargs[:game]
+      if (kwargs[:owned_by] && kwargs[:owned_by].respond_to?(:game))
+        self.game	||= kwargs[:owned_by].game
+      end
+      unless (self.game \
+              || (args[0].kind_of?(::TAF::Game) \
+                  && (self.game ||= args[0].game)))
+        self.raise_exception(NoGameContext)
+      end
       #
       # We're a container, so create our own inventory and add it to
       # our, erm, inventory.
       #
-      debugger
       self.inventory	= Inventory.new(game: self.game, owned_by: self)
       self.add(self.inventory)
       #

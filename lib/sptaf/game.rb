@@ -27,31 +27,127 @@ module TAF
     include(::TAF::ContainerMixin)
 
     #
-    attr_accessor(:inventory)
+    attr_reader(:inventory)
 
     #
-    def load(*args, **kwargs)
-      @elements		= {}
-      if ((loadfile = kwargs[:file]).nil?)
-        raise_exception(NoLoadFile)
+    flag(:loaded)
+
+    #
+    attr_reader(:threadgroup)
+
+    #
+    def initialize(*args, **kwargs)
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      @threadgroup	= ThreadGroup.new
+      threadgroup.add(Thread.current)
+      self.game		= self
+      self.owned_by	= self
+      kwargs.delete(:slug) if (@slug = kwargs[:slug])
+      kwargs.delete(:name) if (self.name = kwargs[:name])
+      @slug		||= self.object_id
+      self.name		||= ''
+      self.static!
+      self.initialize_thing(*args, **kwargs)
+      self.initialize_container(*args, **kwargs)
+      self.create_inventory_on(self,
+                               game:		self,
+                               owned_by:	self,
+                               master:		true)
+      self.add(self)
+      self.allow_containers!
+    end                         # def initialize
+
+    #
+    def keys
+      return @inventory.send(__method__)
+    end                         # def keys
+
+    #
+    def [](*args)
+      return @inventory.send(__method__, *args)
+    end                         # def []
+
+    #
+    def create_inventory_on(target, **kwargs)
+      if (target.has_inventory?)
+        raise_exception(AlreadyHasInventory, target)
       end
-      begin
-        @elements	= YAML.load(File.read(loadfile))
-      rescue StandardError => e
-        raise_exception(BadLoadFile, file: loadfile, exception: e)
-      end
-      return @elements
-    end                         # def load
+      kwargs		= kwargs.dup
+      kwargs[:game]	= self.game
+      kwargs[:owned_by]	= target
+      kwargs[:master]	= (target == self.game ? true : false)
+      target.inventory	= Inventory.new(**kwargs)
+      self.game.add(target.inventory)
+      return target.inventory
+    end                         # def create_inventory_on
 
     #
-    def items
-      return self.inventory.select { |o| o.kind_of?(::TAF::Item) }
-    end                         # def items
+    def create_item(**kwargs)
+      override		= {
+        game:		self.game
+      }
+      kwargs		= override.merge(kwargs.merge(owned_by: self.game))
+      item		= Item.new([], **kwargs)
+      self.game.add(item)
+      return item      
+    end                         # def create_item
 
     #
-    def locations
-      return self.inventory.select { |o| o.kind_of?(::TAF::Location) }
-    end                         # def locations
+    def create_item_on(target, **kwargs)
+      kwargs		= kwargs.merge(owned_by: target)
+      item		= self.create_item(**kwargs)
+      target.add(item)
+      return item
+    end                         # def create_item_on
+
+    #
+    def create_container(**kwargs)
+      override		= {
+        game:		self.game
+      }
+      kwargs		= override.merge(kwargs.merge(owned_by: self.game))
+      item		= Container.new([], **kwargs)
+      self.game.add(item)
+      return item      
+    end                         # def create_container
+
+    #
+    def create_container_on(target, **kwargs)
+      kwargs		= kwargs.merge(owned_by: target)
+      item		= self.create_container(**kwargs)
+      target.add(item)
+      return item
+    end                         # def create_container_on
+
+    #
+    def create_location(**kwargs)
+      override		= {
+        game:		self.game
+      }
+      kwargs		= override.merge(kwargs.merge(owned_by: self.game))
+      item		= Location.new([], **kwargs)
+      self.game.add(item)
+      return item      
+    end                         # def create_location
+
+    #
+    def create_location_on(target, **kwargs)
+      kwargs		= kwargs.merge(owned_by: target)
+      item		= self.create_location(**kwargs)
+      target.add(item)
+      return item
+    end                         # def create_location_on
+
+    #
+    def inspect
+      result		= '#<%s:"%s" name="%s">' \
+                          % [
+        self.class.name,
+        self.slug.to_s,
+        self.name.to_s
+      ]
+      return result
+    end                         # def inspect
 
     #
     # @todo
@@ -88,31 +184,37 @@ module TAF
           inventories_edited <<	i
         end                     # inventories.each do
       end
-      obj.instance_variable_set(:@slug, newslug)
       return inventories_edited
     end                         # def change_slug
 
     #
-    def initialize(*args, **kwargs)
-      warn('[%s] %s' % [self.class.name, __method__.to_s])
-      self.object_setup do
-        self.game	= self
-        self.owned_by	= self
-        self.static!
-=begin
-        self.inventory	= ::TAF::Inventory.new(game:	self,
-                                               owned_by: self,
-                                               master:	true)
-=end
-      end                       # self.object_setup
-      self.initialize_thing(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
-      debugger
-      self.add_inventory(game:		self,
-                         owned_by:	self,
-                         master:	true)
-      self.add(self)
-    end                         # def initialize
+    def load(*args, **kwargs)
+      @elements		||= {}
+      if (self.loaded?)
+        raise_exception(GameAlreadyLoaded, self)
+      end
+      if ((loadfile = kwargs[:file]).nil?)
+        raise_exception(NoLoadFile)
+      end
+      begin
+        @elements	= YAML.load(File.read(loadfile))
+      rescue StandardError => e
+        raise_exception(BadLoadFile,
+                        file:		loadfile,
+                        exception:	e)
+      end
+      return @elements
+    end                         # def load
+
+    #
+    def items
+      return self.inventory.select { |o| o.kind_of?(::TAF::Item) }
+    end                         # def items
+
+    #
+    def locations
+      return self.inventory.select { |o| o.kind_of?(::TAF::Location) }
+    end                         # def locations
 
     nil
   end                           # class Game

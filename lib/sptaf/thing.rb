@@ -30,10 +30,19 @@ module TAF
       include(::TAF::ClassMethods::Thing)
 
       #
+      # @return [void]
+      #
       def included(klass)
-        warn('%s<included> called for %s' % [self.name, klass.name])
-        warn('TAF::Thing<included> extending ::TAF::ClassMethods::Thing')
-        klass.extend(::TAF::ClassMethods::Thing)
+        whoami		= '%s eigenclass.%s' \
+                          % [self.name, __method__.to_s]
+        warn('%s called for %s' \
+             % [whoami, klass.name])
+        [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
+          warn('%s extending %s with %s' \
+               % [whoami, klass.name, xmodule.name])
+          klass.extend(xmodule)
+        end
+        return nil
       end                       # def included
 
       nil
@@ -52,10 +61,19 @@ module TAF
     include(::TAF)
 
     #
-    attr_accessor(:game)
-
+    # The <em>`slug`</em> is the unique game-wide identifier for each
+    # object.  As such, it only has a reader/getter defined so it
+    # can't be accidentally altered.  To change it, use the
+    # #change_slug method.
+    #
+    # @return [Object]
+    #  the slug can be any sort of object, not just a string or a
+    #  number.
     #
     attr_reader(:slug)
+
+    #
+    attr_accessor(:game)
 
     #
     attr_accessor(:owned_by)
@@ -68,6 +86,12 @@ module TAF
 
     #
     attr_accessor(:shortdesc)
+
+    #
+    float_accessor(:mass)
+
+    #
+    float_accessor(:volume)
 
     #
     flag(:static)
@@ -87,23 +111,6 @@ module TAF
              ? true \
              : false
     end                         # def is_container?
-
-    #
-    flag(:in_setup)
-
-    #
-    def superego(meth)
-      result		= self.method(meth).super_method.owner.name
-      return result
-    end                         # def superego
-
-    #
-    def object_setup(&block)
-      self.in_setup!
-      yield(self)
-      self.in_setup	= false
-      return self
-    end                         # def object_setup
 
     #
     def add_inventory(**kwargs)
@@ -140,9 +147,7 @@ module TAF
 
     #
     def initialize_thing(*args, **kwargs)
-      warn('[%s] %s' % [self.class.name, __method__.to_s])
-      inits		= self.mixin_supers(:initialize)
-      debugger
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
       @slug		||= kwargs[:slug] || self.object_id
       if (self.owned_by.nil? \
           && ((! kwargs.key?(:owned_by)) \
@@ -170,15 +175,11 @@ module TAF
         end
       end                       # kwargs.each
 
-      if (self.game.nil? && self.owned_by.respond_to?(:game))
-        @game			||= self.owned_by.game
-      end
-
       unless (self.respond_to?(:game) && (! self.game.nil?))
         self.raise_exception(NoGameContext)
       end
-      self.game.add(self) unless (self.game.in_setup?)
-      self.owned_by.add(self) unless (self.owned_by.in_setup?)
+#      self.game.add(self) unless (self.game.in_setup?)
+#      self.owned_by.add(self) unless (self.owned_by.in_setup?)
     end                         # def initialize_thing
 
     nil

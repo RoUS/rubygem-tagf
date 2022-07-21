@@ -21,10 +21,10 @@ require('byebug')
 # @!macro doc.TAF
 module TAF
 
-  # @!macro doc.LocationMixin
-  module LocationMixin
+  #
+  module ActorMixin
 
-    # @!macro doc.LocationMixin.eigenclass
+    #
     class << self
 
       #
@@ -43,39 +43,72 @@ module TAF
         return nil
       end                       # def included
 
-    end                         # module LocationMixin eigenclass
+      nil
+    end                         # module ActorMixin eigenclass
 
+    #
     include(::TAF::ContainerMixin)
 
     #
-    attr_accessor(:paths)
+    int_accessor(:maxhp)
+
+    #
+    int_accessor(:hp)
+
+    #
+    attr_accessor(:attitude)
+    
+    #
+    attr_reader(:breadcrumbs)
+
+    #
+    def initialize_actor(*args, **kwargs)
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      @breadcrumbs	= []
+      kwargs_defaults	= {
+        maxhp:		0,
+        hp:		0,
+        attitude:	:neutral
+      }
+      self.initialize_thing(*args, kwargs_defaults.merge(kwargs))
+    end                         # def initialize_actor
+
+    nil
+  end                           # module ActorMixin
+
+  #
+  class NPC
+
+    #
+    attr_accessor(:maxhp)
+
+    #
+    attr_accessor(:hp)
+
+    #
+    attr_accessor(:attitude)
+    
+    include(::TAF::ContainerMixin)
+
+    #
+    attr_reader(:breadcrumbs)
 
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      debugger
-      self.paths	||= {}
-      super
+      @breadcrumbs	= []
+      self.initialize_thing(*args, **kwargs)
+      self.initialize_container(*args, **kwargs)
+      unless (self.inventory)
+        self.game.create_inventory_on(self,
+                                      game:	self.game,
+                                      owned_by:	self)
+      end
+
     end                         # def initialize
 
-    #
-    def initialize_location(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-#      self.initialize_container(*args, **kwargs)
-#      self.inventory	= ::TAF::Inventory.new(game:	self,
-#                                              owned_by: self)
-    end                         # def initialize_location
-
     nil
-  end                           # module LocationMixin
-
-  #
-  class Location
-
-    include(::TAF::LocationMixin)
-
-    nil
-  end                           # class Location
+  end                           # class Player
 
   nil
 end                             # module TAF

@@ -16,30 +16,26 @@
 # frozen_string_literal: true
 
 require('rubygems')
-require('psych')
-require('yaml')
+require('bundler')
+Bundler.setup
+require('byebug')
 require_relative('sptaf/version')
 require_relative('sptaf/exceptions')
 require_relative('sptaf/classmethods')
-require_relative('sptaf/thing')
-require_relative('sptaf/container')
-require_relative('sptaf/location')
-require_relative('sptaf/game')
-require_relative('sptaf/player')
-require('byebug')
+
+unless ((RUBY_ENGINE == 'ruby') \
+        && (RUBY_VERSION >= ::TAF::RUBY_VERSION_MIN))
+  warn(__class__.name \
+       + ' requires the ruby engine version ' \
+       + "#{::TAF::RUBY_VERSION_MIN_GEMSPEC}")
+  exit(1)
+end                             # Ruby version check
 
 # @!macro doc.TAF
 module TAF
 
-  unless ((RUBY_ENGINE == 'ruby') \
-          && (RUBY_VERSION >= ::TAF::RUBY_VERSION_MIN))
-    warn(__class__.name \
-         + ' requires the ruby engine version ' \
-         + "#{::TAF::RUBY_VERSION_MIN_GEMSPEC}")
-    exit(1)
-  end                           # Ruby version check
-
   include(::TAF::Exceptions)
+  extend(::TAF::ClassMethods)
 
   # @!macro doc.TAF.eigenclass
   class << self
@@ -62,9 +58,15 @@ module TAF
     # @return [void]
     #
     def included(klass)
-      warn('TAF<included> called for %s' % klass.name)
-      warn('TAF<included> extending ::TAF::ClassMethods::Thing')
-      klass.extend(::TAF::ClassMethods::Thing)
+      whoami		= '%s eigenclass.%s' \
+                          % [self.name, __method__.to_s]
+      warn('%s called for %s' \
+           % [whoami, klass.name])
+      [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
+        warn('%s extending %s with %s' \
+             % [whoami, klass.name, xmodule.name])
+        klass.extend(xmodule)
+      end
       return nil
     end                         # def included
 
@@ -140,6 +142,18 @@ module TAF
 
   nil
 end                             # module TAF
+
+require('binding_of_caller')
+require('psych')
+require('yaml')
+require_relative('sptaf/thing')
+require_relative('sptaf/container')
+require_relative('sptaf/item')
+require_relative('sptaf/location')
+require_relative('sptaf/game')
+require_relative('sptaf/actor')
+require_relative('sptaf/player')
+require_relative('sptaf/npc')
 
 # Local Variables:
 # mode: ruby

@@ -44,9 +44,10 @@ group(:default, :development, :test) do
   gem('bundler',	'>= 1.0.7')
   gem('sptaf',
       path:		'.')
-  gem('ostruct')
+  gem('binding_of_caller')
+  gem('ostruct',	'>= 0.5.5')
   gem('psych')
-  gem('yaml')
+  gem('yaml',		'>= 0.2.0')
   gem('versionomy')
 end
 

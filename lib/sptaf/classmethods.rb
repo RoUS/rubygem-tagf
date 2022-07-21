@@ -28,23 +28,6 @@ module TAF
     include(::TAF)
     include(::TAF::Exceptions)
 
-    #
-    def method_missing(methsym, *args, **kwargs)
-      case(methsym)
-      when :initialize_container
-        return ::TAF::ContainerMixin.initialize_container(*args, **kwargs)
-      when :initialize_location
-        return ::TAF::LocationMixin.initialize_location(*args, **kwargs)
-      when :initialize_thing
-        return ::TAF::Thing.initialize_thing(*args, **kwargs)
-      else
-        return super
-      end
-    end                         # def method_missing
-
-    # @!macro doc.ClassMethods.Thing
-    module Thing
-
       #
       def _decompose_attrib(attrib_p, default=nil)
         strval		= attrib_p.to_s.sub(%r![^_[:alnum:]]*$!, '')
@@ -114,7 +97,7 @@ module TAF
       end                       # def flag
 
       #
-      def iattr_accessor(*args, **kwargs)
+      def int_accessor(*args, **kwargs)
         attrmethod	= __method__.to_s
         kwargs		= _inivaluate_attrib(0, *args, **kwargs)
         kwargs.each do |attrib,default|
@@ -128,7 +111,7 @@ module TAF
             define_method(f_attr.getter) {
               ival	= instance_variable_get(f_attr.ivar)
               if (ival.nil?)
-                ival	= f_attr.default
+                ival	= f_attr.default || Integer(0)
                 instance_variable_set(f_attr.ivar, ival)
               end
               return ival
@@ -147,15 +130,58 @@ module TAF
         end                     # args.each
 
         nil
-      end                       # def iattr_accessor
-      alias_method(:iattr_reader, :iattr_accessor)
-      alias_method(:iattr_writer, :iattr_accessor)
+      end                       # def int_accessor
+      alias_method(:int_reader, :int_accessor)
+      alias_method(:int_writer, :int_accessor)
 
-      nil
-    end                         # module TAF::ClassMethods::Thing
+      #
+      def float_accessor(*args, **kwargs)
+        attrmethod	= __method__.to_s
+        kwargs		= _inivaluate_attrib(0.0, *args, **kwargs)
+        kwargs.each do |attrib,default|
+          f_attr	= _decompose_attrib(attrib, default)
+          unless (f_attr.default.kind_of?(Float))
+            raise(TypeError,
+                  "attribute '#{f_attr.str}' " \
+                  + 'can only have float values')
+          end
+          unless (attrmethod =~ %r!_writer$!)
+            define_method(f_attr.getter) {
+              ival	= instance_variable_get(f_attr.ivar)
+              if (ival.nil?)
+                ival	= f_attr.default || Float(0.0)
+                instance_variable_set(f_attr.ivar, ival)
+              end
+              return ival
+            }
+          end
+          unless (attrmethod =~ %r!_reader$!)
+            define_method(f_attr.setter) { |val|
+              unless (val.kind_of?(Integer))
+                raise(TypeError,
+                      "attribute '#{f_attr.str}' " \
+                      + 'can only have integer values')
+              end
+              return instance_variable_set(f_attr.ivar, val)
+            }
+          end
+        end                     # args.each
+
+        nil
+      end                       # def float_accessor
+      alias_method(:float_reader, :float_accessor)
+      alias_method(:float_writer, :float_accessor)
 
     nil
   end                           # module TAF::ClassMethods
+
+  # @!macro doc.ClassMethods.Thing
+  module ClassMethods::Thing
+
+    extend(::TAF::ClassMethods)
+
+    nil
+  end                           # module TAF::ClassMethods::Thing
 
   nil
 end                             # module TAF
