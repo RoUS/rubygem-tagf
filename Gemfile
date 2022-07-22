@@ -45,6 +45,7 @@ group(:default, :development, :test) do
   gem('sptaf',
       path:		'.')
   gem('binding_of_caller')
+  gem('linguistics')
   gem('ostruct',	'>= 0.5.5')
   gem('psych')
   gem('yaml',		'>= 0.2.0')

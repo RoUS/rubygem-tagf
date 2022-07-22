@@ -130,18 +130,6 @@ module TAF
     end                         # def contains_item?
 
     #
-    # @raise [InventoryExceededItems]
-    # @raise [InventoryExceededMass]
-    # @raise [InventoryExceededVolume]
-    # @return [Object] self
-    def can_add?(*args, **kwargs)
-      result		= true
-      return true if (kwargs[:ignorelimits])
-
-      return result
-    end                         # can_add?(*args, **kwargs)
-
-    #
     def add(arg, **kwargs)
       unless (self.respond_to?(:inventory))
         raise_exception(HasNoInventory, self)
@@ -150,7 +138,26 @@ module TAF
     end                         # def add(arg, **kwargs)
 
     #
+    # @return [void]
+    def inventory_is_full(exc=nil)
+      suffix		= exc.nil? ? '' : "\n  %s"
+      if (exc.kind_of?(LimitItems))
+        msg		= "%s can't hold any more items."
+      elsif (exc.kind_of?(LimitVolume))
+        msg		= "%.0sIt's too big."
+      elsif (exc.kind_of?(LimitMass))
+        msg		= "%.0sThat's too heavy."
+      else
+        msg		= "%s's inventory is full."
+      end
+      warn((msg + suffix) % [self.name, exc.to_s])
+      return nil
+    end                         # def inventory_is_full(exc=nil)
+
+    #
     def initialize_container(*args, **kwargs)
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      return self
     end                         # def initialize_container
 
     nil
@@ -188,6 +195,7 @@ module TAF
       if (self.owned_by && self.owned_by.has_inventory?)
         self.owned_by.add(self)
       end
+      self.game.add(self)
     end                         # def initialize
 
     nil

@@ -66,6 +66,7 @@ module TAF
       unless (owned_by = kwargs[:owned_by])
         raise_exception(NoObjectOwner, self)
       end
+      self.static!
       #
       # Use the inventory key of the owner to make navigation
       # simpler.
@@ -75,6 +76,7 @@ module TAF
                              owned_by.slug.to_s]
       @master		= kwargs[:master] ? true : false
       self.initialize_thing([], **kwargs)
+      self.game.add(self)
     end                         # def initialize
 
     #
@@ -151,6 +153,30 @@ module TAF
     end                         # def delete
 
     #
+    # @raise [LimitMass]
+    # @raise [LimitItems]
+    # @raise [LimitVolume]
+    # @return [Object] self
+    def can_add?(newobj, **kwargs)
+      return true if (kwargs[:ignorelimits])
+      owned_by		= self.owned_by
+      if ((items_max = owned_by.items_max) > 0)
+        if ((owned_by.items_current + 1) > items_max)
+          raise_exception(LimitItems, self, newobj, levels: 2)
+        end
+      elsif ((mass_max = owned_by.mass_max) > 0.0)
+        if ((owned_by.max_current + newobj.mass) > mass_max)
+          raise_exception(LimitMass, self, newobj, levels: 2)
+        end
+      elsif ((volume_max = owned_by.volume_max) > 0.0)
+        if ((owned_by.volume_current + newobj.volume) > volume_max)
+          raise_exception(LimitVolume, self, newobj, levels: 2)
+        end
+      end
+      return true
+    end                         # can_add?(newobj, **kwargs)
+
+    #
     # Adds an object to this object's inventory.  Doesn't change the
     # object's owner (see {TAF::Thing#move_to}), and will raise an
     # exception if
@@ -163,7 +189,7 @@ module TAF
     # @raise [TAF::NotGameElement]
     # @raise [TAF::AlreadyInInventory]
     #
-    def +(arg, **kwargs)
+    def add(arg, **kwargs)
       unless (arg.class.ancestors.include?(::TAF::Thing))
         raise_exception(NotGameElement, arg)
       end
@@ -176,8 +202,8 @@ module TAF
       end
       @contents[key]	= arg
       return self
-    end                         # def +
-    alias_method(:add, :+)
+    end                         # def add(arg, **kwargs)
+    alias_method(:+, :add)
 
     #
     # @param [Array] args

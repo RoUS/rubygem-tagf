@@ -16,6 +16,8 @@
 # frozen_string_literal: true
 
 require_relative('../sptaf')
+require('psych')
+require('yaml')
 require('byebug')
 
 # @!macro doc.TAF.module

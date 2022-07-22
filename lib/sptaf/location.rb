@@ -47,14 +47,6 @@ module TAF
     attr_accessor(:paths)
 
     #
-    def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      debugger
-      self.paths	||= {}
-      super
-    end                         # def initialize
-
-    #
     def initialize_location(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
 #      self.initialize_container(*args, **kwargs)
@@ -69,6 +61,17 @@ module TAF
   class Location
 
     include(::TAF::LocationMixin)
+
+    #
+    def initialize(*args, **kwargs)
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      debugger
+      self.paths	||= {}
+      self.initialize_thing(*args, **kwargs)
+      self.initialize_container(*args, **kwargs)
+      self.initialize_location(*args, **kwargs)
+      self.game.add(self)
+    end                         # def initialize
 
     nil
   end                           # class Location

@@ -38,7 +38,8 @@ module TAF
                                       game:	self.game,
                                       owned_by:	self)
       end
-
+      self.static!
+      self.game.add(self)
     end                         # def initialize
 
     nil

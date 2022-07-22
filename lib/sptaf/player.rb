@@ -32,6 +32,8 @@ module TAF
       @breadcrumbs	= []
       self.initialize_thing(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
+      self.initialize_actor(*args, **kwargs)
+      self.game.add(self)
     end                         # def initialize
 
     nil

@@ -127,19 +127,45 @@ module TAF
     # exception object's backtrace to our caller (or whatever stack
     # frame was made current), and raise it.
     #
-    exc			= exc_class.new(exc_class, *args, **kwargs)
+    exc			= exc_class.new(*args, **kwargs)
     exc.set_backtrace(bt)
     raise(exc)
   end                           # def raise_exception
   private(:raise_exception)
 
+  #
+  def pluralise(name, number=1)
+    result		= name
+    unless (number.kind_of?(Integer) && (number == 1))
+      result		= name.en.plural
+    end
+    return result
+  end                           # def pluralise
+
+  #
+  # Checks to see if the object is a container according to the game
+  # mechanics (basically, its class has included the
+  # TAF::ContainerMixin module).
+  #
+  # @return [Boolean] `true`
+  #   if the current object (`self`) has included the
+  #   `ContainerMixin` module and has all the related methods
+  #   and attributes.
+  # @return [Boolean] `false`
+  #   if the object is not a container.
+  #
+  def is_container?
+    return self.class.ancestors.include?(::TAF::ContainerMixin) \
+           ? true \
+           : false
+  end                         # def is_container?
+
   nil
 end                             # module TAF
 
 require('binding_of_caller')
-require('psych')
-require('yaml')
-#require_relative('sptaf/sptaf-mixin')
+require('linguistics')
+require('ostruct')
 require_relative('sptaf/exceptions')
 require_relative('sptaf/thing')
 require_relative('sptaf/inventory')
@@ -150,6 +176,8 @@ require_relative('sptaf/game')
 require_relative('sptaf/actor')
 require_relative('sptaf/player')
 require_relative('sptaf/npc')
+
+Linguistics.use(:en)
 
 # Local Variables:
 # mode: ruby

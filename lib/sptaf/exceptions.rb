@@ -43,37 +43,40 @@ module TAF
     end                         # class ErrorBase
 
     #
-    module InventoryLimitError
+    module InventoryLimitExceeded
       
-    end
-
-    #
-    class InventoryExceededItems < ErrorBase
-
-      include(InventoryLimitError)
-
       #
-      def initialize(*args, **kwargs)
-        inv		= args[0]
-        newitem		= args[1]
-        if (inv.kind_of?(String))
-          msg		= inv
-        else
-          owned_by_klass = inv.owned_by.class.name
-          owned_by_name	= inv.owned_by.name
-          owned_by_slug	= inv.owned_by.slug
-          msg		= ('inventory for %s[%s] is full; ' \
-                           + "maximum %i max items, cannot add '%s'") \
-                          % [(owned_by_name || owned_by_slug).to_s,
-                             owned_by_klass,
-                             inv.items_max,
-                             (newitem.name || newitem.slug).to_s]
-        end
-        self._set_message(msg)
-      end                       # def initialize
+      class LimitItems < ::TAF::Exceptions::ErrorBase
 
-      nil
-    end                         # class InventoryExceededItems
+        #
+        def initialize(*args, **kwargs)
+          inv		= args[0]
+          newitem	= args[1]
+          if (inv.kind_of?(String))
+            msg		= inv
+          else
+            owner	= inv.owned_by
+            owner_klass	= owner.class.name
+            owner_name	= owner.name
+            owner_slug	= owner.slug
+            msg		= ('inventory for %s:"%s" is full; ' \
+                           + '%i/%i %s, cannot add "%s"') \
+                          % [owner_klass,
+                             (owner_name || owner_slug).to_s,
+                             owner.items_current,
+                             owner.items_max,
+                             pluralise('item', owner.items_max),
+                             (newitem.name || newitem.slug).to_s]
+          end
+          self._set_message(msg)
+        end                     # def initialize
+
+        nil
+      end                       # class LimitItems
+
+    end                         # module InventoryLimitExceeded
+
+    LimitItems		= InventoryLimitExceeded::LimitItems
 
     #
     class NoLoadFile < ErrorBase

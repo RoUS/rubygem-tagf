@@ -116,24 +116,6 @@ module TAF
     ONCE_AND_DONE	= %i[ game slug owned_by ]
 
     #
-    # Checks to see if the object is a container according to the game
-    # mechanics (basically, its class has included the
-    # TAF::ContainerMixin module).
-    #
-    # @return [Boolean] `true`
-    #   if the current object (`self`) has included the
-    #   `ContainerMixin` module and has all the related methods
-    #   and attributes.
-    # @return [Boolean] `false`
-    #   if the object is not a container.
-    #
-    def is_container?
-      return self.class.ancestors.include?(::TAF::ContainerMixin) \
-             ? true \
-             : false
-    end                         # def is_container?
-
-    #
     def has_inventory?
       cond		= (self.is_container? \
                            && self.inventory.kind_of?(::TAF::Inventory))
@@ -162,13 +144,21 @@ module TAF
     def move_to(*args, **kwargs)
       if (self.owned_by.inventory.master?)
         raise_exception(MasterInventory, self, kwargs)
-      end
-      if (self.static?)
+      elsif (self.static?)
         raise_exception(ImmovableObject, self, kwargs)
       end
-      newowner		= args[0] unless (newowner = kwargs[:owned_by])
-      self.owned_by.inventory.delete(self.slug)
-      newowner.inventory.add(self)
+      begin
+        if (args[0].inventory.can_add?(self))
+          newowner = args[0] unless (newowner = kwargs[:owned_by])
+          self.owned_by.inventory.delete(self.slug)
+          newowner.inventory.add(self)
+        end
+      rescue InventoryLimitError => e
+        args[0].inventory_is_full(e)
+      rescue StandardError => e
+        raise
+      end
+      return self
     end                         # def move_to
 
     #
@@ -215,6 +205,7 @@ module TAF
       end
 #      self.game.add(self) unless (self.game.in_setup?)
 #      self.owned_by.add(self) unless (self.owned_by.in_setup?)
+      return self
     end                         # def initialize_thing
 
     nil
