@@ -17,10 +17,10 @@
 
 require_relative('../sptaf')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.Exceptions
+  # @!macro doc.TAF::Exceptions.module
   module Exceptions
 
     #
@@ -41,6 +41,39 @@ module TAF
 
       nil
     end                         # class ErrorBase
+
+    #
+    module InventoryLimitError
+      
+    end
+
+    #
+    class InventoryExceededItems < ErrorBase
+
+      include(InventoryLimitError)
+
+      #
+      def initialize(*args, **kwargs)
+        inv		= args[0]
+        newitem		= args[1]
+        if (inv.kind_of?(String))
+          msg		= inv
+        else
+          owned_by_klass = inv.owned_by.class.name
+          owned_by_name	= inv.owned_by.name
+          owned_by_slug	= inv.owned_by.slug
+          msg		= ('inventory for %s[%s] is full; ' \
+                           + "maximum %i max items, cannot add '%s'") \
+                          % [(owned_by_name || owned_by_slug).to_s,
+                             owned_by_klass,
+                             inv.items_max,
+                             (newitem.name || newitem.slug).to_s]
+        end
+        self._set_message(msg)
+      end                       # def initialize
+
+      nil
+    end                         # class InventoryExceededItems
 
     #
     class NoLoadFile < ErrorBase

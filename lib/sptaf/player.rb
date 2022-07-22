@@ -18,7 +18,7 @@
 require_relative('../sptaf')
 require('byebug')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
   #

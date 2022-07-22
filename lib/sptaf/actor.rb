@@ -16,44 +16,38 @@
 # frozen_string_literal: true
 
 require_relative('../sptaf')
+require_relative('classmethods')
 require('byebug')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
-  #
+  # @!macro doc.TAF::ActorMixin.module
   module ActorMixin
 
-    #
+    include(::TAF::ContainerMixin)
+
+    # ##!macro doc.ActorMixin.eigenclas
     class << self
 
-      #
-      # @return [void]
-      #
+      # @!macro doc.TAF...module.classmethod.included
       def included(klass)
         whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
         warn('%s called for %s' \
              % [whoami, klass.name])
-        [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
-          warn('%s extending %s with %s' \
-               % [whoami, klass.name, xmodule.name])
-          klass.extend(xmodule)
-        end
+        super
         return nil
-      end                       # def included
+      end                       # def included(klass)
 
       nil
     end                         # module ActorMixin eigenclass
 
     #
-    include(::TAF::ContainerMixin)
-
-    #
     int_accessor(:maxhp)
 
     #
-    int_accessor(:hp)
+    float_accessor(:hp)
 
     #
     attr_accessor(:attitude)
@@ -75,40 +69,6 @@ module TAF
 
     nil
   end                           # module ActorMixin
-
-  #
-  class NPC
-
-    #
-    attr_accessor(:maxhp)
-
-    #
-    attr_accessor(:hp)
-
-    #
-    attr_accessor(:attitude)
-    
-    include(::TAF::ContainerMixin)
-
-    #
-    attr_reader(:breadcrumbs)
-
-    #
-    def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      @breadcrumbs	= []
-      self.initialize_thing(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
-      unless (self.inventory)
-        self.game.create_inventory_on(self,
-                                      game:	self.game,
-                                      owned_by:	self)
-      end
-
-    end                         # def initialize
-
-    nil
-  end                           # class Player
 
   nil
 end                             # module TAF

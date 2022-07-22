@@ -39,10 +39,11 @@
 #
 --charset=utf-8
 --verbose
+#--debug
 #--list
 --no-cache
 --title='Text Adventure Framework (TAF) Gem'
---private		# Change to expose private elements
+--private		# Uncomment to expose private elements
 #--markup-provider=commonmarker
 --markup=markdown	# Remove this line if you want to use pandoc
 #
@@ -53,6 +54,7 @@ config/macros.yard
 #
 # Other source files.
 #
+lib/sptaf.rb
 lib/**/*.rb
 #features/**/*.rb
 #

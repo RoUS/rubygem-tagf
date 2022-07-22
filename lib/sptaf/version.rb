@@ -17,7 +17,7 @@
 
 require('versionomy')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
   #

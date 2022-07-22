@@ -18,7 +18,7 @@
 require_relative('../sptaf')
 require('byebug')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
   #
@@ -57,10 +57,20 @@ module TAF
       self.allow_containers!
     end                         # def initialize
 
-    #
-    def keys
-      return @inventory.send(__method__)
-    end                         # def keys
+    inventory_niladics	= %i[
+      keys
+      actors
+      containers
+      inventories
+      items
+      locations
+      npcs
+    ]
+    inventory_niladics.each do |meth|
+      define_method(meth) {
+        self.inventory.send(meth)
+      }
+    end
 
     #
     def [](*args)
@@ -158,7 +168,7 @@ module TAF
       oldslug		||= kwargs[:oldslug]
       newslug		||= kwargs[:newslug]
       unless (obj.respond_to?(:slug))
-        self.raise_exception(NotGameElement, obj)
+        raise_exception(NotGameElement, obj)
       end
       g			= self.game
       inventories	= g.inventory.select { |o|
@@ -173,11 +183,11 @@ module TAF
         inventories.each do |i|
           ckobj		= i[oldslug]
           if (ckobj != obj)
-            self.raise_exception(KeyObjectMismatch,
-                                 oldslug,
-                                 obj,
-                                 ckobj,
-                                 i.name)
+            raise_exception(KeyObjectMismatch,
+                            oldslug,
+                            obj,
+                            ckobj,
+                            i.name)
           end
           i.delete(oldslug)
           i.add(obj)
@@ -205,16 +215,6 @@ module TAF
       end
       return @elements
     end                         # def load
-
-    #
-    def items
-      return self.inventory.select { |o| o.kind_of?(::TAF::Item) }
-    end                         # def items
-
-    #
-    def locations
-      return self.inventory.select { |o| o.kind_of?(::TAF::Location) }
-    end                         # def locations
 
     nil
   end                           # class Game

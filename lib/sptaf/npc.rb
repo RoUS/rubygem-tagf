@@ -18,7 +18,7 @@
 require_relative('../sptaf')
 require('byebug')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
   #
@@ -29,12 +29,20 @@ module TAF
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      self.initialize_actor(*args, **kwargs)
+      @breadcrumbs	= []
+      self.initialize_thing(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
+      self.initialize_actor(*args, **kwargs)
+      unless (self.inventory)
+        self.game.create_inventory_on(self,
+                                      game:	self.game,
+                                      owned_by:	self)
+      end
+
     end                         # def initialize
 
     nil
-  end                           # class Player
+  end                           # class NPC
 
   nil
 end                             # module TAF

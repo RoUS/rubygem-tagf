@@ -18,35 +18,11 @@
 require_relative('../sptaf')
 require('byebug')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.Thing
+  # @!macro doc.TAF::Thing.module
   module Thing
-
-    #
-    class << self
-
-      include(::TAF::ClassMethods::Thing)
-
-      #
-      # @return [void]
-      #
-      def included(klass)
-        whoami		= '%s eigenclass.%s' \
-                          % [self.name, __method__.to_s]
-        warn('%s called for %s' \
-             % [whoami, klass.name])
-        [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
-          warn('%s extending %s with %s' \
-               % [whoami, klass.name, xmodule.name])
-          klass.extend(xmodule)
-        end
-        return nil
-      end                       # def included
-
-      nil
-    end                         # Thing module eigenclass
 
     #
     class Description < ::String
@@ -58,6 +34,7 @@ module TAF
 
     end                         # class Description
 
+    extend(::TAF::ClassMethods)
     include(::TAF)
 
     #
@@ -91,26 +68,84 @@ module TAF
     float_accessor(:mass)
 
     #
+    # The volume used by the current object, in cubic
+    # (whatever-units-are-in-use).  This is only meaningful when an
+    # attempt might be made to place the object into a container with
+    # a volume limitation.  (See mass, ContainerMixin max_items)
+    #
     float_accessor(:volume)
 
     #
+    # Boolean attribute indicating whether the object can be moved
+    # between inventories (<em>e.g.</em>, being picked up by the
+    # player).  Things like rooms (Location-class objects) never
+    # move; things like the player (Player) or any NPCs (NPC) are
+    # moved using specific semantics.
+    #
+    # @!macro [attach] doc.TAF::ClassMethods.classmethod.flag
+    #   @overload $1
+    #     Return the current value of `$1`, which is always either
+    #     `true` or `false`.  It will have no other values.
+    #     @return [Boolean]
+    #       `true` if the `$1` flag is set, or `false` otherwise.
+    #   @overload $1=(arg)
+    #     Sets `$1` to the 'truthy' value of `arg`.  <em>I.e.</em>, if
+    #     Ruby would regard `arg` as `true`, then that's how `$1` will
+    #     be set.  <strong>Exception:</strong> Any numeric value that
+    #     coerces to `Integer(0)` will be regarded as
+    #     <strong>`false`</strong>.
+    #     @param [Object] arg
+    #     @return [Object] the value of `arg` that was passed.
+    #   @overload $1?
+    #     @return [Boolean]
+    #       `true` if `$1` is set, or `false` otherwise.
+    #   @overload $1!
+    #     Unconditionally sets `$1` to `true`.
+    #     @return [Boolean] `true`.
     flag(:static)
 
+    #
+    # List of attributes that are considered essentially immutable,
+    # once set, by automatic attribute hash value processing
+    # (typically by iterating over `kwargs`).
+    #
+    # These typically do <strong>not</strong> has setter
+    # (<em>`sym`</em>`=`) methods, and so if a value MUST be changed,
+    # there are special semantics for making it happen.
+    #
     ONCE_AND_DONE	= %i[ game slug owned_by ]
 
     #
-    def has_inventory?
-      cond		= (self.respond_to?(:inventory) \
-                           && self.inventory.kind_of?(::TAF::Inventory))
-      return cond ? true : false
-    end                         # def has_inventory?
-
+    # Checks to see if the object is a container according to the game
+    # mechanics (basically, its class has included the
+    # TAF::ContainerMixin module).
+    #
+    # @return [Boolean] `true`
+    #   if the current object (`self`) has included the
+    #   `ContainerMixin` module and has all the related methods
+    #   and attributes.
+    # @return [Boolean] `false`
+    #   if the object is not a container.
     #
     def is_container?
       return self.class.ancestors.include?(::TAF::ContainerMixin) \
              ? true \
              : false
     end                         # def is_container?
+
+    #
+    def has_inventory?
+      cond		= (self.is_container? \
+                           && self.inventory.kind_of?(::TAF::Inventory))
+      return cond ? true : false
+    end                         # def has_inventory?
+
+    #
+    def has_items?
+      cond		= (self.has_inventory? \
+                           && (! self.inventory.empty?))
+      return cond ? true : false
+    end                         # def has_items?
 
     #
     def add_inventory(**kwargs)
@@ -126,10 +161,10 @@ module TAF
     #
     def move_to(*args, **kwargs)
       if (self.owned_by.inventory.master?)
-        self.raise_exception(MasterInventory, self, kwargs)
+        raise_exception(MasterInventory, self, kwargs)
       end
       if (self.static?)
-        self.raise_exception(ImmovableObject, self, kwargs)
+        raise_exception(ImmovableObject, self, kwargs)
       end
       newowner		= args[0] unless (newowner = kwargs[:owned_by])
       self.owned_by.inventory.delete(self.slug)
@@ -152,7 +187,7 @@ module TAF
       if (self.owned_by.nil? \
           && ((! kwargs.key?(:owned_by)) \
               || kwargs[:owned_by].nil?))
-        self.raise_exception(NoObjectOwner, self)
+        raise_exception(NoObjectOwner, self)
       end
       kwargs.each do |attrib,newval|
         attrib		= attrib.to_sym
@@ -166,7 +201,7 @@ module TAF
         if (ONCE_AND_DONE.include?(attrib) \
             && (! curval.nil?) \
             && (newval != curval))
-          self.raise_exception(SettingLocked, attrib)
+          raise_exception(SettingLocked, attrib)
         end
         if (self.respond_to?(attrib_setter))
           self.send(attrib_setter, newval)
@@ -176,7 +211,7 @@ module TAF
       end                       # kwargs.each
 
       unless (self.respond_to?(:game) && (! self.game.nil?))
-        self.raise_exception(NoGameContext)
+        raise_exception(NoGameContext)
       end
 #      self.game.add(self) unless (self.game.in_setup?)
 #      self.owned_by.add(self) unless (self.owned_by.in_setup?)

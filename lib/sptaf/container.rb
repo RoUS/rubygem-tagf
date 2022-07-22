@@ -18,7 +18,7 @@
 require_relative('../sptaf')
 require('byebug')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
   #
@@ -27,7 +27,26 @@ module TAF
     include(::TAF::Thing)
     include(Enumerable)
 
-    #
+    # @!macro [attach] doc.TAF::ClassMethods.classmethod.flag
+    #   @overload $1
+    #     Return the current value of `$1`, which is always either
+    #     `true` or `false`.  It will have no other values.
+    #     @return [Boolean]
+    #       `true` if the `$1` flag is set, or `false` otherwise.
+    #   @overload $1=(arg)
+    #     Sets `$1` to the 'truthy' value of `arg`.  <em>I.e.</em>, if
+    #     Ruby would regard `arg` as `true`, then that's how `$1` will
+    #     be set.  <strong>Exception:</strong> Any numeric value that
+    #     coerces to `Integer(0)` will be regarded as
+    #     <strong>`false`</strong>.
+    #     @param [Object] arg
+    #     @return [Object] the value of `arg` that was passed.
+    #   @overload $1?
+    #     @return [Boolean]
+    #       `true` if `$1` is set, or `false` otherwise.
+    #   @overload $1!
+    #     Unconditionally sets `$1` to `true`.
+    #     @return [Boolean] `true`.
     flag(:master)
 
     #
@@ -74,6 +93,7 @@ module TAF
       ]
       return result
     end                         # def inspect
+
     #
     def subordinate_inventories
       results		= [ self ]
@@ -99,14 +119,8 @@ module TAF
     end
 
     #
-    def select(&block)
-      results		= @contents.values.select(&block)
-      return results
-    end
-
-    #
     def [](*args, **kwargs)
-      if (kwargs[:select] == :objects)
+      if (kwargs[:only] == :objects)
         results		= @contents.values.send(:[], *args)
       else
         results		= @contents.send(:[], *args)
@@ -118,9 +132,9 @@ module TAF
     def []=(*args)
       gameobjs		= args.select { |o| o.kind_of?(::TAF::Thing) }
       unless ((args - gameobjs).empty?)
-        self.raise_exception(NotGameElement,
-                             'only game elements ' \
-                             + 'can be put in inventories')
+        raise_exception(NotGameElement,
+                        'only game elements ' \
+                        + 'can be put in inventories')
       end
       return @contents.send(:[]=, *args)
     end                         # def []=
@@ -138,7 +152,7 @@ module TAF
 
     #
     # Adds an object to this object's inventory.  Doesn't change the
-    # object's owner (see TAF::Thing#move_to), and will raise an
+    # object's owner (see {TAF::Thing#move_to}), and will raise an
     # exception if
     #
     # a. the object is already in the new inventory
@@ -146,54 +160,158 @@ module TAF
     #    inventory for the game.
     #
     # @param [TAF::Thing] arg
-    # @raise [TAF::NotGameObject]
+    # @raise [TAF::NotGameElement]
     # @raise [TAF::AlreadyInInventory]
     #
     def +(arg, **kwargs)
       unless (arg.class.ancestors.include?(::TAF::Thing))
-        self.raise_exception(NotGameObject, arg)
+        raise_exception(NotGameElement, arg)
       end
       key		= arg.slug
       if (@contents.keys.include?(key))
         oldobj		= @contents[key]
         if ((arg != oldobj) || (! self.master? ))
-          self.raise_exception(AlreadyInInventory, arg, oldobj)
+          raise_exception(AlreadyInInventory, arg, oldobj)
         end
       end
       @contents[key]	= arg
-      return arg
+      return self
     end                         # def +
     alias_method(:add, :+)
 
     #
-    def each(&block)
-      return @contents.values.each(&block)
+    # @param [Array] args
+    #   Optional list of arguments to pass to the `each` method of
+    #   the `@contents` hash.
+    # @param [Hash] kwargs
+    #   Optional hash of keywords/values, used only by this method and
+    #   not passed on to anything invoked by it.
+    # @option kwargs [Symbol] `:only` (nil)
+    #   Allows iterating over either the slugs or the objects in the
+    #   inventory.  If `:slugs` or `:keys`, only the slugs will be
+    #   passed to the block iterator; if `:objects`, then the actual
+    #   objects.  If omitted altogether, then the block is passed a
+    #   two-element array [<em>slug</em>, <em>object</em>] at each
+    #   iteration.
+    # @return [Array<slug>]
+    #   when invoked with `only: :keys` or `only: :slugs`.
+    # @return [Array<gameobject>]
+    #   when invoked with `only: :objects`.
+    # @return [Hash<slug=>gameobject>]
+    #   when `:only` is something other than `:keys`, `:slugs`, or
+    #   `:objects`, or is omitted entirely.
+    def each(*args, **kwargs, &block)
+      list		= @contents
+      result		= []
+      if (%i[ slugs keys ].include?(kwargs[:only]))
+        list		= @contents.keys
+      elsif (kwargs[:only] == :objects)
+        list		= @contents.values
+      end
+      result		= list.send(__method__, *args, &block)
+      return result
     end                         # def each
+
+    # @param [Array] args
+    #   Optional list of arguments to pass to the `select` method of
+    #   the `@contents` hash.
+    # @param [Hash] kwargs
+    #   Optional hash of keywords/values, used only by this method and
+    #   not passed on to anything invoked by it.
+    # @option kwargs [Symbol] `:only` (nil)
+    #   Allows iterating over either the slugs or the objects in the
+    #   inventory.  If `:slugs` or `:keys`, only the slugs will be
+    #   passed to the block iterator; if `:objects`, then the actual
+    #   objects.  If omitted altogether, then the block is passed a
+    #   two-element array [<em>slug</em>, <em>object</em>] at each
+    #   iteration.
+    # @return [Array<slug>]
+    #   when invoked with `only: :keys` or `only: :slugs`.
+    # @return [Array<gameobject>]
+    #   when invoked with `only: :objects`.
+    # @return [Hash<slug=>gameobject>]
+    #   when `:only` is something other than `:keys`, `:slugs`, or
+    #   `:objects`, or is omitted entirely.
+    def select(*args, **kwargs, &block)
+      list		= @contents
+      result		= []
+      if (%i[ slugs keys ].include?(kwargs[:only]))
+        list		= @contents.keys
+      elsif (kwargs[:only] == :objects)
+        list		= @contents.values
+      end
+      result		= list.send(__method__, *args, &block)
+      return result
+    end                         # def select(*args, **kwargs, &block)
+
+    #
+    def actors
+      result		= self.select(only: :objects) { |o|
+        o.kind_of?(ActorMixin)
+      }
+      return result
+    end                         # def actors
+
+    #
+    def containers
+      result		= self.select(only: :objects) { |o|
+        o.kind_of?(Container)
+      }
+      return result
+    end                         # def containers
+
+    #
+    def inventories
+      result		= self.select(only: :objects) { |o|
+        o.kind_of?(Inventory)
+      }
+      return result
+    end                         # def inventories
+
+    #
+    def items
+      result		= self.select(only: :objects) { |o|
+        o.kind_of?(Item)
+      }
+      return result
+    end                         # def items
+
+    #
+    def locations
+      result		= self.select(only: :objects) { |o|
+        o.kind_of?(Location)
+      }
+      return result
+    end                         # def locations
+
+    #
+    def npcs
+      result		= self.select(only: :objects) { |o|
+        o.kind_of?(NPC)
+      }
+      return result
+    end                         # def npcs
 
     nil
   end                           # class Inventory
 
-  # @!macro doc.ContainerMixin
+  # @!macro doc.TAF::ContainerMixin.module
   module ContainerMixin
 
-    # @!macro doc.ContainerMixin.eigenclass
+    # @!macro doc.TAF::ContainerMixin.module.eigenclass
     class << self
 
-      #
-      # @return [void]
-      #
+      include(::TAF::ClassMethods)
+
+      # @!macro doc.TAF...module.classmethod.included
       def included(klass)
         whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
         warn('%s called for %s' \
              % [whoami, klass.name])
-        [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
-          warn('%s extending %s with %s' \
-               % [whoami, klass.name, xmodule.name])
-          klass.extend(xmodule)
-        end
+        super
         return nil
-      end                       # def included
+      end                       # def included(klass)
 
       nil
     end                         # module ContainerMixin eigenclass
@@ -201,88 +319,86 @@ module TAF
     include(::TAF)
     include(::TAF::Thing)
 
-    #
+    # 
     flag(:allow_containers)
 
     #
-    attr_accessor(:inventory)
-
-    # overload
-    int_reader(:items_max)
-    # overload
-    def items_max=(arg)
-      unless (arg.kind_of?(Integer))
-        raise(ArgumentError,
-              __method__.to_s \
-              + ' requires an integer')
+    #
+    #   @return [TAF::Inventory]
+    #     the object's inventory.
+    #   @return [nil]
+    #     if the inventory has not been created yet.
+    #
+    attr_reader(:inventory)
+    #
+    # @overload inventory=(value)
+    #   @param [Inventory] value
+    #     instance of TAF::Inventory class to install as the
+    #     object's [new] inventory list.
+    #   @macro doc.TAF::Container.classmethod.inventory_accessor.exception.TypeError
+    #   @return [Inventory] object's new inventory object.
+    #
+    def inventory=(value)
+      unless (value.kind_of?(Inventory))
+        raise_exception(TypeError,
+                        ("attribute '#s' requires an instance " \
+                         + 'of class TAF::Inventory') \
+                        % [__method__.to_s.sub(%r!=$!, '')])
       end
-      @items_max	= arg
-    end                         # def items_max=
+      unless (@inventory.nil?)
+        bt		= caller
+        bt.pop
+        bt.pop
+        warn(('%s <slug=%s, name="%s"> already has an inventory, ' \
+              + "overwriting\n  %s") \
+             % [self.class.name,
+                self.slug,
+                self.name,
+                bt.join("\n  ")])
+      end
+      @inventory	= value
+      return @inventory
+    end                         # def inventory=(value)
 
     #
-    int_reader(:items_current)
-    # overload
-    def items_current=(arg)
-      unless (arg.kind_of?(Integer))
-        raise(ArgumentError,
-              __method__.to_s \
-              + ' requires an integer')
-      end
-      @items_current	= arg
-    end                         # def items_current=
+    # Maximum number of items permitted in the container (default 0).
+    # Zero means no limit.  Items are game objects that are non-static
+    # instances of {Container} or {Item}.
+    #
+    # @overload items_max
+    #   @return [Integer]
+    #     the maximum number of discrete items that can be added to an
+    #     object's #inventory.
+    # @overload items_max=(arg)
+    #   @param [Integer] arg
+    #   @raise [TypeError]
+    #     `attribute '$0' can only have integer values or something coercible`
+    #   @return [Integer]
+    #     the value of `arg` that was passed in.
+    #
+    int_accessor(:items_max)
 
     #
-    float_reader(:mass_max)
-    # overload
-    def mass_max=(arg)
-      unless (arg.kind_of?(Numeric))
-        raise(ArgumentError,
-              __method__.to_s \
-              + ' requires a float or something coercible')
-      end
-      @mass_max		= Float(arg)
-    end                         # def mass_max=
+    # Count of things currently in the object's inventory.
+    #
+    int_accessor(:items_current)
 
     #
-    float_reader(:mass_current)
-    # overload
-    def mass_current=(arg)
-      unless (arg.kind_of?(Numeric))
-        raise(ArgumentError,
-              __method__.to_s \
-              + ' requires a float or something coercible')
-      end
-      @mass_current		= Float(arg)
-    end                         # def max_current=
+    float_accessor(:mass_max)
 
     #
-    float_reader(:volume_current)
-    # overload
-    def volume_current=(arg)
-      unless (arg.kind_of?(Numeric))
-        raise(ArgumentError,
-              __method__.to_s \
-              + ' requires a float or something coercible')
-      end
-      @volume_current	= Float(arg)
-    end                         # def volume_current=
+    float_accessor(:mass_current)
 
     #
-    float_reader(:volume_max)
-    # overload
-    def volume_max=(arg)
-      unless (arg.kind_of?(Numeric))
-        raise(ArgumentError,
-              __method__.to_s \
-              + ' requires a float or something coercible')
-      end
-      @volume_max	= Float(arg)
-    end                         # def volume_max=
-
+    float_accessor(:volume_current)
 
     #
-    float_reader(:volume_current)
+    float_accessor(:volume_max)
 
+    #
+    float_accessor(:volume_current)
+
+    #
     def contains_item?(*args, **kwargs)
 
     end                         # def contains_item?
@@ -290,7 +406,7 @@ module TAF
     #
     def add(arg, **kwargs)
       unless (self.respond_to?(:inventory))
-        self.raise_exception(HasNoInventory, self)
+        raise_exception(HasNoInventory, self)
       end
       return self.inventory.add(arg, **kwargs)
     end                         # def add(arg, **kwargs)
@@ -320,13 +436,13 @@ module TAF
       unless (self.game \
               || (args[0].kind_of?(::TAF::Game) \
                   && (self.game ||= args[0].game)))
-        self.raise_exception(NoGameContext)
+        raise_exception(NoGameContext)
       end
       #
       # We're a container, so create our own inventory and add it to
       # our, erm, inventory.
       #
-      self.inventory	= Inventory.new(game: self.game, owned_by: self)
+      self.game.create_inventory_on(self, game: self.game, owned_by: self)
       self.add(self.inventory)
       #
       # Add this object to our owner's inventory.

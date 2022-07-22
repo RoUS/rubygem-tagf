@@ -20,7 +20,6 @@ require('bundler')
 Bundler.setup
 require('byebug')
 require_relative('sptaf/version')
-require_relative('sptaf/exceptions')
 require_relative('sptaf/classmethods')
 
 unless ((RUBY_ENGINE == 'ruby') \
@@ -31,44 +30,38 @@ unless ((RUBY_ENGINE == 'ruby') \
   exit(1)
 end                             # Ruby version check
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
+  #
+  # Include the project exceptions so that anything that mixes in this
+  # module will get those, as well.
+  #
   include(::TAF::Exceptions)
-  extend(::TAF::ClassMethods)
 
-  # @!macro doc.TAF.eigenclass
+  # @!macro [new] doc.TAF.module.eigenclass
+  #   Eigenclass for the top-level TAF module.  It provides class
+  #   methods (like additional attribute declaration methods) for
+  #   anything that extends the TAF module into its singleton class.
   class << self
 
     #
-    # We can either `include` the classmethods module here, or
-    # `extend` it from the main module body.  Six of one..
+    # We can either `include` the classmethods module in the
+    # eigenclass, or `extend` it from the main module body.  Six of
+    # one..  Do the `include` because that makes Yard understand a
+    # little better what's going on.
     #
     include(::TAF::ClassMethods)
 
-    #
-    # Method invoked whenever this module is included as a mixin.  It
-    # is passed the class (or module) object that is including it.  We
-    # extend the caller's eigenclass with the `Thing` classmethods
-    # module, which adds various class methods (like
-    # TAF::ClassMethods::Thing#flag).
-    #
-    # @param [Class,Module] klass
-    #   Object including this module as a mixin.
-    # @return [void]
-    #
+    # @!macro doc.TAF...module.classmethod.included
     def included(klass)
       whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
       warn('%s called for %s' \
            % [whoami, klass.name])
-      [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
-        warn('%s extending %s with %s' \
-             % [whoami, klass.name, xmodule.name])
-        klass.extend(xmodule)
-      end
+      super
       return nil
-    end                         # def included
+    end                         # def included(klass)
 
     nil
   end                           # module TAF eigenclass
@@ -146,6 +139,8 @@ end                             # module TAF
 require('binding_of_caller')
 require('psych')
 require('yaml')
+#require_relative('sptaf/sptaf-mixin')
+require_relative('sptaf/exceptions')
 require_relative('sptaf/thing')
 require_relative('sptaf/container')
 require_relative('sptaf/item')

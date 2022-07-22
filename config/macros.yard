@@ -19,52 +19,63 @@
 #   This file contains macros and reusable strings for insertion
 #   into other source files.
 
-# @!macro [new] doc.TAF
+# @!macro [new] doc.TAF.module
 #   Top-level module namespacing all of the pieces of the `sptaf` gem.
 
-# @!macro [new] doc.TAF.eigenclass
-#   Top-level module namespacing all of the pieces of the `sptaf` gem.
+# @!macro [new] doc.TAF...module.classmethod.included
+#   Method invoked whenever this module is included as a mixin.  It
+#   is passed the class (or module) object that is including it.  We
+#   extend the caller's eigenclass with the classmethods module,
+#   which adds various class methods (like TAF::ClassMethods#flag).
+#  
+#   @param [Class,Module] klass
+#     Object that is including this module as a mixin.
+#   @return [void]
 
-# @!macro [new] doc.Thing
-#   Mixin module defining common methods for all objects in a game.
-
-# @!macro [new] doc.ContainerMixin
-#   Mixin module defining methods specific to objects that have
-#   inventories.
-
-# @!macro [new] doc.ContainerMixin.eigenclass
-#   Mixin module defining methods specific to objects that are
-#   locations in a game (rooms, <em>etc.</em>.
-
-# @!macro [new] doc.Exceptions
-#   Mixin module defining methods specific to objects that are
-#   locations in a game (rooms, <em>etc.</em>.
-
-# @!macro [new] doc.LocationMixin
-#   Mixin module defining methods specific to objects that are
-#   locations in a game (rooms, <em>etc.</em>.
-
-# @!macro [new] doc.LocationMixin.eigenclass
-#   Mixin module defining methods specific to objects that are
-#   locations in a game (rooms, <em>etc.</em>.
-
-# @!macro [new] doc.ClassMethods
+# @!macro [new] doc.TAF::ClassMethods.module
 #   Define class methods and constants that will be added to all
 #   modules and classes in the TAF namespace.
 
-# @!macro [new] doc.ClassMethods.eigenclass
+# @!macro [new] doc.TAF::ClassMethods.module.eigenclass
 #   Define methods and constants that live in the modules' and class'
 #   eigenclasses (<em>a.k.a.</em>, `singleton classes'.  Things like
-#   the #extended and #included metamethods live in the eigenclass.
+#   the `extended` and `included` metamethods live in the eigenclass.
 
-# @!macro [new] doc.ClassMethods.Thing
+# @!macro [new] doc.TAF::ClassMethods::Thing.module
 #   Define class methods and constants that will be added to all
 #   object classes in the TAF namespace.
 
-# @!macro [new] doc.ClassMethods.Thing.eigenclass
+# @!macro [new] doc.TAF::ClassMethods::Thing.module.eigenclass
 #   Define methods and constants that live in the modules' and class'
 #   eigenclasses (<em>a.k.a.</em>, `singleton classes'.  Things like
-#   the #extended and #included metamethods live in the eigenclass.
+#   the `extended` and `included` metamethods live in the eigenclass.
+
+# @!macro [new] doc.TAF::ContainerMixin.module
+#   Mixin module defining methods specific to objects that have
+#   inventories.
+
+# @!macro [new] doc.TAF::ContainerMixin.module.eigenclass
+#   Mixin module defining methods specific to objects that are
+#   locations in a game (rooms, <em>etc.</em>.
+
+# @!macro [new] doc.TAF::Exceptions.module
+#   Mixin module defining methods specific to objects that are
+#   locations in a game (rooms, <em>etc.</em>.
+
+# @!macro [new] doc.TAF::LocationMixin.module
+#   Mixin module defining methods specific to objects that are
+#   locations in a game (rooms, <em>etc.</em>.
+
+# @!macro [new] doc.TAF::LocationMixin.module.eigenclass
+#   Mixin module defining methods specific to objects that are
+#   locations in a game (rooms, <em>etc.</em>.
+
+# @!macro [new] doc.TAF::Thing.module
+#   Mixin module defining common methods for all objects in a game.
+
+# @!macro [new] doc.TAF::Container.classmethod.inventory_accessor.exception.TypeError
+#   @raise [TypeError]
+#     `attribute '$0' can only have instances of class TAF::Inventory`
 
 # Local Variables:
 # mode: ruby

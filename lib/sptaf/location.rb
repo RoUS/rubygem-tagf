@@ -18,30 +18,26 @@
 require_relative('../sptaf')
 require('byebug')
 
-# @!macro doc.TAF
+# @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.LocationMixin
+  # @!macro doc.TAF::LocationMixin.module
   module LocationMixin
 
-    # @!macro doc.LocationMixin.eigenclass
+    # @!macro doc.TAF::LocationMixin.module.eigenclass
     class << self
 
-      #
-      # @return [void]
-      #
+      include(::TAF::ClassMethods)
+
+      # @!macro doc.TAF...module.classmethod.included
       def included(klass)
         whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
         warn('%s called for %s' \
              % [whoami, klass.name])
-        [ TAF::ClassMethods, TAF::ClassMethods::Thing].each do |xmodule|
-          warn('%s extending %s with %s' \
-               % [whoami, klass.name, xmodule.name])
-          klass.extend(xmodule)
-        end
+        super
         return nil
-      end                       # def included
+      end                       # def included(klass)
 
     end                         # module LocationMixin eigenclass
 
