@@ -67,6 +67,16 @@ module TAF
       self.initialize_thing(*args, kwargs_defaults.merge(kwargs))
     end                         # def initialize_actor
 
+    #
+    def add(*args, **kwargs)
+      begin
+        super if (self.inventory.can_add?(*args, **kwargs))
+      rescue InventoryLimitError => e
+        warn("Inventory limit exception: #{e.to_s}")
+      end
+      return self
+    end                         # def add(*args, **kwargs)
+
     nil
   end                           # module ActorMixin
 
