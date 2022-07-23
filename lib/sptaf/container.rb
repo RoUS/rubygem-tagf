@@ -21,15 +21,19 @@ require('byebug')
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF::ContainerMixin.module
+  #
+  # Mixin module defining methods specific to objects that have
+  # inventories, such as locations, player and NPC objects, and some
+  # items.
+  #
   module ContainerMixin
 
-    # @!macro doc.TAF::ContainerMixin.module.eigenclass
+    # @!macro doc.TAF.module.eigenclass ContainerMixin
     class << self
 
       include(::TAF::ClassMethods)
 
-      # @!macro doc.TAF...module.classmethod.included
+      # @!macro doc.TAF.module.classmethod.included
       def included(klass)
         whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
@@ -49,19 +53,25 @@ module TAF
     flag(:allow_containers)
 
     #
+    # Instance variable accessor for a container's inventory (list of
+    # things owned or contained).
     #
+    # @overload inventory
+    #   @!attribute [r] inventory
     #   @return [TAF::Inventory]
     #     the object's inventory.
     #   @return [nil]
-    #     if the inventory has not been created yet.
-    #
+    #     if the inventory hasn't yet been created.
     attr_reader(:inventory)
     #
     # @overload inventory=(value)
+    #   @!attribute [w] inventory
     #   @param [Inventory] value
     #     instance of TAF::Inventory class to install as the
     #     object's [new] inventory list.
-    #   @macro doc.TAF::Container.classmethod.inventory_accessor.exception.TypeError
+    #   @raise [TypeError]
+    #     if the argument is not an instance of TAF::Inventory:
+    #       attribute 'inventory' requires an instance of class TAF::Inventory
     #   @return [Inventory] object's new inventory object.
     #
     def inventory=(value)
@@ -90,17 +100,6 @@ module TAF
     # Maximum number of items permitted in the container (default 0).
     # Zero means no limit.  Items are game objects that are non-static
     # instances of {Container} or {Item}.
-    #
-    # @overload items_max
-    #   @return [Integer]
-    #     the maximum number of discrete items that can be added to an
-    #     object's #inventory.
-    # @overload items_max=(arg)
-    #   @param [Integer] arg
-    #   @raise [TypeError]
-    #     `attribute '$0' can only have integer values or something coercible`
-    #   @return [Integer]
-    #     the value of `arg` that was passed in.
     #
     int_accessor(:items_max)
 

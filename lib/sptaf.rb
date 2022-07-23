@@ -53,7 +53,7 @@ module TAF
     #
     include(::TAF::ClassMethods)
 
-    # @!macro doc.TAF...module.classmethod.included
+    # @!macro doc.TAF.module.classmethod.included
     def included(klass)
       whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]

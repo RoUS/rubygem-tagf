@@ -21,7 +21,10 @@ require('byebug')
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF::Thing.module
+  #
+  # Define class methods and constants that will be added to all
+  # object classes in the TAF namespace.
+  #
   module Thing
 
     #

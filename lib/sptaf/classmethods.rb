@@ -23,12 +23,19 @@ require('byebug')
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF::ClassMethods.module
+  #
+  # Define class methods and constants that will be added to all
+  # modules and classes in the TAF namespace.  These definitions live
+  # in the modules' and class' eigenclasses (<em>a.k.a.</em>
+  # 'singleton classes').  Things like the `extended` and `included`
+  # metamethods live in the eigenclass, and class-level methods like
+  # `attr_accessor` are defined in the eigenclass as well.
+  #
   module ClassMethods
 
     include(::TAF::Exceptions)
 
-    # @!macro doc.TAF...module.classmethod.included
+    # @!macro doc.TAF.module.classmethod.included
     def included(klass)
       whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
@@ -95,7 +102,7 @@ module TAF
     #
     # @param [Array<Symbol>] args
     #   Identifiers for the flag attributes to be declared.
-    # @param [Hash<Symbol>=><Object>] kwargs
+    # @param [Hash<Symbol=>Object>] kwargs
     #   Hash of keyword arguments; see below.
     # @option kwargs [Symbol] `:default`
     # @return [void]
@@ -132,15 +139,16 @@ module TAF
     end                         # def flag
 
     # @!macro [attach] doc.TAF::ClassMethods.classmethod.float_accessor
+    #   @!attribute [rw] $1
     #   @overload $1
     #     @return [Float]
     #       the current value of `$1`.
     #   @overload $1=(arg)
-    #     @param [Float] arg
+    #     @param [Float] value
     #     @raise [TypeError]
     #       `attribute '$1' can only have float values or something coercible`
     #     @return [Float]
-    #       the value of `arg` that was passed in.
+    #       the value of `value` that was passed in.
     #
     def float_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s
@@ -179,16 +187,17 @@ module TAF
     alias_method(:float_reader, :float_accessor)
     alias_method(:float_writer, :float_accessor)
 
-    # @!macro [new] doc.TAF::ClassMethods.classmethod.int_accessor
-    #   @overload $0
+    # @!macro [attach] doc.TAF::ClassMethods.classmethod.int_accessor
+    #   @!attribute [rw] $1
+    #   @overload $1
     #     @return [Integer]
     #       the current value of `$1`.
-    #   @overload $1=(arg)
-    #     @param [Integer] arg
+    #   @overload $1=(value)
+    #     @param [Integer] value
     #     @raise [TypeError]
     #       `attribute '$1' can only have integer values or something coercible`
     #     @return [Integer]
-    #       the value of `arg` that was passed in.
+    #       the value of `value` that was passed in.
     #
     def int_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s

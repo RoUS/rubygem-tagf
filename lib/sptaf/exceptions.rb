@@ -20,7 +20,13 @@ require_relative('../sptaf')
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF::Exceptions.module
+  #
+  # Defines exception classes specific to the {TAF} module.  All are
+  # namespaced under `TAF::Exceptions`.
+  #
+  # Some exceptions are used internally for signalling conditions,
+  # such as attempts to put more into a container than it can hold.
+  #
   module Exceptions
 
     #
@@ -42,6 +48,10 @@ module TAF
       nil
     end                         # class ErrorBase
 
+    #
+    # Define excpetions that are used to signal problems with trying
+    # to put more into an object's inventory than it can hold.  These
+    # are `rescue`d in the normal flow of things.
     #
     module InventoryLimitExceeded
       

@@ -21,15 +21,18 @@ require('byebug')
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF::LocationMixin.module
+  #
+  # Mixin module defining methods specific to objects that are
+  # locations in a game (rooms, <em>etc.</em>.
+  #
   module LocationMixin
 
-    # @!macro doc.TAF::LocationMixin.module.eigenclass
+    # @!macro doc.TAF.module.eigenclass LocationMixin
     class << self
 
       include(::TAF::ClassMethods)
 
-      # @!macro doc.TAF...module.classmethod.included
+      # @!macro doc.TAF.module.classmethod.included
       def included(klass)
         whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]

@@ -22,15 +22,23 @@ require('byebug')
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF::ActorMixin.module
+  #
+  # Mixin module for active objects, like the PC and NPCs.  They get
+  # moved around by the player and/or game logic with specific
+  # semantics.
+  #
   module ActorMixin
 
     include(::TAF::ContainerMixin)
 
-    # ##!macro doc.ActorMixin.eigenclas
+    #
+    # Eigenclass for the ActorMixin module.  Simply provides an
+    # `included` method to propagate the class methods to the
+    # including class.
+    #
     class << self
 
-      # @!macro doc.TAF...module.classmethod.included
+      # @!macro doc.TAF.module.classmethod.included
       def included(klass)
         whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
