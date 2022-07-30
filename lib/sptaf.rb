@@ -37,12 +37,12 @@ module TAF
   # Include the project exceptions so that anything that mixes in this
   # module will get those, as well.
   #
-  include(::TAF::Exceptions)
+  include(Exceptions)
 
   # @!macro [new] doc.TAF.module.eigenclass
-  #   Eigenclass for the top-level TAF module.  It provides class
-  #   methods (like additional attribute declaration methods) for
-  #   anything that extends the TAF module into its singleton class.
+  #   Eigenclass for a TAF module.  It provides class methods (like
+  #   additional attribute declaration methods) for anything that
+  #   extends the TAF module into its singleton class.
   class << self
 
     #
@@ -51,7 +51,7 @@ module TAF
     # one..  Do the `include` because that makes Yard understand a
     # little better what's going on.
     #
-    include(::TAF::ClassMethods)
+    include(ClassMethods)
 
     # @!macro doc.TAF.module.classmethod.included
     def included(klass)
@@ -100,7 +100,7 @@ module TAF
   #   The number of stack frames to pop off the backtrace.  The
   #   default is 1, meaning that the caller's caller will appear to be
   #   the location raising the exception.
-  # @raise [TAF::Exceptions::NotExceptionClass,Exception]
+  # @raise [NotExceptionClass,Exception]
   #   either the requested exception, or a `NotExceptionClass`
   #   exception if the argument wasn't actually an exception class.
   # @return [void]
@@ -134,31 +134,26 @@ module TAF
   private(:raise_exception)
 
   #
-  def pluralise(name, number=1)
-    result		= name
+  # Given a word (presumably a singular noun) and a count, return the
+  # plural of the word if the count justifies it.
+  #
+  # @note
+  #   At the moment, only English (`en`) words are supported.
+  #
+  # @param [String] word
+  # @param [Integer] number
+  # @return [String]
+  #   either the original word, or the deduced plural if the `number`
+  #   argument was an integer 1.  (Floats <em>always</em> use plurals,
+  #   even if they're `1.000`.)
+  #
+  def pluralise(word, number=1)
+    result		= word
     unless (number.kind_of?(Integer) && (number == 1))
-      result		= name.en.plural
+      result		= word.en.plural
     end
     return result
   end                           # def pluralise
-
-  #
-  # Checks to see if the object is a container according to the game
-  # mechanics (basically, its class has included the
-  # TAF::ContainerMixin module).
-  #
-  # @return [Boolean] `true`
-  #   if the current object (`self`) has included the
-  #   `ContainerMixin` module and has all the related methods
-  #   and attributes.
-  # @return [Boolean] `false`
-  #   if the object is not a container.
-  #
-  def is_container?
-    return self.class.ancestors.include?(::TAF::ContainerMixin) \
-           ? true \
-           : false
-  end                         # def is_container?
 
   nil
 end                             # module TAF
@@ -171,7 +166,9 @@ require_relative('sptaf/thing')
 require_relative('sptaf/inventory')
 require_relative('sptaf/container')
 require_relative('sptaf/item')
+require_relative('sptaf/cli')
 require_relative('sptaf/location')
+require_relative('sptaf/feature')
 require_relative('sptaf/game')
 require_relative('sptaf/actor')
 require_relative('sptaf/player')

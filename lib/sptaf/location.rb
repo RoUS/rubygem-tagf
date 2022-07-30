@@ -21,49 +21,80 @@ require('byebug')
 # @!macro doc.TAF.module
 module TAF
 
-  #
-  # Mixin module defining methods specific to objects that are
-  # locations in a game (rooms, <em>etc.</em>.
-  #
-  module LocationMixin
 
-    # @!macro doc.TAF.module.eigenclass LocationMixin
-    class << self
-
-      include(::TAF::ClassMethods)
-
-      # @!macro doc.TAF.module.classmethod.included
-      def included(klass)
-        whoami		= '%s eigenclass.%s' \
-                          % [self.name, __method__.to_s]
-        warn('%s called for %s' \
-             % [whoami, klass.name])
-        super
-        return nil
-      end                       # def included(klass)
-
-    end                         # module LocationMixin eigenclass
-
-    include(::TAF::ContainerMixin)
+  # @!macro doc.TAF.Mixins.module
+  module Mixins
 
     #
-    attr_accessor(:paths)
-
+    # Mixin module defining methods specific to objects that are
+    # locations in a game (rooms, <em>etc.</em>.
     #
-    def initialize_location(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-#      self.initialize_container(*args, **kwargs)
-#      self.inventory	= ::TAF::Inventory.new(game:	self,
-#                                              owned_by: self)
-    end                         # def initialize_location
+    module Location
+
+      # @!macro doc.TAF.Mixins.module.eigenclass Location
+      class << self
+
+        include(ClassMethods)
+
+        # @!macro doc.TAF.module.classmethod.included
+        def included(klass)
+          whoami		= '%s eigenclass.%s' \
+                                  % [self.name, __method__.to_s]
+          warn('%s called for %s' \
+               % [whoami, klass.name])
+          super
+          return nil
+        end                       # def included(klass)
+
+      end                       # module Location eigenclass
+
+      include(Mixins::Container)
+
+      #
+      attr_accessor(:paths)
+
+      #
+      def initialize_location(*args, **kwargs)
+        warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+        self.paths	= {}
+        #      self.initialize_container(*args, **kwargs)
+        #      self.inventory	= ::TAF::Inventory.new(game:	self,
+        #                                              owned_by: self)
+      end                       # def initialize_location
+
+      nil
+    end                         # module Location
 
     nil
-  end                           # module LocationMixin
+  end                           # module Mixins
+
+  #
+  class Connexion
+
+    include(Mixins::Thing)
+
+    #
+    flag(:reversible)
+
+    #
+    attr_accessor(:source)
+
+    #
+    attr_accessor(:destination)
+
+    #
+    def initialize(*args, **kwargs)
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      self.initialize_thing(*args, **kwargs)
+    end                         # def initialize(*args, **kwargs)
+
+    nil
+  end                           # class Connexion
 
   #
   class Location
 
-    include(::TAF::LocationMixin)
+    include(Mixins::Location)
 
     #
     def initialize(*args, **kwargs)
@@ -78,6 +109,18 @@ module TAF
 
     nil
   end                           # class Location
+
+  #
+  class Feature
+
+    include(Mixins::Container)
+
+    def initialize(*args, **kwargs)
+      self.initialize_thing(*args, **kwargs)
+      self.static!
+    end                         # def initialize(*args, **kwargs)
+
+  end                           # class Feature
 
   nil
 end                             # module TAF

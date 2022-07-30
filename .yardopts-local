@@ -44,6 +44,7 @@
 --no-cache
 --title='Text Adventure Framework (TAF) Gem'
 --private		# Uncomment to expose private elements
+--embed-mixins          # New in Yard 0.8.*
 #--markup-provider=commonmarker
 --markup=markdown	# Remove this line if you want to use pandoc
 #

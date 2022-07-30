@@ -24,15 +24,18 @@ module TAF
   #
   class Item
     
-    include(::TAF::Thing)
-    
+    include(Mixins::Thing)
+
+    #
+    flag(:living)
+
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
       self.static	= false
       self.initialize_thing(*args, **kwargs)
       if (kwargs[:is_container])
-        self.include(::TAF::ContainerMixin)
+        self.include(Mixins::Container)
         self.initialize_container(*args, **kwargs)
       end
       self.game.add(self)

@@ -26,7 +26,7 @@ module TAF
   #
   class Game
 
-    include(::TAF::ContainerMixin)
+    include(Mixins::Container)
 
     #
     attr_reader(:inventory)
@@ -174,7 +174,7 @@ module TAF
       end
       g			= self.game
       inventories	= g.inventory.select { |o|
-        o.kind_of?(::TAF::Inventory) && o.keys.include?(oldslug)
+        o.kind_of?(Inventory) && o.keys.include?(oldslug)
       }
       inventories.unshift(self.game.inventory)
       inventories_edited = []

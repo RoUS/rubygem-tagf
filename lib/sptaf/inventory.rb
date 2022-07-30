@@ -24,10 +24,10 @@ module TAF
   #
   class Inventory
 
-    include(::TAF::Thing)
+    include(Mixins::Thing)
     include(Enumerable)
 
-    # @!macro [attach] doc.TAF::ClassMethods.classmethod.flag
+    # @!macro [attach] doc.TAF.classmethod.flag
     #   @overload $1
     #     Return the current value of `$1`, which is always either
     #     `true` or `false`.  It will have no other values.
@@ -47,7 +47,14 @@ module TAF
     #   @overload $1!
     #     Unconditionally sets `$1` to `true`.
     #     @return [Boolean] `true`.
-    flag(:master)
+
+    # @!attribute [r] master
+    #   Boolean flag indicating whether this is the game's master
+    #   inventory or not.
+    def master
+      result		= (self.game.inventory == self)
+      return result ? true : false
+    end                         # def master
 
     #
     # Adaptive name for an object's inventory.
@@ -132,7 +139,7 @@ module TAF
 
     #
     def []=(*args)
-      gameobjs		= args.select { |o| o.kind_of?(::TAF::Thing) }
+      gameobjs		= args.select { |o| o.kind_of?(Mixins::Thing) }
       unless ((args - gameobjs).empty?)
         raise_exception(NotGameElement,
                         'only game elements ' \
@@ -160,15 +167,15 @@ module TAF
     def can_add?(newobj, **kwargs)
       return true if (kwargs[:ignorelimits])
       owned_by		= self.owned_by
-      if ((items_max = owned_by.items_max) > 0)
+      if ((items_max = owned_by.capacity_items) > 0)
         if ((owned_by.items_current + 1) > items_max)
           raise_exception(LimitItems, self, newobj, levels: 2)
         end
-      elsif ((mass_max = owned_by.mass_max) > 0.0)
-        if ((owned_by.max_current + newobj.mass) > mass_max)
+      elsif ((mass_max = owned_by.capacity_mass) > 0.0)
+        if ((owned_by.mass_current + newobj.mass) > mass_max)
           raise_exception(LimitMass, self, newobj, levels: 2)
         end
-      elsif ((volume_max = owned_by.volume_max) > 0.0)
+      elsif ((volume_max = owned_by.capacity_volume) > 0.0)
         if ((owned_by.volume_current + newobj.volume) > volume_max)
           raise_exception(LimitVolume, self, newobj, levels: 2)
         end
@@ -178,19 +185,19 @@ module TAF
 
     #
     # Adds an object to this object's inventory.  Doesn't change the
-    # object's owner (see {TAF::Thing#move_to}), and will raise an
+    # object's owner (see {Mixins::Thing#move_to}), and will raise an
     # exception if
     #
     # a. the object is already in the new inventory
     #    <strong>AND</strong> the new inventory isn't the master
     #    inventory for the game.
     #
-    # @param [TAF::Thing] arg
-    # @raise [TAF::NotGameElement]
-    # @raise [TAF::AlreadyInInventory]
+    # @param [Mixins::Thing] arg
+    # @raise [NotGameElement]
+    # @raise [AlreadyInInventory]
     #
     def add(arg, **kwargs)
-      unless (arg.class.ancestors.include?(::TAF::Thing))
+      unless (arg.class.ancestors.include?(Mixins::Thing))
         raise_exception(NotGameElement, arg)
       end
       key		= arg.slug
@@ -273,7 +280,7 @@ module TAF
     #
     def actors
       result		= self.select(only: :objects) { |o|
-        o.kind_of?(ActorMixin)
+        o.kind_of?(Actor)
       }
       return result
     end                         # def actors

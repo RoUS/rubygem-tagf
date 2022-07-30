@@ -21,199 +21,242 @@ require('byebug')
 # @!macro doc.TAF.module
 module TAF
 
-  #
-  # Define class methods and constants that will be added to all
-  # object classes in the TAF namespace.
-  #
-  module Thing
+  # @!macro doc.TAF.Mixins.module
+  module Mixins
 
     #
-    class Description < ::String
+    # Define class methods and constants that will be added to all
+    # object classes in the TAF namespace.
+    #
+    module Thing
 
       #
-      def wordwrap(right_margin: 72, indent: 0, bullets: %q[o * •])
-        return self
-      end                       # def wordwrap
+      class Description < ::String
 
-    end                         # class Description
+        #
+        # Allow a decription to be formatted as to width and proper
+        # bullet indentation.
+        #
+        # @todo
+        #   This needs thinking out; it may be too much work.
+        #
+        def wordwrap(right_margin: 72, indent: 0, bullets: %q[o * •])
+          return self
+        end                     # def wordwrap
 
-    extend(::TAF::ClassMethods)
-    include(::TAF)
+      end                       # class Description
 
-    #
-    # The <em>`slug`</em> is the unique game-wide identifier for each
-    # object.  As such, it only has a reader/getter defined so it
-    # can't be accidentally altered.  To change it, use the
-    # #change_slug method.
-    #
-    # @return [Object]
-    #  the slug can be any sort of object, not just a string or a
-    #  number.
-    #
-    attr_reader(:slug)
+      include(::TAF)
+      extend(ClassMethods)
 
-    #
-    attr_accessor(:game)
+      #
+      # The <em>`slug`</em> is the unique game-wide identifier for each
+      # object.  As such, it only has a reader/getter defined so it
+      # can't be accidentally altered, and is `nil` until set during
+      # game object initialisation.  To change it, use the
+      # {Game#change_slug} method.
+      #
+      # <strong>N.B.</strong>:
+      # An object's slug can be any sort of non-`nil` object, but
+      # strings or numbers are recommended.  In game data files, strings
+      # should be used when defining objects such as rooms, items,
+      # <em>&.</em>
+      #
+      # @return [Object,nil]
+      #  the current value of the object's slug.
+      #
+      attr_reader(:slug)
 
-    #
-    attr_accessor(:owned_by)
+      # @!attribute [rw] game
+      #
+      # Instance variable referencing the game object which ultimately
+      # 'owns' every object instance created.
+      #
+      # @return [nil]
+      #   if not yet set.
+      # @return [Game]
+      #   game object for the caller, and presumably all other objects
+      #   in the game as well.
+      #
+      attr_accessor(:game)
 
-    #
-    attr_accessor(:name)
+      #
+      attr_accessor(:owned_by)
 
-    #
-    attr_accessor(:desc)
+      #
+      attr_accessor(:name)
 
-    #
-    attr_accessor(:shortdesc)
+      #
+      attr_accessor(:desc)
 
-    #
-    float_accessor(:mass)
+      #
+      attr_accessor(:shortdesc)
 
-    #
-    # The volume used by the current object, in cubic
-    # (whatever-units-are-in-use).  This is only meaningful when an
-    # attempt might be made to place the object into a container with
-    # a volume limitation.  (See mass, ContainerMixin max_items)
-    #
-    float_accessor(:volume)
+      #
+      float_accessor(:mass)
 
-    #
-    # Boolean attribute indicating whether the object can be moved
-    # between inventories (<em>e.g.</em>, being picked up by the
-    # player).  Things like rooms (Location-class objects) never
-    # move; things like the player (Player) or any NPCs (NPC) are
-    # moved using specific semantics.
-    #
-    # @!macro [attach] doc.TAF::ClassMethods.classmethod.flag
-    #   @overload $1
-    #     Return the current value of `$1`, which is always either
-    #     `true` or `false`.  It will have no other values.
-    #     @return [Boolean]
-    #       `true` if the `$1` flag is set, or `false` otherwise.
-    #   @overload $1=(arg)
-    #     Sets `$1` to the 'truthy' value of `arg`.  <em>I.e.</em>, if
-    #     Ruby would regard `arg` as `true`, then that's how `$1` will
-    #     be set.  <strong>Exception:</strong> Any numeric value that
-    #     coerces to `Integer(0)` will be regarded as
-    #     <strong>`false`</strong>.
-    #     @param [Object] arg
-    #     @return [Object] the value of `arg` that was passed.
-    #   @overload $1?
-    #     @return [Boolean]
-    #       `true` if `$1` is set, or `false` otherwise.
-    #   @overload $1!
-    #     Unconditionally sets `$1` to `true`.
-    #     @return [Boolean] `true`.
-    flag(:static)
+      #
+      # The volume used by the current object, in cubic
+      # (whatever-units-are-in-use).  This is only meaningful when an
+      # attempt might be made to place the object into a container with
+      # a volume limitation.  (See #mass,
+      # {Mixins::Container#capacity_items}.)
+      #
+      float_accessor(:volume)
 
-    #
-    # List of attributes that are considered essentially immutable,
-    # once set, by automatic attribute hash value processing
-    # (typically by iterating over `kwargs`).
-    #
-    # These typically do <strong>not</strong> has setter
-    # (<em>`sym`</em>`=`) methods, and so if a value MUST be changed,
-    # there are special semantics for making it happen.
-    #
-    ONCE_AND_DONE	= %i[ game slug owned_by ]
+      #
+      # Boolean attribute indicating whether the object can be moved
+      # between inventories (<em>e.g.</em>, being picked up by the
+      # player).  Things like rooms (Location-class objects) never
+      # move; things like the player (Player) or any NPCs (NPC) are
+      # moved using specific semantics.
+      #
+      # @!macro doc.TAF.classmethods.attribute.flag.use
+      flag(:static)
 
-    #
-    def has_inventory?
-      cond		= (self.is_container? \
-                           && self.inventory.kind_of?(::TAF::Inventory))
-      return cond ? true : false
-    end                         # def has_inventory?
+      #
+      flag(:visible)
 
-    #
-    def has_items?
-      cond		= (self.has_inventory? \
+      #
+      # List of attributes that are considered essentially immutable,
+      # once set, by automatic attribute hash value processing
+      # (typically by iterating over `kwargs`).
+      #
+      # These typically do <strong>not</strong> has setter
+      # (<em>`sym`</em>`=`) methods, and so if a value MUST be changed,
+      # there are special semantics for making it happen.
+      #
+      ONCE_AND_DONE	= %i[ game slug owned_by ]
+
+      #
+      # Checks to see if the object is a container according to the game
+      # mechanics (basically, its class has included the
+      # {Mixins::Container} module).
+      #
+      # @return [Boolean] `true`
+      #   if the current object (`self`) has included the
+      #   `Mixins::Container` module and has all the related methods
+      #   and attributes.
+      # @return [Boolean] `false`
+      #   if the object is not a container.
+      #
+      def is_container?
+        return self.class.ancestors.include?(Mixins::Container) \
+               ? true \
+               : false
+      end                       # def is_container?
+
+      #
+      def has_inventory?
+        cond		= (self.is_container? \
+                           && self.inventory.kind_of?(Inventory))
+        return cond ? true : false
+      end                       # def has_inventory?
+
+      #
+      def has_items?
+        cond		= (self.has_inventory? \
                            && (! self.inventory.empty?))
-      return cond ? true : false
-    end                         # def has_items?
+        return cond ? true : false
+      end                       # def has_items?
 
-    #
-    def add_inventory(**kwargs)
-      return nil if (self.has_inventory?)
-      kwargs_new	= kwargs.merge({ game: self.game, owned_by: self })
-      self.inventory	= Inventory.new(**kwargs)
-      return self.inventory
-    end                         # def add_inventory
+      #
+      def add_inventory(**kwargs)
+        return nil if (self.has_inventory?)
+        kwargs_new	= kwargs.merge({ game: self.game, owned_by: self })
+        self.inventory	= Inventory.new(**kwargs)
+        return self.inventory
+      end                       # def add_inventory
 
-    #
-    # Move the associated object from one object's inventory to
-    # another's.
-    #
-    def move_to(*args, **kwargs)
-      if (self.owned_by.inventory.master?)
-        raise_exception(MasterInventory, self, kwargs)
-      elsif (self.static?)
-        raise_exception(ImmovableObject, self, kwargs)
-      end
-      begin
-        if (args[0].inventory.can_add?(self))
-          newowner = args[0] unless (newowner = kwargs[:owned_by])
-          self.owned_by.inventory.delete(self.slug)
-          newowner.inventory.add(self)
+      #
+      # Move the associated object from one object's inventory to
+      # another's.
+      #
+      def move_to(*args, **kwargs)
+        if (self.owned_by.inventory.master?)
+          raise_exception(MasterInventory, self, kwargs)
+        elsif (self.static?)
+          raise_exception(ImmovableObject, self, kwargs)
         end
-      rescue InventoryLimitError => e
-        args[0].inventory_is_full(e)
-      rescue StandardError => e
-        raise
-      end
-      return self
-    end                         # def move_to
-
-    #
-    def contained_in
-      inventories	= self.game.inventory.select { |o|
-        o.kind_of?(::TAF::Inventory) && (! o.master?)
-      }
-      inlist		= inventories.select { |i| i.include?(self) }
-      return inlist
-    end                         # def contained_in
-
-    #
-    def initialize_thing(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      @slug		||= kwargs[:slug] || self.object_id
-      if (self.owned_by.nil? \
-          && ((! kwargs.key?(:owned_by)) \
-              || kwargs[:owned_by].nil?))
-        raise_exception(NoObjectOwner, self)
-      end
-      kwargs.each do |attrib,newval|
-        attrib		= attrib.to_sym
-        attrib_s	= attrib.to_s
-        attrib_setter	= "#{attrib_s}=".to_sym
-        attrib_ivar	= "@#{attrib_s}".to_sym
-        curval		= nil
-        if (self.respond_to?(attrib))
-          curval	= self.instance_variable_get(attrib_ivar)
+        begin
+          if (args[0].inventory.can_add?(self))
+            newowner = args[0] unless (newowner = kwargs[:owned_by])
+            self.owned_by.inventory.delete(self.slug)
+            newowner.inventory.add(self)
+          end
+        rescue InventoryLimitError => e
+          args[0].inventory_is_full(e)
+        rescue StandardError => e
+          raise
         end
-        if (ONCE_AND_DONE.include?(attrib) \
-            && (! curval.nil?) \
-            && (newval != curval))
-          raise_exception(SettingLocked, attrib)
-        end
-        if (self.respond_to?(attrib_setter))
-          self.send(attrib_setter, newval)
-        else
-          self.instance_variable_set(attrib_ivar, newval)
-        end
-      end                       # kwargs.each
+        return self
+      end                       # def move_to
 
-      unless (self.respond_to?(:game) && (! self.game.nil?))
-        raise_exception(NoGameContext)
-      end
-#      self.game.add(self) unless (self.game.in_setup?)
-#      self.owned_by.add(self) unless (self.owned_by.in_setup?)
-      return self
-    end                         # def initialize_thing
+      #
+      def contained_in
+        inventories	= self.game.inventory.select { |o|
+          o.kind_of?(Inventory) && (! o.master?)
+        }
+        inlist		= inventories.select { |i| i.include?(self) }
+        return inlist
+      end                       # def contained_in
+
+      #
+      def initialize_thing(*args, **kwargs)
+        warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+        @slug		||= kwargs[:slug] || self.object_id
+        if (self.owned_by.nil? \
+            && ((! kwargs.key?(:owned_by)) \
+                || kwargs[:owned_by].nil?))
+          raise_exception(NoObjectOwner, self)
+        end
+        #
+        # Default to things being visible; it takes an explicit change
+        # or a `visible: false` tuple in `kwargs` to make something
+        # hidden.
+        #
+        self.visible!
+        #
+        # Now set attributes according to the keyword arguments hash.
+        #
+        kwargs.each do |attrib,newval|
+          attrib		= attrib.to_sym
+          attrib_s	= attrib.to_s
+          attrib_setter	= "#{attrib_s}=".to_sym
+          attrib_ivar	= "@#{attrib_s}".to_sym
+          curval		= nil
+          if (self.respond_to?(attrib))
+            curval	= self.instance_variable_get(attrib_ivar)
+          end
+          if (ONCE_AND_DONE.include?(attrib) \
+              && (! curval.nil?) \
+              && (newval != curval))
+            raise_exception(SettingLocked, attrib)
+          end
+          if (self.respond_to?(attrib_setter))
+            self.send(attrib_setter, newval)
+          elsif (self.respond_to?(attrib_getter))
+            self.instance_variable_set(attrib_ivar, newval)
+          else
+            raise_exception(RuntimeError,
+                            ('attempt to set non-attribute %s' \
+                             % attrib))
+          end
+        end                     # kwargs.each
+
+        unless (self.respond_to?(:game) && (! self.game.nil?))
+          raise_exception(NoGameContext)
+        end
+        #      self.game.add(self) unless (self.game.in_setup?)
+        #      self.owned_by.add(self) unless (self.owned_by.in_setup?)
+        return self
+      end                       # def initialize_thing
+
+      nil
+    end                         # module TAF::Mixins::Thing
 
     nil
-  end                           # module Thing
-
+  end                           # module TAF::Mixins
   nil
 end                             # module TAF
 

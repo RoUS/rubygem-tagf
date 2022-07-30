@@ -33,7 +33,7 @@ module TAF
   #
   module ClassMethods
 
-    include(::TAF::Exceptions)
+    include(Exceptions)
 
     # @!macro doc.TAF.module.classmethod.included
     def included(klass)
@@ -64,7 +64,7 @@ module TAF
       )
       return pieces
     end                         # def _decompose_attrib
-    protected(:_decompose_attrib)
+    private(:_decompose_attrib)
 
     #
     def _inivaluate_attrib(default, *args, **kwargs)
@@ -85,28 +85,60 @@ module TAF
       end
       return kwargs
     end                         # def _inivaluate_attrib
-    protected(:_inivaluate_attrib)
+    private(:_inivaluate_attrib)
 
-    # Declares the specified symbols as accessors for Boolean values.
-    # For each symbol, four (4) methods are defined:
+    # @!macro [attach] doc.TAF.classmethods.attribute.flag.use
+    #   @!attribute [rw] $1
+    #   @overload $1
+    #     Return the current value of `$1`, which is always either
+    #     `true` or `false`.  It will have no other values.
+    #     @return [Boolean]
+    #       `true` if the `$1` flag is set, or `false` otherwise.
+    #   @overload $1=(value)
+    #     Sets `$1` to the 'truthy' value of `value`.  <em>I.e.</em>,
+    #     if Ruby would regard `arg` as `true`, then that's how `$1`
+    #     will be set.  <strong>Exception:</strong> Any numeric value
+    #     that coerces to `Integer(0)` will be regarded as
+    #     <strong>`false`</strong>.
+    #     @param [Object] value
+    #     @return [Object]
+    #       the value of `value` that was passed.
+    #   @overload $1?
+    #     @return [Boolean]
+    #       `true` if `$1` is set, or `false` otherwise.
+    #   @overload $1!
+    #     Unconditionally sets `$1` to `true`.
+    #     @return [Boolean] `true`.
+
+    # @!macro [new] doc.TAF.classmethods.attribute.flag.def
+    #   @!method [rw] $0(*args, **kwargs)
+    #   Declares the specified symbols as accessors for Boolean
+    #   values.  For each symbol, four (4) methods are defined:
     #
-    #  * <em>`symbol`</em> -- returns the current attribute value.
-    #  * <em>`symbol=`</em> --
-    #    sets the attribute to the 'truthy' interpretation of the
-    #    argument.
-    #  * <em>`symbol?`</em> --
-    #    returns `true` or `false` according to the attribute's value.
-    #    <em>Equivalent to the </em>`symbol`<em> method above.</em>
-    #  * <em>`symbol!`</em> --
-    #    unconditionally sets the attribute to `true`.
+    #    * <em>`symbol`</em> -- returns the current attribute value.
+    #    * <em>`symbol=`</em> --
+    #      sets the attribute to the 'truthy' interpretation of the
+    #      argument.
+    #    * <em>`symbol?`</em> --
+    #      returns `true` or `false` according to the attribute's value.
+    #      <em>Equivalent to the </em>`symbol`<em> method above.</em>
+    #    * <em>`symbol!`</em> --
+    #      unconditionally sets the attribute to `true`.
     #
-    # @param [Array<Symbol>] args
-    #   Identifiers for the flag attributes to be declared.
-    # @param [Hash<Symbol=>Object>] kwargs
-    #   Hash of keyword arguments; see below.
-    # @option kwargs [Symbol] `:default`
-    # @return [void]
+    #   @param [Array<Symbol>] args
+    #     Identifiers for the flag attributes to be declared.
+    #   @param [Hash<Symbol=>Object>] kwargs
+    #     Hash of keyword arguments; see below.
+    #     <strong>This is actually WRONG!</strong>
+    #   @todo
+    #     Make the use of the kwargs parameter more clear in the code
+    #     and fix the docco here.
+    #   @option kwargs [Symbol] :default
+    #     Meh.
+    #   @return [void]
     #
+
+    # @!macro [attach] doc.TAF.classmethod.flag
     def flag(*args, **kwargs)
       kwargs		= _inivaluate_attrib(false, *args, **kwargs)
       kwargs.each do |attrib,default|
@@ -138,7 +170,7 @@ module TAF
       nil
     end                         # def flag
 
-    # @!macro [attach] doc.TAF::ClassMethods.classmethod.float_accessor
+    # @!macro [attach] doc.TAF.classmethod.float_accessor
     #   @!attribute [rw] $1
     #   @overload $1
     #     @return [Float]
@@ -187,7 +219,7 @@ module TAF
     alias_method(:float_reader, :float_accessor)
     alias_method(:float_writer, :float_accessor)
 
-    # @!macro [attach] doc.TAF::ClassMethods.classmethod.int_accessor
+    # @!macro [attach] doc.TAF.classmethod.int_accessor
     #   @!attribute [rw] $1
     #   @overload $1
     #     @return [Integer]

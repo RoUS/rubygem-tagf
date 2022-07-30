@@ -24,7 +24,7 @@ module TAF
   #
   class NPC
 
-    include(::TAF::ActorMixin)
+    include(Mixins::Actor)
 
     #
     def initialize(*args, **kwargs)

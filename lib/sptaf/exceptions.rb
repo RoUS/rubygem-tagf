@@ -74,8 +74,8 @@ module TAF
                           % [owner_klass,
                              (owner_name || owner_slug).to_s,
                              owner.items_current,
-                             owner.items_max,
-                             pluralise('item', owner.items_max),
+                             owner.capacity_items,
+                             pluralise('item', owner.capacity_items),
                              (newitem.name || newitem.slug).to_s]
           end
           self._set_message(msg)
@@ -308,7 +308,7 @@ module TAF
       def initialize(*args, **kwargs)
         if ((args.count == 1) && args[0].kind_of?(String))
           msg		= args[0]
-        elsif (args[0].kind_of?(::TAF::Thing))
+        elsif (args[0].kind_of?(Mixins::Thing))
           name		= args[0].name || args[0].slug.to_s
           case(args.count)
           when 0
@@ -335,7 +335,7 @@ module TAF
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
-        elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(::TAF::Thing) })
+        elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(Mixins::Thing) })
           case(args.count)
           when 0
             msg		= 'object already in inventory'
