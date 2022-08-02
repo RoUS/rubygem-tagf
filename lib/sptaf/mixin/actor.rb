@@ -15,15 +15,16 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require_relative('classmethods')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF.Mixins.module
-  module Mixins
+  # @!macro doc.TAF.Mixin.module
+  module Mixin
 
     #
     # Mixin module for active objects, like the PC and NPCs.  They get
@@ -32,7 +33,8 @@ module TAF
     #
     module Actor
 
-      include(Mixins::Container)
+      #
+      TAF.mixin(Mixin::Container)
 
       #
       # Eigenclass for the Actor module.  Simply provides an
@@ -45,39 +47,63 @@ module TAF
         def included(klass)
           whoami		= '%s eigenclass.%s' \
                                   % [self.name, __method__.to_s]
+=begin
           warn('%s called for %s' \
                % [whoami, klass.name])
+=end
           super
           return nil
         end                       # def included(klass)
 
         nil
-      end                         # module TAF::Mixins::Actor eigenclass
+      end                         # module TAF::Mixin::Actors eigenclass
 
       #
+      # @!macro doc.TAF.classmethod.int_accessor.use
       int_accessor(:maxhp)
 
       #
+      # @!macro doc.TAF.classmethod.float_accessor.use
       float_accessor(:hp)
 
+      #
+      # @return [Faction]
+      # @todo
+      #   Need to define the faction stuff.
+      #
+      attr_accessor(:faction)
+
+      #
+      # @return [Attitude]
+      # @todo
+      #   Need to define the attitude stuff.
       #
       attr_accessor(:attitude)
 
       #
+      # @return [Array<Location>]
+      #
       attr_reader(:breadcrumbs)
 
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [???] self
       #
       def initialize_actor(*args, **kwargs)
         warn('[%s]->%s running' % [self.class.name, __method__.to_s])
         @breadcrumbs	= []
         kwargs_defaults	= {
           maxhp:	0,
-          hp:		0,
+          hp:		0.0,
           attitude:	:neutral
         }
         self.initialize_thing(*args, kwargs_defaults.merge(kwargs))
+        return self
       end                         # def initialize_actor
 
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [???] self
       #
       def add(*args, **kwargs)
         begin
@@ -89,10 +115,10 @@ module TAF
       end                       # def add(*args, **kwargs)
 
       nil
-    end                         # module TAF::Mixins::Actor
+    end                         # module TAF::Mixin::Actor
 
     nil
-  end                           # module TAF::Mixins
+  end                           # module TAF::Mixin
 
   nil
 end                             # module TAF

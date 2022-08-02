@@ -15,65 +15,45 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
 
-
-  # @!macro doc.TAF.Mixins.module
-  module Mixins
+  #
+  class Location
 
     #
-    # Mixin module defining methods specific to objects that are
-    # locations in a game (rooms, <em>etc.</em>.
+    TAF.mixin(Mixin::Location)
+
     #
-    module Location
-
-      # @!macro doc.TAF.Mixins.module.eigenclass Location
-      class << self
-
-        include(ClassMethods)
-
-        # @!macro doc.TAF.module.classmethod.included
-        def included(klass)
-          whoami		= '%s eigenclass.%s' \
-                                  % [self.name, __method__.to_s]
-          warn('%s called for %s' \
-               % [whoami, klass.name])
-          super
-          return nil
-        end                       # def included(klass)
-
-      end                       # module Location eigenclass
-
-      include(Mixins::Container)
-
-      #
-      attr_accessor(:paths)
-
-      #
-      def initialize_location(*args, **kwargs)
-        warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-        self.paths	= {}
-        #      self.initialize_container(*args, **kwargs)
-        #      self.inventory	= ::TAF::Inventory.new(game:	self,
-        #                                              owned_by: self)
-      end                       # def initialize_location
-
-      nil
-    end                         # module Location
+    # @!macro doc.TAF.formal.kwargs
+    # @return [Location] self
+    #
+    def initialize(*args, **kwargs)
+      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      debugger
+      self.paths	||= {}
+      self.initialize_thing(*args, **kwargs)
+      self.initialize_container(*args, **kwargs)
+      self.initialize_location(*args, **kwargs)
+      self.game.add(self)
+    end                         # def initialize
 
     nil
-  end                           # module Mixins
+  end                           # class Location
 
   #
   class Connexion
 
-    include(Mixins::Thing)
+    #
+    TAF.mixin(Mixin::Thing)
 
     #
+    # @!macro doc.TAF.classmethod.flag.use
     flag(:reversible)
 
     #
@@ -90,37 +70,6 @@ module TAF
 
     nil
   end                           # class Connexion
-
-  #
-  class Location
-
-    include(Mixins::Location)
-
-    #
-    def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      debugger
-      self.paths	||= {}
-      self.initialize_thing(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
-      self.initialize_location(*args, **kwargs)
-      self.game.add(self)
-    end                         # def initialize
-
-    nil
-  end                           # class Location
-
-  #
-  class Feature
-
-    include(Mixins::Container)
-
-    def initialize(*args, **kwargs)
-      self.initialize_thing(*args, **kwargs)
-      self.static!
-    end                         # def initialize(*args, **kwargs)
-
-  end                           # class Feature
 
   nil
 end                             # module TAF

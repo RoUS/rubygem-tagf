@@ -15,14 +15,16 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
 
-  # @!macro doc.TAF.Mixins.module
-  module Mixins
+  # @!macro doc.TAF.Mixin.module
+  module Mixin
 
     #
     # Define class methods and constants that will be added to all
@@ -40,13 +42,22 @@ module TAF
         # @todo
         #   This needs thinking out; it may be too much work.
         #
+        # @return [String]
+        #
         def wordwrap(right_margin: 72, indent: 0, bullets: %q[o * •])
           return self
         end                     # def wordwrap
 
       end                       # class Description
 
-      include(::TAF)
+      #
+      TAF.mixin(::TAF)
+
+      #
+      if (TAF.debugging?(:extend))
+        warn('%s extending itself with %s' \
+             % [ self.name, ClassMethods.name ])
+      end
       extend(ClassMethods)
 
       #
@@ -81,18 +92,27 @@ module TAF
       attr_accessor(:game)
 
       #
+      # @return [nil,Container]
+      #
       attr_accessor(:owned_by)
 
+      #
+      # @return [String]
       #
       attr_accessor(:name)
 
       #
+      # @return [String]
+      #
       attr_accessor(:desc)
 
+      #
+      # @return [String]
       #
       attr_accessor(:shortdesc)
 
       #
+      # @!macro doc.TAF.classmethod.float_accessor.use
       float_accessor(:mass)
 
       #
@@ -100,8 +120,9 @@ module TAF
       # (whatever-units-are-in-use).  This is only meaningful when an
       # attempt might be made to place the object into a container with
       # a volume limitation.  (See #mass,
-      # {Mixins::Container#capacity_items}.)
+      # {Mixin::Container#capacity_items}.)
       #
+      # @!macro doc.TAF.classmethod.float_accessor.use
       float_accessor(:volume)
 
       #
@@ -111,10 +132,11 @@ module TAF
       # move; things like the player (Player) or any NPCs (NPC) are
       # moved using specific semantics.
       #
-      # @!macro doc.TAF.classmethods.attribute.flag.use
+      # @!macro doc.TAF.classmethod.flag.use
       flag(:static)
 
       #
+      # @!macro doc.TAF.classmethod.flag.use
       flag(:visible)
 
       #
@@ -122,30 +144,32 @@ module TAF
       # once set, by automatic attribute hash value processing
       # (typically by iterating over `kwargs`).
       #
-      # These typically do <strong>not</strong> has setter
+      # These typically do <strong>not</strong> have setter
       # (<em>`sym`</em>`=`) methods, and so if a value MUST be changed,
       # there are special semantics for making it happen.
       #
       ONCE_AND_DONE	= %i[ game slug owned_by ]
 
       #
-      # Checks to see if the object is a container according to the game
-      # mechanics (basically, its class has included the
-      # {Mixins::Container} module).
+      # Checks to see if the object is a container according to the
+      # game mechanics (basically, its class has included the
+      # {Mixin::Container} module).
       #
       # @return [Boolean] `true`
       #   if the current object (`self`) has included the
-      #   `Mixins::Container` module and has all the related methods
+      #   `Mixin::Container` module and has all the related methods
       #   and attributes.
       # @return [Boolean] `false`
       #   if the object is not a container.
       #
       def is_container?
-        return self.class.ancestors.include?(Mixins::Container) \
+        return self.class.ancestors.include?(Mixin::Container) \
                ? true \
                : false
       end                       # def is_container?
 
+      #
+      # @return [Boolean]
       #
       def has_inventory?
         cond		= (self.is_container? \
@@ -154,6 +178,8 @@ module TAF
       end                       # def has_inventory?
 
       #
+      # @return [Boolean]
+      #
       def has_items?
         cond		= (self.has_inventory? \
                            && (! self.inventory.empty?))
@@ -161,8 +187,10 @@ module TAF
       end                       # def has_items?
 
       #
+      # @return [Inventory]
+      #
       def add_inventory(**kwargs)
-        return nil if (self.has_inventory?)
+        return self.inventory if (self.has_inventory?)
         kwargs_new	= kwargs.merge({ game: self.game, owned_by: self })
         self.inventory	= Inventory.new(**kwargs)
         return self.inventory
@@ -171,6 +199,8 @@ module TAF
       #
       # Move the associated object from one object's inventory to
       # another's.
+      #
+      # @return [Container] self
       #
       def move_to(*args, **kwargs)
         if (self.owned_by.inventory.master?)
@@ -193,6 +223,8 @@ module TAF
       end                       # def move_to
 
       #
+      # @return [Array<Container>]
+      #
       def contained_in
         inventories	= self.game.inventory.select { |o|
           o.kind_of?(Inventory) && (! o.master?)
@@ -201,6 +233,17 @@ module TAF
         return inlist
       end                       # def contained_in
 
+      #
+      # @param [Array] args
+      # @!macro doc.TAF.formal.kwargs
+      # @option kwargs [Symbol] :slug (nil)
+      # @option kwargs [Symbol] :owned_by (nil)
+      # @option kwargs [Symbol] :game (nil)
+      # @raise [NoObjectOwner]
+      # @raise [SettingLocked]
+      # @raise [RuntimeError]
+      # @raise [NoGameContext]
+      # @return [Thing] self
       #
       def initialize_thing(*args, **kwargs)
         warn('[%s]->%s running' % [self.class.name, __method__.to_s])
@@ -220,27 +263,32 @@ module TAF
         # Now set attributes according to the keyword arguments hash.
         #
         kwargs.each do |attrib,newval|
-          attrib		= attrib.to_sym
+          attr_f	= decompose_attrib(attrib, newval)
+          next unless (self.respond_to?(attr_f.getter))
+=begin
+          attrib	= attrib.to_sym
           attrib_s	= attrib.to_s
           attrib_setter	= "#{attrib_s}=".to_sym
           attrib_ivar	= "@#{attrib_s}".to_sym
-          curval		= nil
-          if (self.respond_to?(attrib))
-            curval	= self.instance_variable_get(attrib_ivar)
+=end
+          curval	= nil
+          if (self.respond_to?(attr_f.getter))
+            curval	= self.instance_variable_get(attr_f.ivar)
           end
-          if (ONCE_AND_DONE.include?(attrib) \
+          if (ONCE_AND_DONE.include?(attr_f.attrib) \
               && (! curval.nil?) \
               && (newval != curval))
-            raise_exception(SettingLocked, attrib)
+            raise_exception(SettingLocked, attr_f.attrib)
           end
-          if (self.respond_to?(attrib_setter))
-            self.send(attrib_setter, newval)
-          elsif (self.respond_to?(attrib_getter))
-            self.instance_variable_set(attrib_ivar, newval)
+          if (self.respond_to?(attr_f.setter))
+            self.send(attr_f.setter, newval)
+          elsif (self.respond_to?(attr_f.getter))
+            self.instance_variable_set(attr_f.ivar, newval)
           else
             raise_exception(RuntimeError,
-                            ('attempt to set non-attribute %s' \
-                             % attrib))
+                            (('(kwargs) attempt to set ' \
+                              + 'non-attribute "%s"') \
+                             % attr_f.str))
           end
         end                     # kwargs.each
 
@@ -253,10 +301,10 @@ module TAF
       end                       # def initialize_thing
 
       nil
-    end                         # module TAF::Mixins::Thing
+    end                         # module TAF::Mixin::Thing
 
     nil
-  end                           # module TAF::Mixins
+  end                           # module TAF::Mixin
   nil
 end                             # module TAF
 
