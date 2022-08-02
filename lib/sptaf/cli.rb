@@ -15,10 +15,11 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require_relative('classmethods')
-require('ostruct')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('ostruct')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -30,28 +31,43 @@ module TAF
   #
   class Verb
 
-    include(Mixins::Thing)
+    #
+    TAF.mixin(Mixin::Thing)
 
+    #
+    # @return [String]
     #
     attr_accessor(:name)
 
     #
+    # @return [???]
+    #
     attr_accessor(:type)
 
+    #
+    # @return [???]
     #
     attr_accessor(:objects)
 
     #
+    # @return [???]
+    #
     attr_accessor(:prepositions)
 
     #
+    # @return [???]
+    #
     attr_accessor(:target)
 
+    #
+    # @!macro doc.TAF.formal.kwargs
+    # @return [Verb] self
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
       kwargs[:type] = :intransitive unless (kwargs[:type])
       self.initialize_thing(*args, **kwargs)
+      return self
     end                         # def initialize(*args, **kwargs)
 
     nil
@@ -62,12 +78,16 @@ module TAF
   #
   class Imperative
 
-    include(Mixins::Thing)
+    #
+    TAF.mixin(Mixin::Thing)
 
     #
+    # @!macro doc.TAF.formal.kwargs
+    # @return [Imperative] self
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
       self.initialize_thing(*args, **kwargs)
+      return self
     end                         # def initialize(*args, **kwargs)
 
     nil
@@ -76,8 +96,12 @@ module TAF
   #
   class Noun
 
-    include(Mixins::Thing)
+    #
+    TAF.mixin(Mixin::Thing)
 
+    #
+    # @!macro doc.TAF.formal.kwargs
+    # @return [Noun] self
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
@@ -88,6 +112,7 @@ module TAF
   end                           # class Noun
 
   #
+  # :l
   # :look
   # :inventory
   # :direction
@@ -99,74 +124,76 @@ module TAF
   # :drop {Item}
   # :drop all
   # :throw {Item}
-  # :throw {Item} at {Actor}
+  # :throw {Item} at {Mixin::Actor}
   # :give {Item}
-  # :give {Item} to {Actor}
+  # :give {Item} to {Mixin::Actor}
   # :attack
   # :attack with {Item}
-  # :attack {Actor}
-  # :attack {Actor} with {Item}
+  # :attack {Mixin::Actor}
+  # :attack {Mixin::Actor} with {Item}
   # :kill {Item}
   # :kill {Item} with {Item}
-  DEFAULTS		= {
-    noun:		{
+=begin
+  DEFAULTS              = {
+    noun:               {
     },
-    verb:		{
-      look:		Verb.new(alii:		%i[ l ],
-                                 type:		:intransitive),
-      inventory:	Verb.new(alii:		%i[ i invent ],
-                                 type:		:intransitive),
-      go:		Verb.new(objects:	:direction,
-                                 type:		:transitive),
-      get:		Verb.new(alii:		%i[ g take ],
-                                 type:		:transitive,
-                                 object:	[ :all, Item ],
-                                 :clause =>	{
-                                   :optional =>	{ :from => [ Actor,
+    verb:               {
+      l:                Verb.new(type:          :intransitive),
+      look:             Verb.new(type:          :intransitive),
+      inventory:        Verb.new(alii:          %i[ i invent ],
+                                 type:          :intransitive),
+      go:               Verb.new(objects:       :direction,
+                                 type:          :transitive),
+      get:              Verb.new(alii:          %i[ g take ],
+                                 type:          :transitive,
+                                 object:        [ :all, Item ],
+                                 :clause =>     {
+                                   :optional => { :from => [ Mixin::Actor,
                                                              Item,
                                                              Feature
                                                            ]
                                                 }
                                  }),
-      drop:		Verb.new(type:		:transitive,
-                                 object:	[ :all, Item ]),
-      place:		Verb.new(alii:		%i[ put ],
-                                 type:		:transitive,
-                                 object:	[ :all, Item ],
-                                 :clause =>	{
-                                   :required =>	{ in: [ Item ],
+      drop:             Verb.new(type:          :transitive,
+                                 object:        [ :all, Item ]),
+      place:            Verb.new(alii:          %i[ put ],
+                                 type:          :transitive,
+                                 object:        [ :all, Item ],
+                                 :clause =>     {
+                                   :required => { in: [ Item ],
                                                   on: [ Feature ]
                                                 }
                                  }),
       #
       # `throw` is a Ruby keyword, so beware..
       #
-      throw:		nil,
+      throw:            nil,
     },
-    direction:		{
+    direction:          {
       #
       # Special direction: return to previous location if possible.
       #
-      back:		nil,
-      north:		%i! n    !,
-      northeast:	%i! ne   !,
-      east:		%i! e    !,
-      southeast:	%i! se   !,
-      south:		%i! s    !,
-      west:		%i! w    !,
-      up:		%i! u    !,
-      down:		%i! d    !,
+      back:             nil,
+      north:            %i! n    !,
+      northeast:        %i! ne   !,
+      east:             %i! e    !,
+      southeast:        %i! se   !,
+      south:            %i! s    !,
+      west:             %i! w    !,
+      up:               %i! u    !,
+      down:             %i! d    !,
     },
     #
     # These assume the player is facing a particular direction, and we
     # can figure out to which compass direction they refer.
     #
-    handed:		{
-      left:		nil,
-      right:		nil,
-      forward:		%i! straight !,
+    handed:             {
+      left:             nil,
+      right:            nil,
+      forward:          %i! straight !,
     },
-  }    
+  }
+=end
 
   nil
 end                             # module TAF

@@ -15,8 +15,10 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -24,9 +26,11 @@ module TAF
   #
   class Item
     
-    include(Mixins::Thing)
+    #
+    TAF.mixin(Mixin::Thing)
 
     #
+    # @!macro doc.TAF.classmethod.flag.use
     flag(:living)
 
     #
@@ -35,7 +39,16 @@ module TAF
       self.static	= false
       self.initialize_thing(*args, **kwargs)
       if (kwargs[:is_container])
-        self.include(Mixins::Container)
+        #
+        # @todo
+        #   Reconcile this with TAF.mixin, its super, and
+        #   self.include.
+        #
+        if (TAF.debugging?(:include))
+          warn('%s.%s including %s' \
+               % [ self.name, __method__.to_s, Mixin::Container.name ])
+        end
+        self.include(Mixin::Container)
         self.initialize_container(*args, **kwargs)
       end
       self.game.add(self)

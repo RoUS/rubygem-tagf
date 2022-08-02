@@ -15,8 +15,10 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -24,8 +26,12 @@ module TAF
   #
   class NPC
 
-    include(Mixins::Actor)
+    #
+    TAF.mixin(Mixin::Actor)
 
+    #
+    # @!macro doc.TAF.formal.kwargs
+    # @return [NPC] self
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])

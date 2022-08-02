@@ -15,8 +15,10 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -24,7 +26,8 @@ module TAF
   #
   class Faction
 
-    include(Thing)
+    #
+    TAF.mixin(Mixin::Thing)
 
     # @!attribute [rw] attitude
     # Provides a default attitude for all members of a faction.

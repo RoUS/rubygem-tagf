@@ -39,13 +39,14 @@
 #
 --charset=utf-8
 --verbose
-#--debug
+--debug
+--backtrace
 #--list
 --no-cache
 --title='Text Adventure Framework (TAF) Gem'
 --private		# Uncomment to expose private elements
 --embed-mixins          # New in Yard 0.8.*
-#--markup-provider=commonmarker
+--markup-provider=rdiscount
 --markup=markdown	# Remove this line if you want to use pandoc
 #
 # List this file FIRST as it defines macros used by multiple source
@@ -55,7 +56,6 @@ config/macros.yard
 #
 # Other source files.
 #
-lib/sptaf.rb
 lib/**/*.rb
 #features/**/*.rb
 #

@@ -15,7 +15,9 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
 
 # @!macro doc.TAF.module
 module TAF
@@ -32,7 +34,8 @@ module TAF
     #
     class ErrorBase < StandardError
 
-      include(::TAF)
+      #
+      TAF.mixin(::TAF)
 
       #
       def _set_message(text)
@@ -59,6 +62,7 @@ module TAF
       class LimitItems < ::TAF::Exceptions::ErrorBase
 
         #
+        # @!macro doc.TAF.formal.kwargs
         def initialize(*args, **kwargs)
           inv		= args[0]
           newitem	= args[1]
@@ -92,6 +96,7 @@ module TAF
     class NoLoadFile < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
         arg		= args[0]
         if (arg.kind_of?(String))
@@ -110,6 +115,7 @@ module TAF
     class BadLoadFile < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
         arg		= args[0]
         if (arg.kind_of?(String))
@@ -137,6 +143,7 @@ module TAF
     class NotExceptionClass < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
         arg		= args[0]
         if (arg.kind_of?(String))
@@ -156,6 +163,7 @@ module TAF
     class NotGameElement < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
         arg		= args[0]
         if (arg.kind_of?(String))
@@ -175,6 +183,9 @@ module TAF
     class NoObjectOwner < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [NoObjectOwner] self
+      #
       def initialize(*args, **kwargs)
         arg		= args[0]
         if (arg.kind_of?(String))
@@ -193,6 +204,9 @@ module TAF
     #
     class KeyObjectMismatch < ErrorBase
 
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [KeyObjectMismatch] self
       #
       def initialize(oslug=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
         oslug		= args[0] || kwargs[:slug]
@@ -216,6 +230,9 @@ module TAF
     class NoGameContext < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [NoGameContext] self
+      #
       def initialize(*args, **kwargs)
         if (args[0].kind_of?(String))
           msg	= args[0]
@@ -231,6 +248,9 @@ module TAF
     #
     class SettingLocked < ErrorBase
 
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [SettingLocked] self
       #
       def initialize(*args, **kwargs)
         arg	= args[0]
@@ -251,6 +271,9 @@ module TAF
     #
     class ImmovableObject < ErrorBase
 
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [ImmovableObject] self
       #
       def initialize(*args, **kwargs)
         arg	= args[0]
@@ -277,6 +300,9 @@ module TAF
     #
     class MasterInventory < ErrorBase
 
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [MasterInventory] self
       #
       def initialize(*args, **kwargs)
         arg	= args[0]
@@ -305,10 +331,13 @@ module TAF
     class HasNoInventory < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [HasNoInventory] self
+      #
       def initialize(*args, **kwargs)
         if ((args.count == 1) && args[0].kind_of?(String))
           msg		= args[0]
-        elsif (args[0].kind_of?(Mixins::Thing))
+        elsif (args[0].kind_of?(Mixin::Thing))
           name		= args[0].name || args[0].slug.to_s
           case(args.count)
           when 0
@@ -331,11 +360,14 @@ module TAF
     class AlreadyInInventory < ErrorBase
 
       #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [AlreadyInInventory] self
+      #
       def initialize(*args, **kwargs)
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
-        elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(Mixins::Thing) })
+        elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(Mixin::Thing) })
           case(args.count)
           when 0
             msg		= 'object already in inventory'
@@ -363,6 +395,9 @@ module TAF
     #
     class DuplicateObject < ErrorBase
 
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [DuplicateObject] self
       #
       def initialize(*args, **kwargs)
         type	= self.class.name.sub(%r!^.*Duplicate!, '')

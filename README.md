@@ -1,45 +1,86 @@
-#  Exceptable - Framework for Application Exceptions
+#  SPTAF - Single-Player Text Adventure Framework
 
 ## Usage
 
 ```ruby
 
-require('exceptable')
-module Foo
-  include Exceptable
-  class MyError < ExceptionBase
-    MessageFormat = [
-                     'message when invoked with no arguments',
-                     'message when 1 argument: %s',
-                     'message when 2 or more arguments: %s/%s',
-                    ]
-  end
-end
-
-raise Foo::MyError
-=> Foo::MyError: message when invoked with no arguments
-
-raise Foo::MyError.new
-=> Foo::MyError: message when invoked with no arguments
-
-raise Foo::MyError.new('[this here is an argument]')
-=> Foo::MyError: message when arguments: [this here is an argument]
-
-raise Foo::MyError.new('[this here is an argument]')
-=> Foo::MyError: message when arguments: [this here is an argument]
-
-raise Foo::MyError.new('arg1', 'arg2')
-=> Foo::MyError: message when arguments: arg1/arg2
-
-raise Foo::MyError.new('arg1', 'arg2', 'arg3', 'arg4')
-=> Foo::MyError: message when arguments: arg1/arg2
+require('sptaf')
+include SPTAF
+game = Game.new(slug: 'mytextgame',
+                name: 'The Secrect Caverns of the Shoggoths',
+                shortdesc: 'My first game',
+                author: 'John Q Doe <johnqdoe@example.com>')
+game.load(file: 'mytextgame.yaml')
+game.start
 ```
 
-## Adding Your Own Exceptions
+## The Game Object
+
+**`slug`**
+
+: The game-wide unique identifier for the object.
+
+**`game`**
+
+: The game object that ultimately owns all the other objects. Each
+  object has this attribute, which is how they can find each other.
+
+[**`is_container?`**](id:attribute-is_container)
+
+: Returns `true` if the object has mixed in the `Mixin::Container`
+  module, and can therefore have an [inventory](#class-inventory) and
+  'own' other objects.
+
+## [Game Elements](id:game-elements)
 
 Description goes here.
 
-## Contributing to exceptable
+### [Class: Thing](id:class-thing)
+
+Description goes here.
+
+### [Class: Container](id:class-container)
+
+Description goes here.
+
+### [Class: Inventory](id:class-inventory)
+
+Description goes here.  See the [Inventories](#inventories) section
+for details.
+
+### [Class: Location](id:class-location)
+
+Description goes here.
+
+### [Class: Feature](id:class-feature)
+
+Description goes here.
+
+### [Class: Item](id:class-item)
+
+Description goes here.
+
+### [Class: NPC](id:class-npc)
+
+Description goes here.
+
+### [Class: Player](id:class-player)
+
+Description goes here.
+
+### [Class: Faction](id:class-faction)
+
+Description goes here.
+
+## [Inventories](id:inventories)
+
+Description goes here.
+
+## Relationships Between Objects
+
+Description goes here.
+
+## Contributing to sptaf
 
 * Check out the latest master to make sure the feature hasn't been
   implemented or the bug hasn't been fixed yet
@@ -57,10 +98,9 @@ Description goes here.
 
 ## Copyright
 
-`Exceptable` is copyright (c) 2022 by Ken Coar, and is made available
+`SPTAF` is copyright (c) 2022 by Ken Coar, and is made available
 under the terms of the Apache Licence 2.0. See the
-{file.LICENCE.html LICENCE file} for further details.
-
+[LICENCE file](./file.LICENCE.html) for further details.
 
 <!-- Local Variables: -->
 <!-- mode: markdown -->

@@ -15,8 +15,10 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -24,8 +26,13 @@ module TAF
   #
   class Feature
 
-    include(Mixins::Container)
+    #
+    TAF.mixin(Mixin::Container)
 
+    #
+    # @!macro doc.TAF.formal.kwargs
+    # @return [Feature] self
+    #
     def initialize(*args, **kwargs)
       self.initialize_thing(*args, **kwargs)
       self.static!

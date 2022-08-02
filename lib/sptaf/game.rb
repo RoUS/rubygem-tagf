@@ -15,10 +15,12 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('psych')
-require('yaml')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('psych')
+TAF.require_file('yaml')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -26,18 +28,32 @@ module TAF
   #
   class Game
 
-    include(Mixins::Container)
+    #
+    TAF.mixin(Mixin::Container)
 
+    #
+    # This is the game's master inventory.  All objects (including
+    # inventories) created for this game are registered in this
+    # inventory.  While things can be deleted from it, they cannot be
+    # moved from it to another inventory.  Game elements can be in one
+    # inventory or two -- the master and possibly some container.
+    #
+    # @see Inventory
+    #
+    # @return [Inventory]
+    #   the master inventory of the current game.
     #
     attr_reader(:inventory)
 
     #
+    # @!macro doc.TAF.classmethod.flag.use
     flag(:loaded)
 
     #
     attr_reader(:threadgroup)
 
     #
+    # @return [Game] self
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
       @threadgroup	= ThreadGroup.new
@@ -53,8 +69,7 @@ module TAF
       self.initialize_container(*args, **kwargs)
       self.create_inventory_on(self,
                                game:		self,
-                               owned_by:	self,
-                               master:		true)
+                               owned_by:	self)
       self.add(self)
       self.allow_containers!
     end                         # def initialize

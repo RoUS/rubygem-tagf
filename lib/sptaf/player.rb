@@ -15,9 +15,11 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('set')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('set')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -25,14 +27,15 @@ module TAF
   #
   class Player
 
-    include(Mixins::Actor)
+    #
+    TAF.mixin(Mixin::Actor)
 
     #
     # Hash of locations to which the player has been.  The key for
     # each tuple is the location object, and the value is the integer
     # number of times shi's been there.
     #
-    # @return [Hash<Location=>Integer>]
+    # @return [Hash{Location=>Integer}]
     attr_reader(:locations)
 
     #

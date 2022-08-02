@@ -15,6 +15,8 @@
 #++
 # frozen_string_literal: true
 
+require_relative('debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
 require('versionomy')
 
 # @!macro doc.TAF.module

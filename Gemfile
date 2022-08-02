@@ -42,12 +42,12 @@ ruby('>= 2.7')
 
 group(:default, :development, :test) do
   gem('bundler',	'>= 1.0.7')
-  gem('sptaf',
-      path:		'.')
   gem('binding_of_caller')
   gem('linguistics')
   gem('ostruct',	'>= 0.5.5')
   gem('psych')
+  gem('sptaf',
+      path:		'.')
   gem('yaml',		'>= 0.2.0')
   gem('versionomy')
 end
@@ -69,6 +69,9 @@ group(:development, :test) do
   end
 
   gem('commonmarker')
+  gem('kramdown')
+  gem('kramdown-syntax-coderay')
+  gem('rdiscount')
   gem('coveralls')
   gem('cucumber')
   gem('github-markup')

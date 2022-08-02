@@ -14,7 +14,6 @@
 # permissions and limitations under the License.
 #++
 # frozen_string_literal: true
-#
 
 require_relative('lib/sptaf/version')
 

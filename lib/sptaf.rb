@@ -18,9 +18,12 @@
 require('rubygems')
 require('bundler')
 Bundler.setup
-require('byebug')
-require_relative('sptaf/version')
-require_relative('sptaf/classmethods')
+require('sptaf/debugging')
+
+warn(__FILE__) if (TAF.debugging?(:file))
+
+TAF.require_file('sptaf/version')
+TAF.require_file('sptaf/classmethods')
 
 unless ((RUBY_ENGINE == 'ruby') \
         && (RUBY_VERSION >= ::TAF::RUBY_VERSION_MIN))
@@ -35,9 +38,9 @@ module TAF
 
   #
   # Include the project exceptions so that anything that mixes in this
-  # module will get those, as well.
+  # module will get those as well.
   #
-  include(Exceptions)
+  TAF.mixin(Exceptions)
 
   # @!macro [new] doc.TAF.module.eigenclass
   #   Eigenclass for a TAF module.  It provides class methods (like
@@ -51,14 +54,19 @@ module TAF
     # one..  Do the `include` because that makes Yard understand a
     # little better what's going on.
     #
+    if (TAF.debugging?(:include))
+      warn('%s including %s' % [ self.name, Exceptions.name ])
+    end
     include(ClassMethods)
 
     # @!macro doc.TAF.module.classmethod.included
     def included(klass)
-      whoami		= '%s eigenclass.%s' \
+      whoami            = '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
+=begin
       warn('%s called for %s' \
            % [whoami, klass.name])
+=end
       super
       return nil
     end                         # def included(klass)
@@ -66,17 +74,23 @@ module TAF
     nil
   end                           # module TAF eigenclass
 
+  C_Attitudes           = %i[
+                             friendly
+                             neutral
+                             hostile
+                            ]
+
   #
   def mixin_supers(msym=:initialize)
-    msym		= msym.to_sym
+    msym                = msym.to_sym
     debugger
-    result		= []
-    next_method		= method(msym)
+    result              = []
+    next_method         = method(msym)
     while (next_method)
-      owner		= next_method.owner
+      owner             = next_method.owner
       warn('Owner %s is a %s' % [owner.name, owner.class.name])
       result.push(owner)
-      next_method	= next_method.super_method
+      next_method       = next_method.super_method
     end                         # while (next_method)
     return result
   end                           # def mixin_supers(msym=:initialize)
@@ -106,14 +120,14 @@ module TAF
   # @return [void]
   #
   def raise_exception(exc_class, *args, **kwargs)
-    kwargs[:levels]	||= 1
-    bt			= caller
+    kwargs[:levels]     ||= 1
+    bt                  = caller
     #
     # Verify that we were given an actual exception class.
     #
     unless (exc_class.ancestors.include?(Exception))
       bt.pop
-      exc		= NotExceptionClass.new(exc_class)
+      exc               = NotExceptionClass.new(exc_class)
       exc.set_backtrace(bt)
       raise(exc)
     end
@@ -127,7 +141,7 @@ module TAF
     # exception object's backtrace to our caller (or whatever stack
     # frame was made current), and raise it.
     #
-    exc			= exc_class.new(*args, **kwargs)
+    exc                 = exc_class.new(*args, **kwargs)
     exc.set_backtrace(bt)
     raise(exc)
   end                           # def raise_exception
@@ -148,31 +162,75 @@ module TAF
   #   even if they're `1.000`.)
   #
   def pluralise(word, number=1)
-    result		= word
+    result              = word
     unless (number.kind_of?(Integer) && (number == 1))
-      result		= word.en.plural
+      result            = word.en.plural
     end
     return result
   end                           # def pluralise
 
+  #
+  # Convert a value into a Boolean.  This varies slightly from normal
+  # Ruby semantics in that an integer 0 is considered `false` whereas
+  # normal Ruby interpretation would consider it `true`.
+  #
+  # @param [Object] testvalue
+  #   value to evaluate for truthiness.
+  # @return [Boolean]
+  #   the result of the evaluation.
+  #
+  def truthify(testvalue)
+    if (testvalue.kind_of?(Integer) && testvalue.zero?)
+      result            = false
+    else
+      result            = testvalue ? true : false
+    end
+    return result
+  end                           # def truthify(testvalue)
+
+    # @private
+    #
+    # @param [String,Symbol] attrib_p
+    # @param [Any] default
+    # @return [OpenStruct]
+    def decompose_attrib(attrib_p, default=nil)
+      strval		= attrib_p.to_s.sub(%r![^_[:alnum:]]*$!, '')
+      pieces		= OpenStruct.new(
+        default: 	default,
+        str:		strval,
+        attrib:		strval.to_sym,
+        getter:		strval.to_sym,
+        setter:		"#{strval}=".to_sym,
+        query:		"#{strval}?".to_sym,
+        bang:		"#{strval}!".to_sym,
+        ivar:		"@#{strval}".to_sym
+      )
+      return pieces
+    end                         # def decompose_attrib(attrib_p, default=nil)
+    protected(:decompose_attrib)
+    module_function(:decompose_attrib)
+
   nil
 end                             # module TAF
 
-require('binding_of_caller')
-require('linguistics')
-require('ostruct')
-require_relative('sptaf/exceptions')
-require_relative('sptaf/thing')
-require_relative('sptaf/inventory')
-require_relative('sptaf/container')
-require_relative('sptaf/item')
-require_relative('sptaf/cli')
-require_relative('sptaf/location')
-require_relative('sptaf/feature')
-require_relative('sptaf/game')
-require_relative('sptaf/actor')
-require_relative('sptaf/player')
-require_relative('sptaf/npc')
+TAF.require_file('binding_of_caller')
+TAF.require_file('linguistics')
+TAF.require_file('ostruct')
+TAF.require_file('sptaf/exceptions')
+TAF.require_file('sptaf/mixin/thing')
+TAF.require_file('sptaf/inventory')
+TAF.require_file('sptaf/mixin/container')
+TAF.require_file('sptaf/container')
+TAF.require_file('sptaf/item')
+TAF.require_file('sptaf/cli')
+TAF.require_file('sptaf/mixin/location')
+TAF.require_file('sptaf/location')
+TAF.require_file('sptaf/feature')
+TAF.require_file('sptaf/game')
+TAF.require_file('sptaf/mixin/actor')
+TAF.require_file('sptaf/faction')
+TAF.require_file('sptaf/player')
+TAF.require_file('sptaf/npc')
 
 Linguistics.use(:en)
 

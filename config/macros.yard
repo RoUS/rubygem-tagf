@@ -22,28 +22,139 @@
 # @!macro [new] doc.TAF.module
 #   Top-level module namespacing all of the pieces of the `sptaf` gem.
 
+# @!macro [new] doc.TAF.Mixin.module
+#   Module namespacing all the modules specifically designed to be
+#   mixed into classes and other modules.
+
+# @!macro [new] doc.TAF.formal.kwargs
+#   @param [Hash] kwargs
+#     hash with symbolic keys providing additional information to
+#     the method.
+
 # @!macro [new] doc.TAF.module.classmethod.included
 #   Method invoked whenever this module is included as a mixin.  It
 #   is passed the class (or module) object that is including it.  We
 #   extend the caller's eigenclass with the {ClassMethods} module,
 #   which adds various class methods (like {TAF::ClassMethods#flag}).
-#  
+#
 #   @param [Class,Module] klass
 #     Object that is including this module as a mixin.
 #   @return [void]
 
-# @!macro [new] doc.TAF.module.eigenclass
+# @!macro [new] doc.TAF.Mixin.module.eigenclass
 #
 # Eigenclass for the $0 module; essentially just defines
 # the `included` method for the mixin.
 #
 
-# @!macro [new] doc.TAF::Thing.module
-#   Mixin module defining common methods for all objects in a game.
+# @!macro [new] doc.TAF.classmethod.flag.def
+#   @!method [rw] $0(*args, **kwargs)
+#   Declares the specified symbols as accessors for Boolean
+#   values.  For each symbol, four (4) methods are defined:
+#
+#    * <em>`symbol`</em> --
+#      returns the current attribute value.
+#    * <em>`symbol=`(value)</em> --
+#      sets the attribute to the 'truthy' interpretation of the
+#      argument <em>value</em>.
+#    * <em>`symbol?`</em> --
+#      returns `true` or `false` according to the attribute's
+#      current value.  <em>Equivalent to the </em>`symbol`<em>
+#      method above.</em>
+#    * <em>`symbol!`</em> --
+#      unconditionally sets the attribute to `true`.
+#
+#   @param [Array<Symbol>] args
+#     Identifiers for the flag attributes to be declared.
+#   @param [Hash{Symbol=>Object}] kwargs
+#     Hash of keyword arguments; see below.
+#     <strong>This is actually WRONG!</strong>
+#   @todo
+#     Make the use of the kwargs parameter more clear in the code
+#     and fix the docco here.
+#   @option kwargs [Symbol] :default
+#     Meh.
+#   @return [void]
+#
 
-# @!macro [new] doc.TAF::Container.classmethod.inventory_accessor.exception.TypeError
-#   @raise [TypeError]
-#     `attribute '$0' can only have instances of class TAF::Inventory`
+# @!macro [new] doc.TAF.classmethod.flag.use
+#   @!attribute [rw] $1 (false)
+#   @overload $1 (false)
+#     Access the current value of the `$1` attribute, which is
+#     always a Boolean, either `true` or `false`.  It will have no
+#     other types of values.  If it has never been read before,
+#     the first access will pre-set it to the initial value (if
+#     any) specified when the attribute was declared with `$0`.
+#     If the declaration didn't specify an initial value, `false`
+#     is used by default.
+#     Return the current value of the `$1` attribute, which is
+#     always either `true` or `false`.  It will have no other
+#     values.
+#     @return [Boolean]
+#       `true` if the `$1` flag is set, or `false` otherwise.
+#   @overload $1=(value)
+#     Sets the `$1` attribute to the 'truthy' interpretation of
+#     `value`.  <em>I.e.</em>, if Ruby would regard `arg` as
+#     `true`, then that's how `$1` will be set.
+#     <strong>Exception:</strong> Any numeric value that coerces
+#     to `Integer(0)` will be regarded as
+#     <strong>`false`</strong>.
+#     @param [Object] value
+#     @return [Object]
+#       the value of `value` that was passed.
+#   @overload $1?
+#     @return [Boolean]
+#       `true` if the `$1` attribute is set, or `false` otherwise.
+#   @overload $1!
+#     Unconditionally sets `$1` to `true`.
+#     @return [Boolean] `true`.
+
+# @!macro [new] doc.TAF.classmethod.float_accessor.def
+#   TBS
+
+# @!macro [new] doc.TAF.classmethod.float_accessor.use
+#   @!attribute [rw] $1
+#   @overload $1
+#     Access the current value of the `$1` attribute, which is
+#     always a floating-point (`Float`) number.  It will have no
+#     other types of values.  If it has never been read before,
+#     the first access will pre-set it to the initial value (if
+#     any) specified when the attribute was declared with `$0`.
+#     If the declaration didn't specify an initial value, `0.0`
+#     is used by default.
+#
+#     @return [Float]
+#       `true` if the `$1` flag is set, or `false` otherwise.
+#
+#   @overload $1=(value)
+#     Sets the `$1` attribute to the 'truthy' interpretation of
+#     `value`.  <em>I.e.</em>, if Ruby would regard `arg` as
+#     `true`, then that's how `$1` will be set.
+#     <strong>Exception:</strong> Any numeric value that coerces
+#     to `Integer(0)` will be regarded as
+#     <strong>`false`</strong>.
+#     @param [Object] value
+#     @raise [TypeError]
+#       `attribute '$1' can only have float values or something
+#       coercible`
+#     @return [Object]
+#       the value to which the attribute was set.
+
+# @!macro [new] doc.TAF.classmethod.int_accessor.def
+#   TBS
+
+# @!macro [new] doc.TAF.classmethod.int_accessor.use
+#   @!attribute [rw] $1
+#   @overload $1
+#     @return [Integer]
+#       the current value of `$1`.
+#   @overload $1=(value)
+#     @param [Integer] value
+#     @raise [TypeError]
+#       `attribute '$1' can only have integer values or something coercible`
+#     @return [Integer]
+#       the value of `value` that was passed in.
+#
 
 # Local Variables:
 # mode: ruby

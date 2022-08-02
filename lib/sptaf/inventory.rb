@@ -15,8 +15,10 @@
 #++
 # frozen_string_literal: true
 
-require_relative('../sptaf')
-require('byebug')
+require('sptaf/debugging')
+warn(__FILE__) if (TAF.debugging?(:file))
+TAF.require_file('sptaf')
+TAF.require_file('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -24,8 +26,11 @@ module TAF
   #
   class Inventory
 
-    include(Mixins::Thing)
-    include(Enumerable)
+    #
+    TAF.mixin(Mixin::Thing)
+
+    #
+    TAF.mixin(Enumerable)
 
     # @!macro [attach] doc.TAF.classmethod.flag
     #   @overload $1
@@ -139,7 +144,7 @@ module TAF
 
     #
     def []=(*args)
-      gameobjs		= args.select { |o| o.kind_of?(Mixins::Thing) }
+      gameobjs		= args.select { |o| o.kind_of?(Mixin::Thing) }
       unless ((args - gameobjs).empty?)
         raise_exception(NotGameElement,
                         'only game elements ' \
@@ -185,19 +190,19 @@ module TAF
 
     #
     # Adds an object to this object's inventory.  Doesn't change the
-    # object's owner (see {Mixins::Thing#move_to}), and will raise an
+    # object's owner (see {Mixin::Thing#move_to}), and will raise an
     # exception if
     #
     # a. the object is already in the new inventory
     #    <strong>AND</strong> the new inventory isn't the master
     #    inventory for the game.
     #
-    # @param [Mixins::Thing] arg
+    # @param [Mixin::Thing] arg
     # @raise [NotGameElement]
     # @raise [AlreadyInInventory]
     #
     def add(arg, **kwargs)
-      unless (arg.class.ancestors.include?(Mixins::Thing))
+      unless (arg.class.ancestors.include?(Mixin::Thing))
         raise_exception(NotGameElement, arg)
       end
       key		= arg.slug
@@ -219,7 +224,7 @@ module TAF
     # @param [Hash] kwargs
     #   Optional hash of keywords/values, used only by this method and
     #   not passed on to anything invoked by it.
-    # @option kwargs [Symbol] `:only` (nil)
+    # @option kwargs [Symbol] :only (nil)
     #   Allows iterating over either the slugs or the objects in the
     #   inventory.  If `:slugs` or `:keys`, only the slugs will be
     #   passed to the block iterator; if `:objects`, then the actual
@@ -230,7 +235,7 @@ module TAF
     #   when invoked with `only: :keys` or `only: :slugs`.
     # @return [Array<gameobject>]
     #   when invoked with `only: :objects`.
-    # @return [Hash<slug=>gameobject>]
+    # @return [Hash{slug=>gameobject}]
     #   when `:only` is something other than `:keys`, `:slugs`, or
     #   `:objects`, or is omitted entirely.
     def each(*args, **kwargs, &block)
@@ -251,18 +256,19 @@ module TAF
     # @param [Hash] kwargs
     #   Optional hash of keywords/values, used only by this method and
     #   not passed on to anything invoked by it.
-    # @option kwargs [Symbol] `:only` (nil)
+    # @option kwargs [Symbol] :only (nil)
     #   Allows iterating over either the slugs or the objects in the
-    #   inventory.  If `:slugs` or `:keys`, only the slugs will be
-    #   passed to the block iterator; if `:objects`, then the actual
-    #   objects.  If omitted altogether, then the block is passed a
+    #   inventory.  If the value is either `:slugs` or `:keys`, only
+    #   the slugs will be passed to the block iterator; if the value
+    #   is `:objects`, then only the actual objects are passed.  If
+    #   this option is omitted altogether, then the block is passed a
     #   two-element array [<em>slug</em>, <em>object</em>] at each
     #   iteration.
     # @return [Array<slug>]
     #   when invoked with `only: :keys` or `only: :slugs`.
     # @return [Array<gameobject>]
     #   when invoked with `only: :objects`.
-    # @return [Hash<slug=>gameobject>]
+    # @return [Hash{slug=>gameobject}]
     #   when `:only` is something other than `:keys`, `:slugs`, or
     #   `:objects`, or is omitted entirely.
     def select(*args, **kwargs, &block)
