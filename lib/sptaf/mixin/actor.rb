@@ -17,8 +17,8 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('byebug')
+require('sptaf')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -34,7 +34,7 @@ module TAF
     module Actor
 
       #
-      TAF.mixin(Mixin::Container)
+      include(Mixin::Container)
 
       #
       # Eigenclass for the Actor module.  Simply provides an

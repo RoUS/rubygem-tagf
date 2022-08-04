@@ -17,9 +17,9 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('set')
-TAF.require_file('byebug')
+require('sptaf')
+require('set')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -28,7 +28,7 @@ module TAF
   class Player
 
     #
-    TAF.mixin(Mixin::Actor)
+    include(Mixin::Actor)
 
     #
     # Hash of locations to which the player has been.  The key for

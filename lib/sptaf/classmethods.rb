@@ -15,11 +15,10 @@
 #++
 # frozen_string_literal: true
 
-TAF.require_file('sptaf')
+require_relative('debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf/exceptions')
-TAF.require_file('ostruct')
-TAF.require_file('byebug')
+require('ostruct')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -35,7 +34,7 @@ module TAF
   module ClassMethods
 
     #
-    TAF.mixin(::TAF)
+    include(::TAF)
 
     # @!macro doc.TAF.module.classmethod.included
     def included(klass)
@@ -250,8 +249,12 @@ module TAF
     nil
   end                           # module TAF::ClassMethods
 
+  #
+  extend(ClassMethods)
+
   nil
 end                             # module TAF
+require('sptaf/exceptions')
 
 # Local Variables:
 # mode: ruby

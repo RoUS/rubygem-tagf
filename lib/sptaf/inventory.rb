@@ -17,8 +17,8 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('byebug')
+require('sptaf')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -27,10 +27,10 @@ module TAF
   class Inventory
 
     #
-    TAF.mixin(Mixin::Thing)
+    include(Mixin::Thing)
 
     #
-    TAF.mixin(Enumerable)
+    include(Enumerable)
 
     # @!macro [attach] doc.TAF.classmethod.flag
     #   @overload $1

@@ -22,8 +22,9 @@ require('sptaf/debugging')
 
 warn(__FILE__) if (TAF.debugging?(:file))
 
-TAF.require_file('sptaf/version')
-TAF.require_file('sptaf/classmethods')
+require('sptaf/version')
+require('sptaf/classmethods')
+require('sptaf/exceptions')
 
 unless ((RUBY_ENGINE == 'ruby') \
         && (RUBY_VERSION >= ::TAF::RUBY_VERSION_MIN))
@@ -37,10 +38,13 @@ end                             # Ruby version check
 module TAF
 
   #
+  extend(ClassMethods)
+  
+  #
   # Include the project exceptions so that anything that mixes in this
   # module will get those as well.
   #
-  TAF.mixin(Exceptions)
+  include(Exceptions)
 
   # @!macro [new] doc.TAF.module.eigenclass
   #   Eigenclass for a TAF module.  It provides class methods (like
@@ -213,24 +217,24 @@ module TAF
   nil
 end                             # module TAF
 
-TAF.require_file('binding_of_caller')
-TAF.require_file('linguistics')
-TAF.require_file('ostruct')
-TAF.require_file('sptaf/exceptions')
-TAF.require_file('sptaf/mixin/thing')
-TAF.require_file('sptaf/inventory')
-TAF.require_file('sptaf/mixin/container')
-TAF.require_file('sptaf/container')
-TAF.require_file('sptaf/item')
-TAF.require_file('sptaf/cli')
-TAF.require_file('sptaf/mixin/location')
-TAF.require_file('sptaf/location')
-TAF.require_file('sptaf/feature')
-TAF.require_file('sptaf/game')
-TAF.require_file('sptaf/mixin/actor')
-TAF.require_file('sptaf/faction')
-TAF.require_file('sptaf/player')
-TAF.require_file('sptaf/npc')
+require('binding_of_caller')
+require('linguistics')
+require('ostruct')
+require('sptaf/exceptions')
+require('sptaf/mixin/thing')
+require('sptaf/inventory')
+require('sptaf/mixin/container')
+require('sptaf/container')
+require('sptaf/item')
+require('sptaf/cli')
+require('sptaf/mixin/location')
+require('sptaf/location')
+require('sptaf/feature')
+require('sptaf/game')
+require('sptaf/mixin/actor')
+require('sptaf/faction')
+require('sptaf/player')
+require('sptaf/npc')
 
 Linguistics.use(:en)
 

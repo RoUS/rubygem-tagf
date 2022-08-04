@@ -17,7 +17,7 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
+require('sptaf')
 
 # @!macro doc.TAF.module
 module TAF
@@ -35,7 +35,7 @@ module TAF
     class ErrorBase < StandardError
 
       #
-      TAF.mixin(::TAF)
+      include(::TAF)
 
       #
       def _set_message(text)

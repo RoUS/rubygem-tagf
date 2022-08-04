@@ -17,8 +17,8 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('byebug')
+require('sptaf')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -27,7 +27,7 @@ module TAF
   class Faction
 
     #
-    TAF.mixin(Mixin::Thing)
+    include(Mixin::Thing)
 
     # @!attribute [rw] attitude
     # Provides a default attitude for all members of a faction.

@@ -68,9 +68,6 @@ group(:development, :test) do
     gem('debugger')
   end
 
-  gem('commonmarker')
-  gem('kramdown')
-  gem('kramdown-syntax-coderay')
   gem('rdiscount')
   gem('coveralls')
   gem('cucumber')
@@ -79,6 +76,7 @@ group(:development, :test) do
   # Needed for Yard, of all things
   #
   gem('irb')
+  gem('pp')
   gem('rake',		'< 11.0')
   gem('redcarpet')
   gem('rdoc')

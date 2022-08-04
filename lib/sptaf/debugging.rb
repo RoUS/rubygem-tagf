@@ -32,6 +32,10 @@ module TAF
   # * `require`
   #
   DEBUG_ITEMS           = Set.new(%i[
+                                     extend
+                                     file
+                                     include
+                                     require
                                     ])
 
   #
@@ -44,39 +48,41 @@ module TAF
   class << self
     
     #
-    def mixin(mixin_module)
-      kmethname         = 'include'
+    def include(mixin_module)
+      methsym		= __method__
+      methname          = methsym.to_s
+      warn('In %s eigenclass .%s' % [self.name, methname])
+      ppstring		= ''
+      warn('===== %s' % [PP.pp(DEBUG_ITEMS, String.new)])
       if (TAF.debugging?(:include))
         bt              = caller
-        calling_file    = bt.first.sub(%r!:.*!, '')
-        warn("%s %s(%s)" % [calling_file, kmethname, mixin_module.to_s])
+        calling_file    = bt.first
+        warn("%s %s(%s)" % [calling_file, methname, mixin_module.to_s])
       end
       #
-      # @todo
-      #   Okey, this is broken; it just calls us again.  Maybe
-      #   __method__.super_method?
-      #
-      eval_str          = "#{kmethname}(#{mixin_module.to_s})"
+      eval_str          = 'self.method(%s).super_method.call(%s)' \
+                          % [methsym.inspect, mixin_module.to_s]
+      warn('====== %s' % [eval_str])
       binding.of_caller(1).eval(eval_str)
 #     super
-    end                         # def mixin(mixin_module)
+    end                         # def include(mixin_module)
 
     #
-    def require_file(path)
-      kmethname         = __method__.to_s.sub(%r!_file!, '')
+    def require(path)
+      methsym		= __method__
+      methname		= methsym.to_s
       if (TAF.debugging?(:require))
         bt              = caller
-        calling_file    = bt.first.sub(%r!:.*!, '')
-        warn("%s %s('%s')" % [calling_file, kmethname, path.to_s])
+        calling_file    = bt.first
+        warn("%s %s(%s)" % [calling_file, methname, path.inspect])
       end
       #
-      # @todo
-      #   Okey, this is broken; it just calls us again.  Maybe
-      #   __method__.super_method?
-      #
-      binding.of_caller(1).eval("#{kmethname}('#{path}')")
-    end                         # def require_file(filespec)
-    alias_method(:require_file_relative, :require_file)
+      eval_str          = 'self.method(%s).super_method.call(%s)' \
+                          % [methsym.inspect, path.inspect]
+      warn('====== %s' % [eval_str])
+      binding.of_caller(1).eval(eval_str)
+    end                         # def require(filespec)
+    alias_method(:require_relative, :require)
 
     nil
   end                           # module TAF eigenclass

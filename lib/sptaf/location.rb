@@ -17,8 +17,8 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('byebug')
+require('sptaf')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -27,7 +27,7 @@ module TAF
   class Location
 
     #
-    TAF.mixin(Mixin::Location)
+    include(Mixin::Location)
 
     #
     # @!macro doc.TAF.formal.kwargs
@@ -50,7 +50,7 @@ module TAF
   class Connexion
 
     #
-    TAF.mixin(Mixin::Thing)
+    include(Mixin::Thing)
 
     #
     # @!macro doc.TAF.classmethod.flag.use

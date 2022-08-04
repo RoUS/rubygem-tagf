@@ -17,8 +17,8 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('byebug')
+require('sptaf')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -37,10 +37,6 @@ module TAF
       class << self
 
         #
-        if (TAF.debugging?(:include))
-          warn('%s.%s including %s' \
-               % [ self.name, __method__.to_s, ClassMethods.name ])
-        end
         include(ClassMethods)
 
         # @!macro doc.TAF.module.classmethod.included
@@ -61,7 +57,7 @@ module TAF
       #
       # All Containers are Things.
       #
-      TAF.mixin(Mixin::Thing)
+      include(Mixin::Thing)
 
       #
       # Whether or not this container is permitted to have others

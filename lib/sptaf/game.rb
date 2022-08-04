@@ -17,10 +17,10 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('psych')
-TAF.require_file('yaml')
-TAF.require_file('byebug')
+require('sptaf')
+require('psych')
+require('yaml')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -29,7 +29,7 @@ module TAF
   class Game
 
     #
-    TAF.mixin(Mixin::Container)
+    include(Mixin::Container)
 
     #
     # This is the game's master inventory.  All objects (including

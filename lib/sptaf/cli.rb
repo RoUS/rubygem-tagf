@@ -17,9 +17,9 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('ostruct')
-TAF.require_file('byebug')
+require('sptaf')
+require('ostruct')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -32,7 +32,7 @@ module TAF
   class Verb
 
     #
-    TAF.mixin(Mixin::Thing)
+    include(Mixin::Thing)
 
     #
     # @return [String]
@@ -79,7 +79,7 @@ module TAF
   class Imperative
 
     #
-    TAF.mixin(Mixin::Thing)
+    include(Mixin::Thing)
 
     #
     # @!macro doc.TAF.formal.kwargs
@@ -97,7 +97,7 @@ module TAF
   class Noun
 
     #
-    TAF.mixin(Mixin::Thing)
+    include(Mixin::Thing)
 
     #
     # @!macro doc.TAF.formal.kwargs

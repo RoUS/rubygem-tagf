@@ -17,8 +17,8 @@
 
 require('sptaf/debugging')
 warn(__FILE__) if (TAF.debugging?(:file))
-TAF.require_file('sptaf')
-TAF.require_file('byebug')
+require('sptaf')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
@@ -27,7 +27,7 @@ module TAF
   class NPC
 
     #
-    TAF.mixin(Mixin::Actor)
+    include(Mixin::Actor)
 
     #
     # @!macro doc.TAF.formal.kwargs

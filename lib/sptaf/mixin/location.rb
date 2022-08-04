@@ -35,10 +35,6 @@ module TAF
       class << self
 
         #
-        if (TAF.debugging?(:include))
-          warn('%s.%s including %s' \
-               % [ self.name, __method__.to_s, ClassMethods.name ])
-        end
         include(ClassMethods)
 
         # @!macro doc.TAF.module.classmethod.included
@@ -56,10 +52,7 @@ module TAF
       end                       # module Location eigenclass
 
       #
-      if (TAF.debugging?(:include))
-        warn('%s including %s' % [ self.name, Mixin::Container.name ])
-      end
-      TAF.mixin(Mixin::Container)
+      include(Mixin::Container)
 
       #
       attr_accessor(:paths)
