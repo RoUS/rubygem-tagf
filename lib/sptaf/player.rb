@@ -97,7 +97,10 @@ module TAF
 
     #
     def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      if (debugging?(:initialize))
+        warn('[%s]->%s running' \
+             % [self.class.name, __method__.to_s])
+      end
       @breadcrumbs	= []
       @locations	= {}
       self.initialize_thing(*args, **kwargs)

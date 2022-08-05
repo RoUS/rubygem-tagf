@@ -151,6 +151,25 @@ module TAF
       ONCE_AND_DONE	= %i[ game slug owned_by ]
 
       #
+      # How to refer to the element as a singular, such as "**a**
+      # knife", "**some** coins", "**an** ocarina", and so forth.
+      #
+      # @return [String]
+      #   "`a`", "`an`", or "`some`", or whatever is appropriate.  The
+      #   default is determined from the first letter of the element's
+      #   #desc value..
+      attr_accessor(:article)
+      
+      #
+      # How to refer to contents when displayed.  Are they 'in' the
+      # container (like a backpack), or 'on' it (like a desk)?  For a
+      # location, is the player 'in' it or 'at' it?
+      #
+      # @return [String]
+      #   "`on`" or "`in`" as appropriate.  The default is "`in`".
+      attr_accessor(:preposition)
+      
+      #
       # Checks to see if the object is a container according to the
       # game mechanics (basically, its class has included the
       # {Mixin::Container} module).
@@ -246,7 +265,10 @@ module TAF
       # @return [Thing] self
       #
       def initialize_thing(*args, **kwargs)
-        warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         @slug		||= kwargs[:slug] || self.object_id
         if (self.owned_by.nil? \
             && ((! kwargs.key?(:owned_by)) \
@@ -265,12 +287,6 @@ module TAF
         kwargs.each do |attrib,newval|
           attr_f	= decompose_attrib(attrib, newval)
           next unless (self.respond_to?(attr_f.getter))
-=begin
-          attrib	= attrib.to_sym
-          attrib_s	= attrib.to_s
-          attrib_setter	= "#{attrib_s}=".to_sym
-          attrib_ivar	= "@#{attrib_s}".to_sym
-=end
           curval	= nil
           if (self.respond_to?(attr_f.getter))
             curval	= self.instance_variable_get(attr_f.ivar)
@@ -292,11 +308,22 @@ module TAF
           end
         end                     # kwargs.each
 
+        #
+        # Now check for validity..
+        #
         unless (self.respond_to?(:game) && (! self.game.nil?))
           raise_exception(NoGameContext)
         end
-        #      self.game.add(self) unless (self.game.in_setup?)
-        #      self.owned_by.add(self) unless (self.owned_by.in_setup?)
+        if (self.article.nil? && (! self.desc.nil?))
+          self.article	= ('aeiou'.include?(self.desc.downcase[0]) \
+                           ? 'an' \
+                           : 'a')
+        end
+        if (self.is_container?)
+          @pending_inventory ||= []
+        end
+        self.game.add(self)
+        self.owned_by.add(self)
         return self
       end                       # def initialize_thing
 

@@ -56,7 +56,7 @@ module TAF
     # @!attribute [r] master
     #   Boolean flag indicating whether this is the game's master
     #   inventory or not.
-    def master
+    def master?
       result		= (self.game.inventory == self)
       return result ? true : false
     end                         # def master
@@ -73,7 +73,12 @@ module TAF
 
     #
     def initialize(**kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      if (debugging?(:initialize))
+        warn('<%s>[%s].%s running' \
+             % [self.class.name,
+                self.slug.to_s,
+                __method__.to_s])
+      end
       @contents		= {}
       unless (owned_by = kwargs[:owned_by])
         raise_exception(NoObjectOwner, self)
@@ -83,10 +88,9 @@ module TAF
       # Use the inventory key of the owner to make navigation
       # simpler.
       #
-      @slug		= '%s[%s].inventory' \
+      @slug		= '<%s>[%s].inventory' \
                           % [owned_by.class.name,
                              owned_by.slug.to_s]
-      @master		= kwargs[:master] ? true : false
       self.initialize_thing([], **kwargs)
       self.game.add(self)
     end                         # def initialize
@@ -96,14 +100,18 @@ module TAF
       result		= ('#<%s:"%s" ' \
                            + ' game="%s"' \
                            + ', name="%s"' \
-                           + ', %i item(s)' \
+                           + ', %i %s' \
+                           + ', %i %s' \
                            + '>') \
                           % [
         self.class.name,
         self.slug.to_s,
         self.game.slug.to_s,
         self.name.to_s,
-        @contents.size
+        @contents.count,
+        pluralise('object', @contents.count),
+        self.items.count,
+        pluralise('item', self.items.count)
       ]
       return result
     end                         # def inspect
@@ -212,6 +220,17 @@ module TAF
           raise_exception(AlreadyInInventory, arg, oldobj)
         end
       end
+      if (debugging?(:inventory))
+        warn('<%s>[%s].%s: Adding <%s>[%s] to <%s>[%s] inventory' \
+             % [self.class.name,
+                self.slug.to_s,
+                __method__.to_s,
+                arg.class.name,
+                arg.slug.to_s,
+                self.class.name,
+                self.slug
+               ])
+      end
       @contents[key]	= arg
       return self
     end                         # def add(arg, **kwargs)
@@ -298,6 +317,14 @@ module TAF
       }
       return result
     end                         # def containers
+
+    #
+    def features
+      result		= self.select(only: :objects) { |o|
+        o.kind_of?(Feature)
+      }
+      return result
+    end                         # def features
 
     #
     def inventories

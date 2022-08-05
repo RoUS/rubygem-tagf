@@ -30,12 +30,37 @@ module TAF
     include(Mixin::Thing)
 
     #
+    # If the item is a container, we'll mix in Mixin::Container during
+    # initialisation.
+    #
+
+    #
+    # Identify all the instance methods specific to the
+    # Mixin::Container module by subtracting all those mixed into from
+    # other modules.  We do this so we can essentially remove all
+    # aspects of container-ness from an Item.
+    #
+    CONTAINER_METHODS	=
+      Mixin::Container.instance_methods \
+      - (Mixin::Container.included_modules.map { |m|
+           m.instance_methods
+         }.flatten.uniq)
+
+    #
+    # Is this item alive, like a bird or lizard?  If so, it may leave
+    # loot or a corpse behind if it dies.  Whatever remains might be
+    # an Item (or multiple Items), or it may be a Feature and
+    # therefore not acquirable.
+    #
     # @!macro doc.TAF.classmethod.flag.use
     flag(:living)
 
     #
     def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      if (debugging?(:initialize))
+        warn('[%s]->%s running' \
+             % [self.class.name, __method__.to_s])
+      end
       self.static	= false
       self.initialize_thing(*args, **kwargs)
       if (kwargs[:is_container])
@@ -44,11 +69,7 @@ module TAF
         #   Reconcile this with TAF.mixin, its super, and
         #   self.include.
         #
-        if (TAF.debugging?(:include))
-          warn('%s.%s including %s' \
-               % [ self.name, __method__.to_s, Mixin::Container.name ])
-        end
-        self.include(Mixin::Container)
+        self.singleton_class.include(Mixin::Container)
         self.initialize_container(*args, **kwargs)
       end
       self.game.add(self)
@@ -63,7 +84,6 @@ module TAF
 
     #
     def inspect
-      debugger
       result		= ('#<%s:"%s" ' \
                            + 'game="%s"' \
                            + ', name="%s"' \

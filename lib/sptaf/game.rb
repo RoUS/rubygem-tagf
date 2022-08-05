@@ -50,16 +50,81 @@ module TAF
     flag(:loaded)
 
     #
-    attr_reader(:threadgroup)
+    attr_accessor(:loadfile)
 
     #
-    # @return [Game] self
+    attr_accessor(:savefile)
+
+    #
+    attr_reader(:creation_overrides)
+    private(:creation_overrides)
+
+    #
+    # Constructor for the main element of this entire project -- the
+    # <strong>Game</strong> object.  Every element, including this
+    # one, <em>must</em> have the following attributes:
+    #
+    # * `#game` --
+    #   a link to the main Game object (an instance of this class).
+    # * `#slug` --
+    #   a unique identifier that is used to locate the element in the
+    #   various inventories -- particularly the master, which is the
+    #   inventory of the Game object.  The <em>`slug`</em> can be any
+    #   class of object, but short strings without any whitespace are
+    #   recommended.  See Mixin::Thing#slug
+    # * `#owned_by` --
+    #   the object in whose inventory the element is listed.
+    #   <em>Every</em> element is listed in the master inventory, but
+    #   each may also appear in one additional inventory -- such as
+    #   that of a pouch, or a backpack, or a Location or Feature.
+    #
+    # The arguments to Game#initialize are passed down to other
+    # constructors and methods.  They may be modified slightly by each
+    # callee in turn, so the order of invocation can be important.
+    #
+    # @param [Array] args ([])
+    #   an optional array of order-dependent arguments.  Not used by
+    #   Game#initialize.
+    # @param [Hash<Symbol=>Object>] kwargs ({})
+    #   a hash with symbolic keys that are either used to identify
+    #   attributes to be set to the corresponding values, flags,
+    #   control instructions, or other tuples intended for methods and
+    #   constructors Game#initialize may invoke.
+    # @option kwargs [Symbol] :slug (nil)
+    #   This should be a simple string; it is recommended that you use
+    #   a word or portmanteau that identifies the game itself (such as
+    #   `adventure` or `zork`), since the slug can be used to pick the
+    #   appropriate set of definitions out of a YAML file.  (See
+    #   #load)
+    # @option kwargs [Symbol] :owned_by (nil)
+    #   For a Game object, the <em>`owned_by`</em> attribute is
+    #   unequivocally set to the Game object itself.  That is, the
+    #   game owns itself.  For other objects created by this
+    #   constructor, this tupe may be passed through from the caller,
+    #   or overridden by Game#initialize as appropriate.
+    # @option kwargs [Symbol] :loadfile (nil)
+    #   The filesystem path to the default YAML file from which the
+    #   game's definitions will be loaded.  If this isn't set as part
+    #   of the constructor invocation, it will need to be set
+    #   explicitly or specified on a call to the #load method.
+    # @option kwargs [Symbol] :name (nil)
+    # @option kwargs [Symbol] :desc (nil)
+    # @option kwargs [Symbol] :shortdesc (nil)
+    # @return [Game]
+    #   self
     def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      @threadgroup	= ThreadGroup.new
-      threadgroup.add(Thread.current)
-      self.game		= self
-      self.owned_by	= self
+      if (debugging?(:initialize))
+        warn('[%s]->%s running' \
+             % [self.class.name, __method__.to_s])
+      end
+      @creation_overrides = {
+        game:		self,
+        owned_by:	self,
+        visible:	false,  # Everything we create here is metadata
+      }
+      kwargs		= kwargs.merge(self.creation_overrides)
+      self.game		= kwargs[:game]
+      self.owned_by	= kwargs[:game]
       kwargs.delete(:slug) if (@slug = kwargs[:slug])
       kwargs.delete(:name) if (self.name = kwargs[:name])
       @slug		||= self.object_id
@@ -67,9 +132,6 @@ module TAF
       self.static!
       self.initialize_thing(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
-      self.create_inventory_on(self,
-                               game:		self,
-                               owned_by:	self)
       self.add(self)
       self.allow_containers!
     end                         # def initialize
@@ -95,32 +157,50 @@ module TAF
     end                         # def []
 
     #
+    def each(*args, **kwargs, &block)
+      return @inventory.send(__method__, *args, **kwargs, &block)
+    end                         # def each(*args, **kwargs, &block)
+
+    #
+    def find(*args, **kwargs, &block)
+      return @inventory.send(__method__, *args, **kwargs, &block)
+    end                         # def find(*args, **kwargs, &block)
+
+    #
+    def map(*args, **kwargs, &block)
+      return @inventory.send(__method__, *args, **kwargs, &block)
+    end                         # def map(*args, **kwargs, &block)
+
+    #
+    def select(*args, **kwargs, &block)
+      return @inventory.send(__method__, *args, **kwargs, &block)
+    end                         # def select(*args, **kwargs, &block)
+
+    #
     def create_inventory_on(target, **kwargs)
       if (target.has_inventory?)
         raise_exception(AlreadyHasInventory, target)
       end
-      kwargs		= kwargs.dup
-      kwargs[:game]	= self.game
+      kwargs		= kwargs.merge(self.creation_overrides)
       kwargs[:owned_by]	= target
-      kwargs[:master]	= (target == self.game ? true : false)
       target.inventory	= Inventory.new(**kwargs)
-      self.game.add(target.inventory)
+      self.add(target.inventory)
       return target.inventory
     end                         # def create_inventory_on
 
     #
     def create_item(**kwargs)
-      override		= {
-        game:		self.game
-      }
-      kwargs		= override.merge(kwargs.merge(owned_by: self.game))
+      kwargs		= kwargs.merge(self.creation_overrides)
       item		= Item.new([], **kwargs)
-      self.game.add(item)
+      self.add(item)
       return item      
     end                         # def create_item
 
     #
     def create_item_on(target, **kwargs)
+      unless (target.is_container?)
+        raise_exception(NotAContainer, target)
+      end
       kwargs		= kwargs.merge(owned_by: target)
       item		= self.create_item(**kwargs)
       target.add(item)
@@ -145,6 +225,25 @@ module TAF
       target.add(item)
       return item
     end                         # def create_container_on
+
+    #
+    def create_feature(**kwargs)
+      kwargs		= kwargs.merge(self.creation_overrides)
+      feature		= Feature.new([], **kwargs)
+      self.add(feature)
+      return feature
+    end                         # def create_feature(*args, **kwargs)
+
+    #
+    def create_feature_on(target, **kwargs)
+      unless (target.is_container?)
+        raise_exception(NotAContainer, target)
+      end
+      kwargs		= kwargs.merge(owned_by: target)
+      item		= self.create_feature(**kwargs)
+      target.add(item)
+      return item
+    end                         # def create_feature_on
 
     #
     def create_location(**kwargs)
@@ -188,7 +287,7 @@ module TAF
         raise_exception(NotGameElement, obj)
       end
       g			= self.game
-      inventories	= g.inventory.select { |o|
+      inventories	= g.inventory.select(only: :objects) { |o|
         o.kind_of?(Inventory) && o.keys.include?(oldslug)
       }
       inventories.unshift(self.game.inventory)

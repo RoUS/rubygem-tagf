@@ -64,6 +64,10 @@ module TAF
         #
         # @!macro doc.TAF.formal.kwargs
         def initialize(*args, **kwargs)
+          if (debugging?(:initialize))
+            warn('[%s]->%s running' \
+                 % [self.class.name, __method__.to_s])
+          end
           inv		= args[0]
           newitem	= args[1]
           if (inv.kind_of?(String))
@@ -98,6 +102,10 @@ module TAF
       #
       # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg		= args[0]
         if (arg.kind_of?(String))
           msg		= arg
@@ -117,6 +125,10 @@ module TAF
       #
       # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg		= args[0]
         if (arg.kind_of?(String))
           msg		= arg
@@ -145,6 +157,10 @@ module TAF
       #
       # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg		= args[0]
         if (arg.kind_of?(String))
           msg		= arg
@@ -165,6 +181,10 @@ module TAF
       #
       # @!macro doc.TAF.formal.kwargs
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg		= args[0]
         if (arg.kind_of?(String))
           msg		= arg
@@ -187,6 +207,10 @@ module TAF
       # @return [NoObjectOwner] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg		= args[0]
         if (arg.kind_of?(String))
           msg		= arg
@@ -209,6 +233,10 @@ module TAF
       # @return [KeyObjectMismatch] self
       #
       def initialize(oslug=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         oslug		= args[0] || kwargs[:slug]
         obj		= args[1] || kwargs[:object]
         ckobj		= args[2] || kwargs[:ckobject]
@@ -234,6 +262,10 @@ module TAF
       # @return [NoGameContext] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         if (args[0].kind_of?(String))
           msg	= args[0]
         else
@@ -253,6 +285,10 @@ module TAF
       # @return [SettingLocked] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg	= args[0]
         if (arg.kind_of?(String))
           msg	= arg
@@ -276,6 +312,10 @@ module TAF
       # @return [ImmovableObject] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg	= args[0]
         if (arg.kind_of?(String))
           msg	= arg
@@ -298,6 +338,39 @@ module TAF
     end                         # class ImmovableObject
 
     #
+    class NotAContainer < ErrorBase
+
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [NotAContainer] self
+      #
+      def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
+        arg	= args[0]
+        if (arg.kind_of?(String))
+          msg	= arg
+        else
+          obj	= args[0]
+          objtype = obj.class.name.sub(%r!^.*::!, '')
+          name	= obj.name || obj.slug
+          if (name)
+            msg	= "%s object '%s' is not a container" \
+                  % [objtype, name]
+          else
+            msg	= "%s object is not a container" \
+                  % [objtype]
+          end
+        end
+        self._set_message(msg)
+      end                       # def initialize
+
+      nil
+    end                         # class NotAContainer
+
+    #
     class MasterInventory < ErrorBase
 
       #
@@ -305,6 +378,10 @@ module TAF
       # @return [MasterInventory] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         arg	= args[0]
         if (arg.kind_of?(String))
           msg	= arg
@@ -335,6 +412,10 @@ module TAF
       # @return [HasNoInventory] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         if ((args.count == 1) && args[0].kind_of?(String))
           msg		= args[0]
         elsif (args[0].kind_of?(Mixin::Thing))
@@ -364,6 +445,10 @@ module TAF
       # @return [AlreadyInInventory] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
@@ -400,6 +485,10 @@ module TAF
       # @return [DuplicateObject] self
       #
       def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         type	= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count == 1) && args[0].kind_of?(String))
           msg	= args[0]

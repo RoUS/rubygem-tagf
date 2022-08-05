@@ -34,6 +34,10 @@ module TAF
     # @return [Feature] self
     #
     def initialize(*args, **kwargs)
+      if (debugging?(:initialize))
+        warn('[%s]->%s running' \
+             % [self.class.name, __method__.to_s])
+      end
       self.initialize_thing(*args, **kwargs)
       self.static!
     end                         # def initialize(*args, **kwargs)

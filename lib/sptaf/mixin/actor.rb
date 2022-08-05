@@ -90,7 +90,10 @@ module TAF
       # @return [???] self
       #
       def initialize_actor(*args, **kwargs)
-        warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         @breadcrumbs	= []
         kwargs_defaults	= {
           maxhp:	0,

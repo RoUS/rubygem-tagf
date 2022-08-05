@@ -64,7 +64,10 @@ module TAF
     # @return [Verb] self
     #
     def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      if (debugging?(:initialize))
+        warn('[%s]->%s running' \
+             % [self.class.name, __method__.to_s])
+      end
       kwargs[:type] = :intransitive unless (kwargs[:type])
       self.initialize_thing(*args, **kwargs)
       return self

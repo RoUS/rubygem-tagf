@@ -66,6 +66,36 @@ module TAF
       # @!macro doc.TAF.classmethod.flag.use
       flag(:allow_containers)
 
+      #
+      def is_empty?(*args, **kwargs)
+        args.push(:items) if (args.empty?)
+        args		= args.map { |o| o.to_sym }
+        result		= 0
+        args.each { |type| result += self.inventory.send(type).count }
+        return result.zero? ? true : false
+      end                       # def is_empty?
+
+      #
+      # Does the container have the option of being open or closed?
+      # Think about a birdcage, which would want a door to keep any
+      # birds from escaping.
+      #
+      # @!macro doc.TAF.classmethod.flag.use
+      flag(is_openable: false)
+
+      #
+      # If the container is openable, is it actually open?
+      #
+      # @!macro doc.TAF.classmethod.flag.use
+      flag(is_open: false)
+
+      #
+      # Can you see through the container and identify what's inside?
+      # Default is `false`.
+      #
+      # @!macro doc.TAF.classmethod.flag.use
+      flag(is_transparent: false)
+
       # @!attribute [rw] inventory
       # Instance variable accessor for a container's inventory (list
       # of things owned or contained).
@@ -120,7 +150,7 @@ module TAF
       # Count of things currently in the object's inventory.
       #
       # @!macro doc.TAF.classmethod.int_accessor.use
-      int_accessor(:items_current)
+      int_accessor(:current_items)
 
       #
       # @!macro doc.TAF.classmethod.float_accessor.use
@@ -128,20 +158,19 @@ module TAF
       
       #
       # @!macro doc.TAF.classmethod.float_accessor.use
-      float_accessor(:mass_current)
+      float_accessor(:current_mass)
 
-      #
-      # @!macro doc.TAF.classmethod.float_accessor.use
-      float_accessor(:volume_current)
-      
       #
       # @!macro doc.TAF.classmethod.float_accessor.use
       float_accessor(:capacity_volume)
 
       #
       # @!macro doc.TAF.classmethod.float_accessor.use
-      float_accessor(:volume_current)
-      
+      float_accessor(:current_volume)
+
+      #
+      attr_reader(:pending_inventory)
+
       #
       # @!macro doc.TAF.formal.kwargs
       # @return [Boolean]
@@ -149,6 +178,35 @@ module TAF
       def contains_item?(*args, **kwargs)
         
       end                       # def contains_item?
+
+      #
+      def update_inventory!
+        if (debugging?(:inventory))
+          warn('Updating inventory for <%s>[%s]' \
+               % [ self.class.name, self.slug.to_s ])
+          if (self.pending_inventory.empty?)
+            warn('No pending inventory updates for <%s>[%s]' \
+                 % [ self.class.name, self.slug.to_s ])
+            return self.inventory
+          elsif (self.inventory.nil?)
+            warn('Inventory for <%s>[%s] not yet ready' \
+                 % [ self.class.name, self.slug.to_s ])
+            return nil
+          end
+        end
+        while (invobj = self.pending_inventory.pop)
+          if (debugging?(:inventory))
+            warn('Dequeuing and adding <%s>[%s] to <%s>[%s] inventory' \
+                 % [invobj.class.name,
+                    invobj.slug.to_s,
+                    self.class.name,
+                    self.slug.to_s
+                   ])
+          end
+          result	= self.inventory.add(invobj)
+        end
+        return self.inventory
+      end                       # def update_inventory!
 
       #
       # Method to add a game element to the current object's
@@ -161,10 +219,42 @@ module TAF
       # @raise [HasNoInventory]
       # @return [@todo]
       def add(arg, **kwargs)
+        result		= nil
         unless (self.respond_to?(:inventory))
           raise_exception(HasNoInventory, self)
         end
-        return self.inventory.add(arg, **kwargs)
+        if (self.inventory.nil?)
+          unless (self.pending_inventory.include?(arg))
+            if (debugging?(:inventory))
+              warn('<%s>[%s].%s: Enqueuing <%s>[%s] for addition to <%s>[%s] inventory' \
+                   % [self.class.name,
+                      self.slug.to_s,
+                      __method__.to_s,
+                      arg.class.name,
+                      arg.slug.to_s,
+                      self.class.name,
+                      self.slug.to_s
+                     ])
+            end
+            self.pending_inventory.push(arg)
+          end
+          return self.inventory
+        else
+          self.update_inventory! unless (self.pending_inventory.empty?)
+        end
+        if (debugging?(:inventory))
+          warn('<%s>[%s].%s: Adding <%s>[%s] to <%s>[%s] inventory' \
+               % [self.class.name,
+                  self.slug.to_s,
+                  __method__.to_s,
+                  arg.class.name,
+                  arg.slug.to_s,
+                  self.class.name,
+                  self.slug.to_s
+                 ])
+        end
+        result		= self.inventory.add(arg)
+        return result
       end                       # def add(arg, **kwargs)
 
       #
@@ -189,7 +279,14 @@ module TAF
       # @return [Container] self
       #
       def initialize_container(*args, **kwargs)
-        warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+        if (debugging?(:initialize))
+          warn('<%s>[%s].%s running' \
+               % [self.class.name,
+                  self.slug.to_s,
+                  __method__.to_s])
+        end
+        @pending_inventory	||= []
+        self.game.create_inventory_on(self, owned_by: self)
         return self
       end                       # def initialize_container
 

@@ -60,6 +60,10 @@ module TAF
     # @return [Faction] self
     #
     def initialize(*args, **kwargs)
+      if (debugging?(:initialize))
+        warn('[%s]->%s running' \
+             % [self.class.name, __method__.to_s])
+      end
       initialize_thing(*args, **kwargs)
       if (self.name.nil?)
         raise_exception(NameRequired, self)

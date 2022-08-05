@@ -59,7 +59,10 @@ module TAF
 
       #
       def initialize_location(*args, **kwargs)
-        warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
         self.paths	= {}
         #      self.initialize_container(*args, **kwargs)
         #      self.inventory	= ::TAF::Inventory.new(game:	self,
