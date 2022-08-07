@@ -31,6 +31,8 @@ module TAF
   #
   module Exceptions
 
+    include(::TAF)
+
     #
     class ErrorBase < StandardError
 
@@ -57,7 +59,10 @@ module TAF
     # are `rescue`d in the normal flow of things.
     #
     module InventoryLimitExceeded
-      
+
+      #
+      extend(ClassMethods)
+
       #
       class LimitItems < ::TAF::Exceptions::ErrorBase
 
@@ -190,7 +195,7 @@ module TAF
           msg		= arg
         else
           objtype	= arg.class.name
-          msg		= 'not a game object: %s:%s' \
+          msg		= 'not a game object: <%s>[%s]' \
                           % [objtype, arg.to_s]
         end
         self._set_message(msg)
@@ -349,20 +354,16 @@ module TAF
           warn('[%s]->%s running' \
                % [self.class.name, __method__.to_s])
         end
-        arg	= args[0]
+        arg		= args[0]
+        name		= nil
         if (arg.kind_of?(String))
-          msg	= arg
+          msg		= arg
         else
-          obj	= args[0]
-          objtype = obj.class.name.sub(%r!^.*::!, '')
-          name	= obj.name || obj.slug
-          if (name)
-            msg	= "%s object '%s' is not a container" \
-                  % [objtype, name]
-          else
-            msg	= "%s object is not a container" \
-                  % [objtype]
-          end
+          obj		= args[0]
+          objtype	= obj.class.name
+          name		= '<%s>[%s]' % [ objtype, obj.slug.to_s ]
+          msg		= "element %s is not a container" \
+                          % [name ? name : objtype]
         end
         self._set_message(msg)
       end                       # def initialize
@@ -370,6 +371,54 @@ module TAF
       nil
     end                         # class NotAContainer
 
+    #
+    class UnscrewingInscrutable < ErrorBase
+
+      include(::TAF)
+
+      o#
+      extend(Contracts::Core)
+      
+      Contract([Class,
+                Class,
+                Symbol,
+                Object,
+                Class,
+                Class,
+                Symbol,
+                Object] => Contracts::Builtin::Any)
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [UnscrewingInscrutable] self
+      #
+      def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
+        arg		= args[0]
+        name		= nil
+        if (arg.kind_of?(String))
+          msg		= arg
+        else
+          msgargs	= []
+          msgargs.push(args[0].class.name)
+          msgargs.push(args[0].slug.to_s)
+          msgargs.push(args[1].to_s.sub(%r![^[:alnum:]]$!, ''))
+          msgargs.push(args[2].to_s)
+          msgargs.push(args[3].class.name)
+          msgargs.push(args[3].slug.to_s)
+          msgargs.push(args[4].to_s.sub(%r![^[:alnum:]]$!, ''))
+          msgargs.push(args[5].to_s)
+          msg		= ('<%s>[%s].%s cannot be set to %s ' \
+                           + 'if <%s>[%s].%s is %s') \
+                          % msgargs
+        end
+        self._set_message(msg)
+      end                       # def initialize
+
+      nil
+    end                         # class NotAContainer
     #
     class MasterInventory < ErrorBase
 
@@ -438,6 +487,41 @@ module TAF
     end                         # class HasNoInventory
 
     #
+    class AlreadyHasInventory < ErrorBase
+
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [AlreadyHasInventory] self
+      #
+      def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
+        if ((args.count >= 1) && args[0].kind_of?(String))
+          msg		= args[0]
+        else
+          target	= arg[0]
+          unless (target.has_inventory?)
+            raise_exception(RuntimeError,
+                            ('%s called against an element (<%s>[%s]) ' \
+                             "which *doesn't* have an inventory") \
+                            % [self.class.name,
+                               target.class.name,
+                               target.slug.to_s],
+                            levels: -1)
+          end
+          msg		= ('cannot replace existing inventory ' \
+                           + 'for <%s>[%s]') \
+                            % [target.class.name, target.slug.to_s]
+        end
+        self._set_message(msg)
+      end                       # def initialize
+
+      nil
+    end                         # class AlreadyHasInventory
+
+    #
     class AlreadyInInventory < ErrorBase
 
       #
@@ -476,6 +560,40 @@ module TAF
 
       nil
     end                         # class AlreadyInInventory
+
+    #
+    class ImmovalElementDestinationError < ErrorBase
+
+      #
+      # @!macro doc.TAF.formal.kwargs
+      # @return [ImmovalElementDestinationError] self
+      #
+      def initialize(*args, **kwargs)
+        if (debugging?(:initialize))
+          warn('[%s]->%s running' \
+               % [self.class.name, __method__.to_s])
+        end
+        if ((args.count >= 1) && args[0].kind_of?(String))
+          msg		= args[0]
+        else
+          target	= args[0]
+          newcontent	= args[1]
+          if (newcontent.kind_of?(Class))
+            newobject	= '<%s>' % [newcontent.class.name]
+          else
+            newobject	= '<%s>[%s]' \
+                          % [newcontent.class.name,
+                             newcontent.slug.to_s]
+          end
+          msg		= ('element %s is static and cannot be ' \
+                           + 'stored in inventory of %s') \
+                            % [target, newcontent]
+        end
+        self._set_message(msg)
+      end                       # def initialize
+
+      nil
+    end                         # class ImmovalElementDestinationError
 
     #
     class DuplicateObject < ErrorBase

@@ -30,30 +30,6 @@ module TAF
     include(Mixin::Location)
 
     #
-    def describe(**kwargs)
-      result	= "You're in %s\n" % [ self.desc ]
-      self.inventory.features.each do |f|
-        next unless (f.visible?)
-        result	+= "  You see %s." % [f.name]
-        #
-        # @todo
-        #   This needs to be worked; if the preposition is 'on' then
-        #   the container is always open and transparent.
-        #
-        if (f.is_open? || f.transparent?)
-          if (f.is_empty?)
-            if (f.preposition == 'in')
-              result += "  It is empty.\n"
-            else
-              result += "  There is nothing on it.\n"
-            end
-          end
-        end
-      end                       # self.inventory.features.each
-      return result
-    end                         # def describe(**kwargs)
-
-    #
     # @!macro doc.TAF.formal.kwargs
     # @return [Location] self
     #
@@ -62,7 +38,6 @@ module TAF
         warn('[%s]->%s running' \
              % [self.class.name, __method__.to_s])
       end
-      debugger
       self.paths	||= {}
       self.initialize_thing(*args, **kwargs)
       self.initialize_container(*args, **kwargs)

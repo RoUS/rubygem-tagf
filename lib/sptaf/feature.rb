@@ -39,7 +39,8 @@ module TAF
              % [self.class.name, __method__.to_s])
       end
       self.initialize_thing(*args, **kwargs)
-      self.static!
+      self.initialize_container(*args, **kwargs)
+      self.is_static!
     end                         # def initialize(*args, **kwargs)
 
   end                           # class Feature

@@ -120,7 +120,7 @@ module TAF
       @creation_overrides = {
         game:		self,
         owned_by:	self,
-        visible:	false,  # Everything we create here is metadata
+        is_visible:	false,  # Everything we create here is metadata
       }
       kwargs		= kwargs.merge(self.creation_overrides)
       self.game		= kwargs[:game]
@@ -129,7 +129,7 @@ module TAF
       kwargs.delete(:name) if (self.name = kwargs[:name])
       @slug		||= self.object_id
       self.name		||= ''
-      self.static!
+      self.is_static!
       self.initialize_thing(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
       self.add(self)
@@ -176,11 +176,45 @@ module TAF
       return @inventory.send(__method__, *args, **kwargs, &block)
     end                         # def select(*args, **kwargs, &block)
 
-    #
-    def create_inventory_on(target, **kwargs)
-      if (target.has_inventory?)
+    # @param [Object] target
+    #   the game element being tested for containerness.
+    # @raise [NotAContainer]
+    #   if <em>target</em> isn't a container but something
+    #   containerish is being attempted on it.
+    # @raise [AlreadyHasInventory]
+    # @raise [ImmovableElementDestinationError]
+    # @return [void]
+    def validate_container(target, newcontent, **kwargs)
+      unless (TAF.is_game_element?(target))
+        raise_exception(NotGameElement, target)
+      end
+      unless (target.is_container?)
+        raise_exception(NotAContainer, target)
+      end
+      #
+      # @todo
+      #   FLAWED! Need to allow check for class hierarchy (like
+      #   Inventory on container, Item on container, Feature *only* on
+      #   Location
+      #
+      if ((newcontent == Inventory) && target.has_inventory?)
         raise_exception(AlreadyHasInventory, target)
       end
+      unless (TAF.is_game_element?(newcontent))
+        raise_exception(NotGameElement, newcontent)
+      end
+      if (newcontent.is_static? && (! target.is_static?))
+        raise_exception(ImmovableElementDestinationError,
+                        target,
+                        newcontent)
+      end
+      return nil
+    end                         # def validate_container(target, newcontent, **kwargs)
+    private(:validate_container)
+
+    #
+    def create_inventory_on(target, **kwargs)
+      self.validate_container(target, Inventory)
       kwargs		= kwargs.merge(self.creation_overrides)
       kwargs[:owned_by]	= target
       target.inventory	= Inventory.new(**kwargs)
@@ -198,9 +232,7 @@ module TAF
 
     #
     def create_item_on(target, **kwargs)
-      unless (target.is_container?)
-        raise_exception(NotAContainer, target)
-      end
+      self.validate_container(target, Item)
       kwargs		= kwargs.merge(owned_by: target)
       item		= self.create_item(**kwargs)
       target.add(item)
@@ -220,6 +252,7 @@ module TAF
 
     #
     def create_container_on(target, **kwargs)
+      self.validate_container(target, Container)
       kwargs		= kwargs.merge(owned_by: target)
       item		= self.create_container(**kwargs)
       target.add(item)
@@ -236,9 +269,7 @@ module TAF
 
     #
     def create_feature_on(target, **kwargs)
-      unless (target.is_container?)
-        raise_exception(NotAContainer, target)
-      end
+      self.validate_container(target, Feature)
       kwargs		= kwargs.merge(owned_by: target)
       item		= self.create_feature(**kwargs)
       target.add(item)
@@ -258,6 +289,7 @@ module TAF
 
     #
     def create_location_on(target, **kwargs)
+      self.validate_container(target, Location)
       kwargs		= kwargs.merge(owned_by: target)
       item		= self.create_location(**kwargs)
       target.add(item)

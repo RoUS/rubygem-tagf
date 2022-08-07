@@ -60,6 +60,26 @@ module TAF
       include(Mixin::Thing)
 
       #
+      # List of all the instance variables used by attributes supplied
+      # by the Mixin::Container module.  This is used when cloning a
+      # duplicate or converting to a different type of element.
+      #
+      INSTANCE_VARIABLES	= %i[
+                        	     @allow_containers
+				     @is_openable
+                                     @is_open
+                                     @is_transparent
+                                     @inventory
+                                     @capacity_items
+                                     @current_items
+                                     @capacity_mass
+                                     @current_mass
+                                     @capacity_volume
+                                     @current_volume
+                                     @pending_inventory
+				    ]
+
+      #
       # Whether or not this container is permitted to have others
       # nested inside it.
       #
@@ -67,8 +87,12 @@ module TAF
       flag(:allow_containers)
 
       #
+      # @return [Boolean]
+      #   `true` if the container's inventory has no Item, Container,
+      #   or Feature elements in it.
+      #
       def is_empty?(*args, **kwargs)
-        args.push(:items) if (args.empty?)
+        args = %i[ items containers features ] if (args.empty?)
         args		= args.map { |o| o.to_sym }
         result		= 0
         args.each { |type| result += self.inventory.send(type).count }
@@ -84,10 +108,59 @@ module TAF
       flag(is_openable: false)
 
       #
-      # If the container is openable, is it actually open?
+      # If the container is openable, is it actually open?  We
+      # overrides some of the standard attribute accessors added by
+      # the ClassMethods#flag method to provide correct results if the
+      # element can't even be opened.
       #
       # @!macro doc.TAF.classmethod.flag.use
+      # @overload is_open
+      #   @return `true` or `false` if the element can be opened
+      #   (#is_openable), otherwise `false`.
+      # @overload is_open?
+      #   @return `true` or `false` if the element can be opened
+      #   (#is_openable), otherwise `false`.
+      # @overload is_open!
+      #   Sets the flag to `true` if the element is openable,
+      #   otherwise always `false`.
+      #   @return `true` or `false` if the element can be opened
+      #   (#is_openable), otherwise `false`.
+      # @overload is_open=(value)
+      #   Sets the flag to the `truthy` (see #truthify) value of the
+      #   argument, but only if the current element is openable.
+      #   Otherwise, the value is always `false`.
+      #   @param [Boolean] value
+      #     The new setting for the attribute, either `true` or
+      #     `false` according to its truthiness (see #truthify), or
+      #     unconditionally `false` if the element cannot be opened
+      #     (see #is_openable).
+      #   @return `true` or `false` if the element can be opened
+      #     (#is_openable), otherwise `false`.
       flag(is_open: false)
+      def is_open
+        @is_open = false unless (self.is_openable?)
+        result		= @is_open
+        return result
+      end                       # def is_open
+      alias_method(:is_open?, :is_open)
+      def is_open=(value)
+        value		= truthify(value)
+        if (self.is_openable?)
+          @is_open	= value
+        elsif (game_option?(:RaiseOnInvalidValues) && value)
+          raise_exception(UnscrewingInscrutable,
+                          self,
+                          __method__,
+                          true,
+                          self,
+                          :is_openable,
+                          false)
+        else
+          value		= false
+        end
+        @is_open	= value
+        return @is_open
+      end                       # def is_open=(value)
 
       #
       # Can you see through the container and identify what's inside?

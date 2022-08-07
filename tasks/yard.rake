@@ -17,6 +17,7 @@
 #
 
 require('yard')
+require('byebug')
 
 namespace(:doc) do
   task(:yard)
@@ -78,6 +79,16 @@ namespace(:doc) do
     # Add some options we pretty much always want to have.
     #
     yardoc.options      ||= %i[ --verbose ]
+    File.open('.yardopts.new', 'w') do |f|
+      yardoc.options.each do |opt|
+        if (m = (opt.match(%r!^([^=]*)=(.*)!)))
+          f.puts('%s="%s"' % [m.captures[0],m.captures[1]])
+        else
+          f.puts(opt)
+        end
+      end                       # options
+      yardoc.files.each { |o| f.puts(o) }
+    end                         # File.open('.yardopts.new', 'w')
     $stdout.puts(yardoc.options.inspect)
     $stdout.puts(yardoc.files.inspect)
   end                         # YARD::Rake::YardocTask.new do |yardoc|

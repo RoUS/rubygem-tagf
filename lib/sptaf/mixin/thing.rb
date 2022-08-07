@@ -112,6 +112,18 @@ module TAF
       attr_accessor(:shortdesc)
 
       #
+      # @!macro doc.TAF.classmethod.int_accessor.use
+      int_accessor(:illumination)
+
+      #
+      # @!macro doc.TAF.classmethod.float_accessor.use
+      float_accessor(:pct_dim_per_turn)
+
+      #
+      # @!macro doc.TAF.classmethod.flag.use
+      flag(only_dim_near_player: true)
+
+      #
       # @!macro doc.TAF.classmethod.float_accessor.use
       float_accessor(:mass)
 
@@ -133,11 +145,11 @@ module TAF
       # moved using specific semantics.
       #
       # @!macro doc.TAF.classmethod.flag.use
-      flag(:static)
+      flag(:is_static)
 
       #
       # @!macro doc.TAF.classmethod.flag.use
-      flag(:visible)
+      flag(:is_visible)
 
       #
       # List of attributes that are considered essentially immutable,
@@ -159,7 +171,7 @@ module TAF
       #   default is determined from the first letter of the element's
       #   #desc value..
       attr_accessor(:article)
-      
+
       #
       # How to refer to contents when displayed.  Are they 'in' the
       # container (like a backpack), or 'on' it (like a desk)?  For a
@@ -168,7 +180,39 @@ module TAF
       # @return [String]
       #   "`on`" or "`in`" as appropriate.  The default is "`in`".
       attr_accessor(:preposition)
-      
+
+      #
+      def describe(**kwargs)
+        unless (kwargs[:level])
+          kwargs[:level] = 0
+          result	= ''
+        else
+          result	= "\n"
+        end
+        result		+= (kwargs[:level] * ' ') + self.desc
+        return result unless (self.is_container?)
+
+        self.inventory.features.each do |f|
+          next unless (f.is_visible?)
+          result	+= "  You see %s." % [f.name]
+          #
+          # @todo
+          #   This needs to be worked; if the preposition is 'on' then
+          #   the container is always open and transparent.
+          #
+          if (f.is_open? || f.transparent?)
+            if (f.is_empty?)
+              if (f.preposition == 'in')
+                result += "  It is empty.\n"
+              else
+                result += "  There is nothing on it.\n"
+              end
+            end
+          end
+        end                     # self.inventory.features.each
+        return result
+      end                       # def describe(**kwargs)
+
       #
       # Checks to see if the object is a container according to the
       # game mechanics (basically, its class has included the
@@ -182,7 +226,7 @@ module TAF
       #   if the object is not a container.
       #
       def is_container?
-        return self.class.ancestors.include?(Mixin::Container) \
+        return self.singleton_class.ancestors.include?(Mixin::Container) \
                ? true \
                : false
       end                       # def is_container?
@@ -224,7 +268,7 @@ module TAF
       def move_to(*args, **kwargs)
         if (self.owned_by.inventory.master?)
           raise_exception(MasterInventory, self, kwargs)
-        elsif (self.static?)
+        elsif (self.is_static?)
           raise_exception(ImmovableObject, self, kwargs)
         end
         begin
@@ -277,10 +321,10 @@ module TAF
         end
         #
         # Default to things being visible; it takes an explicit change
-        # or a `visible: false` tuple in `kwargs` to make something
+        # or a `is_visible: false` tuple in `kwargs` to make something
         # hidden.
         #
-        self.visible!
+        self.is_visible!
         #
         # Now set attributes according to the keyword arguments hash.
         #

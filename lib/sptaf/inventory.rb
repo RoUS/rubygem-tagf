@@ -83,7 +83,7 @@ module TAF
       unless (owned_by = kwargs[:owned_by])
         raise_exception(NoObjectOwner, self)
       end
-      self.static!
+      self.is_static!
       #
       # Use the inventory key of the owner to make navigation
       # simpler.

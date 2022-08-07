@@ -40,23 +40,17 @@ module TAF
     def included(klass)
       whoami		= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
-=begin
-      warn('%s called for %s' \
-           % [whoami, klass.name])
-=end
-      [ TAF::ClassMethods ].each do |xmodule|
-        if (klass.singleton_class.included_modules.include?(xmodule))
-          next
-        end
-        if (TAF.debugging?(:extend))
-          warn('%s extending %s with %s' \
-               % [whoami, klass.name, xmodule.name])
-        end
-        klass.extend(xmodule)
-      end
-      super
+      TAF.invasion_force(klass)
       return nil
     end                         # def included(klass)
+
+    # @!macro doc.TAF.module.classmethod.included
+    def extended(klass)
+      whoami		= '%s eigenclass.%s' \
+                          % [self.name, __method__.to_s]
+      TAF.invasion_force(klass)
+      return nil
+    end                         # def extended(klass)
 
     # @private
     #

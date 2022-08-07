@@ -58,6 +58,10 @@ module TAF
       attr_accessor(:paths)
 
       #
+      # @!macro doc.TAF.classmethod.float_accessor.use
+      float_accessor(:light_level)
+
+      #
       def initialize_location(*args, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \

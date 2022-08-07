@@ -16,106 +16,71 @@
 # frozen_string_literal: true
 
 require('rubygems')
-require('set')
-require('byebug')
-require('binding_of_caller')
+require('contracts')
 
 # @!macro doc.TAF.module
 module TAF
 
   #
-  # Debug options are:
-  #
-  # * `debugging`
-  # * `extend`
-  # * `file`
-  # * `include`
-  # * `initialize`
-  # * `inventory`
-  # * `require`
-  #
-  DEBUG_OPTIONS		= Set.new
-
-  #
-  def debugging?(item)
-    return (DEBUG_OPTIONS.include?(item.to_sym)) ? true : false
-  end                           # def debugging?(item)
-  module_function(:debugging?)
-
-  #
   class << self
     
-    #
-    def set_debugging_options(*args, **kwargs)
-      report		= debugging?(:debugging)
-      if (report)
-        warn('<%s>.%s existing debugging options: %s' \
-             % [ self.class.name,
-                 __method__.to_s,
-                 DEBUG_OPTIONS.to_a.sort.inspect
-               ])
-      end
-      enable		= args \
-                          | [ [*kwargs[:set]] \
-                              |  [*kwargs[:on]] \
-                              | [*kwargs[:enable]] ].flatten
-      enable		= enable.map { |o| o.to_sym }.uniq
-      disable		= [ [*kwargs[:clear]] \
-                            | [*kwargs[:off]] \
-                            | [*kwargs[:disable]] ].flatten
-      disable		= disable.map { |o| o.to_sym }.uniq
-      new_settings	= DEBUG_OPTIONS.union(enable) - disable
-
-      DEBUG_OPTIONS.replace(new_settings)
-      if (report || debugging?(:debugging))
-        warn('<%s>.%s new debugging options: %s' \
-             % [ self.class.name,
-                 __method__.to_s,
-                 DEBUG_OPTIONS.to_a.sort.inspect
-               ])
-      end
-      return new_settings
-    end
+    UNIVERSAL_MODULES	= [
+      Contracts::Core,
+      TAF::ClassMethods,
+      TAF::Exceptions,
+    ]
 
     #
-    def includer(mixin_module)
-      methsym		= __method__
-      methname          = methsym.to_s
-      warn('In %s eigenclass .%s' % [self.name, methname])
-      ppstring		= ''
-      warn('===== %s' % [PP.pp(DEBUG_ITEMS, String.new)])
-      if (TAF.debugging?(:include))
-        bt              = caller
-        calling_file    = bt.first
-        warn("%s %s(%s)" % [calling_file, methname, mixin_module.to_s])
-      end
-      #
-      eval_str          = 'self.method(%s).super_method.call(%s)' \
-                          % [methsym.inspect, mixin_module.to_s]
-      warn('====== %s' % [eval_str])
-      binding.of_caller(1).eval(eval_str)
-#     super
-    end                         # def include(mixin_module)
-
+    # We can either `include` the classmethods module in the
+    # eigenclass, or `extend` it from the main module body.  Six of
+    # one..  Do the `include` because that makes Yard understand a
+    # little better what's going on.
     #
-    def requirer(path)
-      methsym		= __method__
-      methname		= methsym.to_s
-      if (TAF.debugging?(:require))
-        bt              = caller
-        calling_file    = bt.first
-        warn("%s %s(%s)" % [calling_file, methname, path.inspect])
+    def invasion_force(klass=self)
+      UNIVERSAL_MODULES.each do |xmodule|
+        next unless (defined?(xmodule))
+        unless (klass.included_modules.include?(xmodule))
+          if (TAF.debugging?(:include))
+            warn('<%s>[eigenclass] including module <%s>' \
+                 % [ klass.name, xmodule.name ])
+          end
+          klass.include(xmodule)
+        end
+        unless (klass.singleton_class.included_modules.include?(xmodule))
+          if (TAF.debugging?(:extend))
+            warn('<%s>[eigenclass] extending module <%s>' \
+                 % [ klass.name, xmodule.name ])
+          end
+          klass.extend(xmodule)
+        end
       end
-      #
-      eval_str          = 'self.method(%s).super_method.call(%s)' \
-                          % [methsym.inspect, path.inspect]
-      warn('====== %s' % [eval_str])
-      binding.of_caller(1).eval(eval_str)
-    end                         # def require(filespec)
-    alias_method(:requirer_relative, :requirer)
+    end                         # def invasion_force
+
+    invasion_force(self)
+
+    # @!macro doc.TAF.module.classmethod.included
+    def included(klass)
+      whoami            = '<%s>[eigenclass.%s]' \
+                          % [self.name, __method__.to_s]
+      invasion_force(klass)
+      return nil
+    end                         # def included(klass)
 
     nil
   end                           # module TAF eigenclass
+  
+  nil
+end
+
+require('sptaf/mixin/debugging')
+require('set')
+require('byebug')
+
+# @!macro doc.TAF.module
+module TAF
+
+  #
+  include(Mixin::Debugging)
 
   nil
 end                             # module TAF

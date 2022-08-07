@@ -53,7 +53,7 @@ module TAF
     # therefore not acquirable.
     #
     # @!macro doc.TAF.classmethod.flag.use
-    flag(:living)
+    flag(:is_living)
 
     #
     def initialize(*args, **kwargs)
@@ -61,7 +61,7 @@ module TAF
         warn('[%s]->%s running' \
              % [self.class.name, __method__.to_s])
       end
-      self.static	= false
+      self.is_static	= false
       self.initialize_thing(*args, **kwargs)
       if (kwargs[:is_container])
         #
@@ -73,13 +73,6 @@ module TAF
         self.initialize_container(*args, **kwargs)
       end
       self.game.add(self)
-      if (self.is_container?)
-        self.game.create_inventory_on(self,
-                                      game:	self.game,
-                                      owned_by:	self,
-                                      master:	false)
-        self.game.add(self.inventory)
-      end
     end                         # def initialize
 
     #
@@ -95,7 +88,7 @@ module TAF
         self.slug.to_s,
         self.game.slug.to_s,
         self.name.to_s,
-        self.static?.inspect,
+        self.is_static.inspect,
         (self.is_container? \
          ? (self.inventory.empty? \
             ? 'container (empty)' \

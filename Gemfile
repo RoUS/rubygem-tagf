@@ -43,11 +43,13 @@ ruby('>= 2.7')
 group(:default, :development, :test) do
   gem('bundler',	'>= 1.0.7')
   gem('binding_of_caller')
+  gem('contracts',	'< 0.17.0')
   gem('linguistics')
   gem('ostruct',	'>= 0.5.5')
   gem('psych')
   gem('sptaf',
       path:		'.')
+  gem('thor')
   gem('yaml',		'>= 0.2.0')
   gem('versionomy')
 end

@@ -18,6 +18,17 @@
 require('rubygems')
 require('bundler')
 Bundler.setup
+require('contracts')
+
+# @!macro doc.TAF.module
+module TAF
+
+  #
+  include(Contracts::Core)
+
+  nil
+end                             # module TAF
+
 require('sptaf/debugging')
 
 warn(__FILE__) if (TAF.debugging?(:file))
@@ -34,17 +45,17 @@ unless ((RUBY_ENGINE == 'ruby') \
   exit(1)
 end                             # Ruby version check
 
+require('sptaf/mixin/events')
+
 # @!macro doc.TAF.module
 module TAF
 
   #
-  extend(ClassMethods)
-  
+  # List of game-wide option flags to impose (or relax) certain restrictions.
   #
-  # Include the project exceptions so that anything that mixes in this
-  # module will get those as well.
-  #
-  include(Exceptions)
+  GAME_OPTIONS		= %i[
+                             RaiseOnInvalidValues
+                            ]
 
   # @!macro [new] doc.TAF.module.eigenclass
   #   Eigenclass for a TAF module.  It provides class methods (like
@@ -53,30 +64,23 @@ module TAF
   class << self
 
     #
-    # We can either `include` the classmethods module in the
-    # eigenclass, or `extend` it from the main module body.  Six of
-    # one..  Do the `include` because that makes Yard understand a
-    # little better what's going on.
-    #
-    if (TAF.debugging?(:include))
-      warn('%s including %s' % [ self.name, Exceptions.name ])
-    end
-    include(ClassMethods)
-
-    # @!macro doc.TAF.module.classmethod.included
-    def included(klass)
-      whoami            = '%s eigenclass.%s' \
-                          % [self.name, __method__.to_s]
-=begin
-      warn('%s called for %s' \
-           % [whoami, klass.name])
-=end
-      super
-      return nil
-    end                         # def included(klass)
+    def game_options(*args, **kwargs)
+      
+    end                         # def game_options(*args, **kwargs)
 
     nil
   end                           # module TAF eigenclass
+
+  #
+  extend(ClassMethods)
+  include(Contracts::Core)
+  
+  #
+  # Include the project exceptions so that anything that mixes in this
+  # module will get those as well.
+  #
+  include(Exceptions)
+  include(Mixin::Events)
 
   C_Attitudes           = %i[
                              friendly
@@ -151,6 +155,14 @@ module TAF
   end                           # def raise_exception
   private(:raise_exception)
 
+  # @param [Object] target
+  # @return [Boolean]
+  def is_game_element?(target)
+    result	= target.singleton_class.ancestors.include?(Mixin::Thing)
+    return result ? true : false
+  end                           # is_game_element?(target)
+  module_function(:is_game_element?)
+
   #
   # Given a word (presumably a singular noun) and a count, return the
   # plural of the word if the count justifies it.
@@ -220,6 +232,8 @@ end                             # module TAF
 require('binding_of_caller')
 require('linguistics')
 require('ostruct')
+debugger
+
 require('sptaf/exceptions')
 require('sptaf/mixin/thing')
 require('sptaf/inventory')
