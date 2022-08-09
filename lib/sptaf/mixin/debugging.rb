@@ -57,7 +57,7 @@ module TAF
         if (debugging?(:initialize))
           warn('<%s>[%s].%s running' \
                % [elem.class.name,
-                  elem.slug.to_s,
+                  elem.eid.to_s,
                   scope.eval('__method__.to_s')])
         end
       end                       # def notify_initialising

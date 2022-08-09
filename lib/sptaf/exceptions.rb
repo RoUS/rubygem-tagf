@@ -81,15 +81,15 @@ module TAF
             owner	= inv.owned_by
             owner_klass	= owner.class.name
             owner_name	= owner.name
-            owner_slug	= owner.slug
+            owner_eid	= owner.eid
             msg		= ('inventory for %s:"%s" is full; ' \
                            + '%i/%i %s, cannot add "%s"') \
                           % [owner_klass,
-                             (owner_name || owner_slug).to_s,
+                             (owner_name || owner_eid).to_s,
                              owner.items_current,
                              owner.capacity_items,
                              pluralise('item', owner.capacity_items),
-                             (newitem.name || newitem.slug).to_s]
+                             (newitem.name || newitem.eid).to_s]
           end
           self._set_message(msg)
         end                     # def initialize
@@ -237,22 +237,22 @@ module TAF
       # @!macro doc.TAF.formal.kwargs
       # @return [KeyObjectMismatch] self
       #
-      def initialize(oslug=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
+      def initialize(oeid=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \
                % [self.class.name, __method__.to_s])
         end
-        oslug		= args[0] || kwargs[:slug]
+        oeid		= args[0] || kwargs[:eid]
         obj		= args[1] || kwargs[:object]
         ckobj		= args[2] || kwargs[:ckobject]
         iname		= args[3] || kwargs[:inventory_name]
 
         msg		= ("value for key '%s' in %s fails to match: " \
                            + "%s:'%s' instead of %s:'%s'") \
-                          % [oslug.to_s,
+                          % [oeid.to_s,
                              iname,
-                             (ckobj.name || ckobj.slug).to_s,
-                             (obj.name || obj.slug).to_s]
+                             (ckobj.name || ckobj.eid).to_s,
+                             (obj.name || obj.eid).to_s]
         self._set_message(msg)
       end                       # def initialize
 
@@ -327,7 +327,7 @@ module TAF
         else
           obj	= args[0]
           objtype = obj.class.name.sub(%r!^.*::!, '')
-          name	= obj.name || obj.slug
+          name	= obj.name || obj.eid
           if (name)
             msg	= "%s object '%s' is static and cannot be relocated" \
                   % [objtype, name]
@@ -361,7 +361,7 @@ module TAF
         else
           obj		= args[0]
           objtype	= obj.class.name
-          name		= '<%s>[%s]' % [ objtype, obj.slug.to_s ]
+          name		= '<%s>[%s]' % [ objtype, obj.eid.to_s ]
           msg		= "element %s is not a container" \
                           % [name ? name : objtype]
         end
@@ -403,11 +403,11 @@ module TAF
         else
           msgargs	= []
           msgargs.push(args[0].class.name)
-          msgargs.push(args[0].slug.to_s)
+          msgargs.push(args[0].eid.to_s)
           msgargs.push(args[1].to_s.sub(%r![^[:alnum:]]$!, ''))
           msgargs.push(args[2].to_s)
           msgargs.push(args[3].class.name)
-          msgargs.push(args[3].slug.to_s)
+          msgargs.push(args[3].eid.to_s)
           msgargs.push(args[4].to_s.sub(%r![^[:alnum:]]$!, ''))
           msgargs.push(args[5].to_s)
           msg		= ('<%s>[%s].%s cannot be set to %s ' \
@@ -437,7 +437,7 @@ module TAF
         else
           obj	= args[0]
           objtype	= obj.class.name.sub(%r!^.*::!, '')
-          name	= obj.name || obj.slug
+          name	= obj.name || obj.eid
           if (name)
             msg	= ("cannot remove %s object '%s' from " \
                    + 'the master inventory') \
@@ -467,8 +467,8 @@ module TAF
         end
         if ((args.count == 1) && args[0].kind_of?(String))
           msg		= args[0]
-        elsif (args[0].kind_of?(Mixin::Thing))
-          name		= args[0].name || args[0].slug.to_s
+        elsif (args[0].kind_of?(Mixin::Element))
+          name		= args[0].name || args[0].eid.to_s
           case(args.count)
           when 0
             msg		= 'object has no inventory'
@@ -508,12 +508,12 @@ module TAF
                              "which *doesn't* have an inventory") \
                             % [self.class.name,
                                target.class.name,
-                               target.slug.to_s],
+                               target.eid.to_s],
                             levels: -1)
           end
           msg		= ('cannot replace existing inventory ' \
                            + 'for <%s>[%s]') \
-                            % [target.class.name, target.slug.to_s]
+                            % [target.class.name, target.eid.to_s]
         end
         self._set_message(msg)
       end                       # def initialize
@@ -536,19 +536,19 @@ module TAF
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
-        elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(Mixin::Thing) })
+        elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(Mixin::Element) })
           case(args.count)
           when 0
             msg		= 'object already in inventory'
           when 1
             msg		= ("%s object '%s' already in inventory") \
                           % [args[0].class.name,
-                             (args[0].name || args[0].slug).to_s]
+                             (args[0].name || args[0].eid).to_s]
           when 2
             msg		= ("%s object '%s' already in inventory, " \
-                           + 'cannot add %s with same slug') \
+                           + 'cannot add %s with same eid') \
                           % [args[0].class.name,
-                             (args[0].name || args[0].slug).to_s,
+                             (args[0].name || args[0].eid).to_s,
                              args[1].class.name]
           else
             msg		= 'unforeseen arguments to exception: %s' \
@@ -583,7 +583,7 @@ module TAF
           else
             newobject	= '<%s>[%s]' \
                           % [newcontent.class.name,
-                             newcontent.slug.to_s]
+                             newcontent.eid.to_s]
           end
           msg		= ('element %s is static and cannot be ' \
                            + 'stored in inventory of %s') \
@@ -610,9 +610,9 @@ module TAF
         type	= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count == 1) && args[0].kind_of?(String))
           msg	= args[0]
-        elsif (args[0].respond_to?(:slug))
+        elsif (args[0].respond_to?(:eid))
           msg	= 'attempt to register new %s using existing UID %s' \
-                  % [type,args[0].slug]
+                  % [type,args[0].eid]
         else
           msg	= 'attempt to register new %s with existing UID' \
                   % type

@@ -27,7 +27,7 @@ module TAF
   class Faction
 
     #
-    include(Mixin::Thing)
+    include(Mixin::Element)
 
     # @!attribute [rw] attitude
     # Provides a default attitude for all members of a faction.
@@ -48,7 +48,7 @@ module TAF
     #
     def update_all_members!
       newattitude		= self.attitude
-      @game.actors.each do |slug,actor|
+      @game.actors.each do |eid,actor|
         if (actor.respond_to?(:faction) && (actor.faction == self))
           actor.attitude	= newattitude
         end

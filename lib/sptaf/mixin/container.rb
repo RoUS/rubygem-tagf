@@ -55,9 +55,9 @@ module TAF
       end                       # module Containers eigenclass
 
       #
-      # All Containers are Things.
+      # All Containers are Elements.
       #
-      include(Mixin::Thing)
+      include(Mixin::Element)
 
       #
       # List of all the instance variables used by attributes supplied
@@ -100,6 +100,13 @@ module TAF
       end                       # def is_empty?
 
       #
+      # Is the container a surface, like a desk or table?  If so, it's
+      # always open.
+      #
+      # @!macro doc.TAF.classmethod.flag.invoke
+      flag(:is_surface)
+
+      #
       # Does the container have the option of being open or closed?
       # Think about a birdcage, which would want a door to keep any
       # birds from escaping.
@@ -138,13 +145,22 @@ module TAF
       #     (#is_openable), otherwise `false`.
       flag(is_open: false)
       def is_open
-        @is_open = false unless (self.is_openable?)
+        if (self.is_surface?)
+          @is_open	= true
+        elsif (! self.is_openable?)
+          @is_open	= false
+        end
         result		= @is_open
         return result
       end                       # def is_open
       alias_method(:is_open?, :is_open)
       def is_open=(value)
         value		= truthify(value)
+        #
+        # @todo
+        #   Need to handle trying to close an always-open surface with
+        #   an exception.
+        #
         if (self.is_openable?)
           @is_open	= value
         elsif (game_option?(:RaiseOnInvalidValues) && value)
@@ -200,10 +216,10 @@ module TAF
           bt		= caller
           bt.pop
           bt.pop
-          warn(('%s <slug=%s, name="%s"> already has an inventory, ' \
+          warn(('%s <eid=%s, name="%s"> already has an inventory, ' \
                 + "overwriting\n  %s") \
                % [self.class.name,
-                  self.slug,
+                  self.eid,
                   self.name,
                   bt.join("\n  ")])
         end
@@ -256,14 +272,14 @@ module TAF
       def update_inventory!
         if (debugging?(:inventory))
           warn('Updating inventory for <%s>[%s]' \
-               % [ self.class.name, self.slug.to_s ])
+               % [ self.class.name, self.eid.to_s ])
           if (self.pending_inventory.empty?)
             warn('No pending inventory updates for <%s>[%s]' \
-                 % [ self.class.name, self.slug.to_s ])
+                 % [ self.class.name, self.eid.to_s ])
             return self.inventory
           elsif (self.inventory.nil?)
             warn('Inventory for <%s>[%s] not yet ready' \
-                 % [ self.class.name, self.slug.to_s ])
+                 % [ self.class.name, self.eid.to_s ])
             return nil
           end
         end
@@ -271,9 +287,9 @@ module TAF
           if (debugging?(:inventory))
             warn('Dequeuing and adding <%s>[%s] to <%s>[%s] inventory' \
                  % [invobj.class.name,
-                    invobj.slug.to_s,
+                    invobj.eid.to_s,
                     self.class.name,
-                    self.slug.to_s
+                    self.eid.to_s
                    ])
           end
           result	= self.inventory.add(invobj)
@@ -285,7 +301,7 @@ module TAF
       # Method to add a game element to the current object's
       # inventory.
       #
-      # @param [Thing] arg
+      # @param [Element] arg
       # @!macro doc.TAF.formal.kwargs
       # @option kwargs [Symbol] :duh (nil)
       #   No options defined at this time.
@@ -301,12 +317,12 @@ module TAF
             if (debugging?(:inventory))
               warn('<%s>[%s].%s: Enqueuing <%s>[%s] for addition to <%s>[%s] inventory' \
                    % [self.class.name,
-                      self.slug.to_s,
+                      self.eid.to_s,
                       __method__.to_s,
                       arg.class.name,
-                      arg.slug.to_s,
+                      arg.eid.to_s,
                       self.class.name,
-                      self.slug.to_s
+                      self.eid.to_s
                      ])
             end
             self.pending_inventory.push(arg)
@@ -318,12 +334,12 @@ module TAF
         if (debugging?(:inventory))
           warn('<%s>[%s].%s: Adding <%s>[%s] to <%s>[%s] inventory' \
                % [self.class.name,
-                  self.slug.to_s,
+                  self.eid.to_s,
                   __method__.to_s,
                   arg.class.name,
-                  arg.slug.to_s,
+                  arg.eid.to_s,
                   self.class.name,
-                  self.slug.to_s
+                  self.eid.to_s
                  ])
         end
         result		= self.inventory.add(arg)
@@ -355,7 +371,7 @@ module TAF
         if (debugging?(:initialize))
           warn('<%s>[%s].%s running' \
                % [self.class.name,
-                  self.slug.to_s,
+                  self.eid.to_s,
                   __method__.to_s])
         end
         @pending_inventory	||= []

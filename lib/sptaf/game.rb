@@ -66,12 +66,12 @@ module TAF
     #
     # * `#game` --
     #   a link to the main Game object (an instance of this class).
-    # * `#slug` --
+    # * `#eid` --
     #   a unique identifier that is used to locate the element in the
     #   various inventories -- particularly the master, which is the
-    #   inventory of the Game object.  The <em>`slug`</em> can be any
+    #   inventory of the Game object.  The <em>`eid`</em> can be any
     #   class of object, but short strings without any whitespace are
-    #   recommended.  See Mixin::Thing#slug
+    #   recommended.  See Mixin::Element#eid
     # * `#owned_by` --
     #   the object in whose inventory the element is listed.
     #   <em>Every</em> element is listed in the master inventory, but
@@ -90,10 +90,10 @@ module TAF
     #   attributes to be set to the corresponding values, flags,
     #   control instructions, or other tuples intended for methods and
     #   constructors Game#initialize may invoke.
-    # @option kwargs [Symbol] :slug (nil)
+    # @option kwargs [Symbol] :eid (nil)
     #   This should be a simple string; it is recommended that you use
     #   a word or portmanteau that identifies the game itself (such as
-    #   `adventure` or `zork`), since the slug can be used to pick the
+    #   `adventure` or `zork`), since the eid can be used to pick the
     #   appropriate set of definitions out of a YAML file.  (See
     #   #load)
     # @option kwargs [Symbol] :owned_by (nil)
@@ -125,9 +125,9 @@ module TAF
       kwargs		= kwargs.merge(self.creation_overrides)
       self.game		= kwargs[:game]
       self.owned_by	= kwargs[:game]
-      kwargs.delete(:slug) if (@slug = kwargs[:slug])
+      kwargs.delete(:eid) if (@eid = kwargs[:eid])
       kwargs.delete(:name) if (self.name = kwargs[:name])
-      @slug		||= self.object_id
+      @eid		||= self.object_id
       self.name		||= ''
       self.is_static!
       self.initialize_thing(*args, **kwargs)
@@ -301,7 +301,7 @@ module TAF
       result		= '#<%s:"%s" name="%s">' \
                           % [
         self.class.name,
-        self.slug.to_s,
+        self.eid.to_s,
         self.name.to_s
       ]
       return result
@@ -311,39 +311,39 @@ module TAF
     # @todo
     #   * Really need to mutex or threadlock the inventories..
     #
-    def change_slug(obj=nil, oldslug=nil, newslug=nil, **kwargs)
+    def change_eid(obj=nil, oldeid=nil, neweid=nil, **kwargs)
       obj		||= kwargs[:object]
-      oldslug		||= kwargs[:oldslug]
-      newslug		||= kwargs[:newslug]
-      unless (obj.respond_to?(:slug))
+      oldeid		||= kwargs[:oldeid]
+      neweid		||= kwargs[:neweid]
+      unless (obj.respond_to?(:eid))
         raise_exception(NotGameElement, obj)
       end
       g			= self.game
       inventories	= g.inventory.select(only: :objects) { |o|
-        o.kind_of?(Inventory) && o.keys.include?(oldslug)
+        o.kind_of?(Inventory) && o.keys.include?(oldeid)
       }
       inventories.unshift(self.game.inventory)
       inventories_edited = []
       if (inventories.empty?)
-        warn("No inventories found containing slug '%s'" % [oldslug])
+        warn("No inventories found containing eid '%s'" % [oldeid])
       else
-        obj.instance_variable_set(:@slug, newslug)
+        obj.instance_variable_set(:@eid, neweid)
         inventories.each do |i|
-          ckobj		= i[oldslug]
+          ckobj		= i[oldeid]
           if (ckobj != obj)
             raise_exception(KeyObjectMismatch,
-                            oldslug,
+                            oldeid,
                             obj,
                             ckobj,
                             i.name)
           end
-          i.delete(oldslug)
+          i.delete(oldeid)
           i.add(obj)
           inventories_edited <<	i
         end                     # inventories.each do
       end
       return inventories_edited
-    end                         # def change_slug
+    end                         # def change_eid
 
     #
     def load(*args, **kwargs)

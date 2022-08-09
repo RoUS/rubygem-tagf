@@ -158,7 +158,7 @@ module TAF
   # @param [Object] target
   # @return [Boolean]
   def is_game_element?(target)
-    result	= target.singleton_class.ancestors.include?(Mixin::Thing)
+    result	= target.singleton_class.ancestors.include?(Mixin::Element)
     return result ? true : false
   end                           # is_game_element?(target)
   module_function(:is_game_element?)

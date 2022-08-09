@@ -27,7 +27,7 @@ module TAF
   class Inventory
 
     #
-    include(Mixin::Thing)
+    include(Mixin::Element)
 
     #
     include(Enumerable)
@@ -67,7 +67,7 @@ module TAF
     def name
       text		= "Inventory for %s '%s'" \
                           % [self.owned_by.class.name,
-                             (self.owned_by.name || self.owned_by.slug).to_s]
+                             (self.owned_by.name || self.owned_by.eid).to_s]
       return text
     end                         # def name
 
@@ -76,7 +76,7 @@ module TAF
       if (debugging?(:initialize))
         warn('<%s>[%s].%s running' \
              % [self.class.name,
-                self.slug.to_s,
+                self.eid.to_s,
                 __method__.to_s])
       end
       @contents		= {}
@@ -88,9 +88,9 @@ module TAF
       # Use the inventory key of the owner to make navigation
       # simpler.
       #
-      @slug		= '<%s>[%s].inventory' \
+      @eid		= '<%s>[%s].inventory' \
                           % [owned_by.class.name,
-                             owned_by.slug.to_s]
+                             owned_by.eid.to_s]
       self.initialize_thing([], **kwargs)
       self.game.add(self)
     end                         # def initialize
@@ -105,8 +105,8 @@ module TAF
                            + '>') \
                           % [
         self.class.name,
-        self.slug.to_s,
-        self.game.slug.to_s,
+        self.eid.to_s,
+        self.game.eid.to_s,
         self.name.to_s,
         @contents.count,
         pluralise('object', @contents.count),
@@ -152,7 +152,7 @@ module TAF
 
     #
     def []=(*args)
-      gameobjs		= args.select { |o| o.kind_of?(Mixin::Thing) }
+      gameobjs		= args.select { |o| o.kind_of?(Mixin::Element) }
       unless ((args - gameobjs).empty?)
         raise_exception(NotGameElement,
                         'only game elements ' \
@@ -198,22 +198,22 @@ module TAF
 
     #
     # Adds an object to this object's inventory.  Doesn't change the
-    # object's owner (see {Mixin::Thing#move_to}), and will raise an
+    # object's owner (see {Mixin::Element#move_to}), and will raise an
     # exception if
     #
     # a. the object is already in the new inventory
     #    <strong>AND</strong> the new inventory isn't the master
     #    inventory for the game.
     #
-    # @param [Mixin::Thing] arg
+    # @param [Mixin::Element] arg
     # @raise [NotGameElement]
     # @raise [AlreadyInInventory]
     #
     def add(arg, **kwargs)
-      unless (arg.class.ancestors.include?(Mixin::Thing))
+      unless (arg.class.ancestors.include?(Mixin::Element))
         raise_exception(NotGameElement, arg)
       end
-      key		= arg.slug
+      key		= arg.eid
       if (@contents.keys.include?(key))
         oldobj		= @contents[key]
         if ((arg != oldobj) || (! self.master? ))
@@ -223,12 +223,12 @@ module TAF
       if (debugging?(:inventory))
         warn('<%s>[%s].%s: Adding <%s>[%s] to <%s>[%s] inventory' \
              % [self.class.name,
-                self.slug.to_s,
+                self.eid.to_s,
                 __method__.to_s,
                 arg.class.name,
-                arg.slug.to_s,
+                arg.eid.to_s,
                 self.class.name,
-                self.slug
+                self.eid
                ])
       end
       @contents[key]	= arg
@@ -244,23 +244,23 @@ module TAF
     #   Optional hash of keywords/values, used only by this method and
     #   not passed on to anything invoked by it.
     # @option kwargs [Symbol] :only (nil)
-    #   Allows iterating over either the slugs or the objects in the
-    #   inventory.  If `:slugs` or `:keys`, only the slugs will be
+    #   Allows iterating over either the eids or the objects in the
+    #   inventory.  If `:eids` or `:keys`, only the eids will be
     #   passed to the block iterator; if `:objects`, then the actual
     #   objects.  If omitted altogether, then the block is passed a
-    #   two-element array [<em>slug</em>, <em>object</em>] at each
+    #   two-element array [<em>eid</em>, <em>object</em>] at each
     #   iteration.
-    # @return [Array<slug>]
-    #   when invoked with `only: :keys` or `only: :slugs`.
+    # @return [Array<eid>]
+    #   when invoked with `only: :keys` or `only: :eids`.
     # @return [Array<gameobject>]
     #   when invoked with `only: :objects`.
-    # @return [Hash{slug=>gameobject}]
-    #   when `:only` is something other than `:keys`, `:slugs`, or
+    # @return [Hash{eid=>gameobject}]
+    #   when `:only` is something other than `:keys`, `:eids`, or
     #   `:objects`, or is omitted entirely.
     def each(*args, **kwargs, &block)
       list		= @contents
       result		= []
-      if (%i[ slugs keys ].include?(kwargs[:only]))
+      if (%i[ eids keys ].include?(kwargs[:only]))
         list		= @contents.keys
       elsif (kwargs[:only] == :objects)
         list		= @contents.values
@@ -276,24 +276,24 @@ module TAF
     #   Optional hash of keywords/values, used only by this method and
     #   not passed on to anything invoked by it.
     # @option kwargs [Symbol] :only (nil)
-    #   Allows iterating over either the slugs or the objects in the
-    #   inventory.  If the value is either `:slugs` or `:keys`, only
-    #   the slugs will be passed to the block iterator; if the value
+    #   Allows iterating over either the eids or the objects in the
+    #   inventory.  If the value is either `:eids` or `:keys`, only
+    #   the eids will be passed to the block iterator; if the value
     #   is `:objects`, then only the actual objects are passed.  If
     #   this option is omitted altogether, then the block is passed a
-    #   two-element array [<em>slug</em>, <em>object</em>] at each
+    #   two-element array [<em>eid</em>, <em>object</em>] at each
     #   iteration.
-    # @return [Array<slug>]
-    #   when invoked with `only: :keys` or `only: :slugs`.
+    # @return [Array<eid>]
+    #   when invoked with `only: :keys` or `only: :eids`.
     # @return [Array<gameobject>]
     #   when invoked with `only: :objects`.
-    # @return [Hash{slug=>gameobject}]
-    #   when `:only` is something other than `:keys`, `:slugs`, or
+    # @return [Hash{eid=>gameobject}]
+    #   when `:only` is something other than `:keys`, `:eids`, or
     #   `:objects`, or is omitted entirely.
     def select(*args, **kwargs, &block)
       list		= @contents
       result		= []
-      if (%i[ slugs keys ].include?(kwargs[:only]))
+      if (%i[ eids keys ].include?(kwargs[:only]))
         list		= @contents.keys
       elsif (kwargs[:only] == :objects)
         list		= @contents.values

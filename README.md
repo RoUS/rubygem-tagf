@@ -6,7 +6,7 @@
 
 require('sptaf')
 include SPTAF
-game = Game.new(slug: 'mytextgame',
+game = Game.new(eid: 'mytextgame',
                 name: 'The Secrect Caverns of the Shoggoths',
                 shortdesc: 'My first game',
                 author: 'John Q Doe <johnqdoe@example.com>')
@@ -14,16 +14,170 @@ game.load(file: 'mytextgame.yaml')
 game.start
 ```
 
-## The Game Object
+## [Things Specific to Actors](id:actor-features)
 
-**`slug`**
+### [Attributes](id:actor-attributes)
 
-: The game-wide unique identifier for the object.
+[**`maxhp`**](id:attribute-maxhp) [rw] (`Integer`)
 
-**`game`**
+: TBS
+
+[**`hp`**](id:attribute-hp) [rw] (`Float`)
+
+: TBS
+
+[**`faction`**](id:attribute-faction) [rw] ([`Faction`](#class-faction)
+
+: TBS
+
+[**`attitude`**](id:attribute-attitude) [rw] (`Symbol`)
+
+: TBS
+
+[**`breadcrumbs`**](id:attribute-breadcrumbs) [rw] (`Array`)
+
+: TBS
+
+## [Things Specific to Containers](id:container-features)
+
+### [Attributes](id:container-attributes)
+
+[**`allow_containers`**](id:attribute-allow_containers) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`is_surface`**](id:attribute-is_surface) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`is_openable`**](id:attribute-is_openable) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`is_open`**](id:attribute-is_open) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`is_transparent`**](id:attribute-is_transparent) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`capacity_items`**](id:attribute-capacity_items) [rw] (`Integer`)
+
+: TBS
+
+[**`current_items`**](id:attribute-current_items) [rw] (`Integer`)
+
+: TBS
+
+[**`capacity_mass`**](id:attribute-capacity_mass) [rw] (`Float`)
+
+: TBS
+
+[**`current_mass`**](id:attribute-current_mass) [rw] (`Float`)
+
+: TBS
+
+[**`capacity_volume`**](id:attribute-capacity_volume) [rw] (`Float`)
+
+: TBS
+
+[**`current_volume`**](id:attribute-current_volume) [rw] (`Float`)
+
+: TBS
+
+## [Things Specific to Locations](id:location-features)
+
+### [Attributes](id:location-attributes)
+
+[**`paths`**](id:attribute-paths) [rw] (`Hash`)
+
+: TBS
+
+[**`light_level`**](id:attribute-light_level) [rw] (`Float`)
+
+: TBS
+
+## [Things Relating to Events](id:event-features)
+
+### [Attributes](id:event-attributes)
+
+[**`events_heard`**](id:attribute-events_heard) [rw] (`Set`)
+
+: TBS
+
+[**`event_queue`**](id:attribute-event_queue) [r] (`Array`)
+
+: TBS
+
+## [Things Common to All Classes](id:common-features)
+
+### [Attributes](id:common-attributes)
+
+[**`eid`**](id:attribute-eid) [ro]
+
+: The game-wide unique element identifier for the object.
+
+[**`game`**](id:attribute-game) [rw]
 
 : The game object that ultimately owns all the other objects. Each
   object has this attribute, which is how they can find each other.
+
+[**`owned_by`**](id:attribute-owned_by) [rw] ([`Element`](#class-element))
+
+: TBS
+
+[**`name`**](id:attribute-name) [rw] (`String`)
+
+: TBS
+
+[**`desc`**](id:attribute-desc) [rw] (`String`)
+
+: TBS
+
+[**`shortdesc`**](id:attribute-shortdesc) [rw] (`String`)
+
+: TBS
+
+[**`illumination`**](id:attribute-illumination) [rw] (`Integer`)
+
+: TBS
+
+[**`pct_dim_per_turn`**](id:attribute-pct_dim_per_turn) [rw] (`Float`)
+
+: TBS
+
+[**`only_dim_near_player`**](id:attribute-only_dim_near_player) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`mass`**](id:attribute-mass) [rw] (`Float`)
+
+: TBS
+
+[**`volume`**](id:attribute-volume) [rw] (`Float`)
+
+: TBS
+
+[**`is_static`**](id:attribute-is_static) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`is_visible`**](id:attribute-is_visible) [rw] ([Boolean](#type-flag))
+
+: TBS
+
+[**`article`**](id:attribute-article) [rw] (`String`)
+
+: TBS
+
+[**`preposition`**](id:attribute-preposition) [rw] (`String`)
+
+: TBS
+
+### [Methods](id:common-methods)
+
+## The Game Object
 
 [**`is_container?`**](id:attribute-is_container)
 
@@ -35,7 +189,7 @@ game.start
 
 Description goes here.
 
-### [Class: Thing](id:class-thing)
+### [Class: Element](id:class-element)
 
 Description goes here.
 

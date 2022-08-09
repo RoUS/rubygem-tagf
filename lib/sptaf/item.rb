@@ -27,7 +27,7 @@ module TAF
   class Item
     
     #
-    include(Mixin::Thing)
+    include(Mixin::Element)
 
     #
     # If the item is a container, we'll mix in Mixin::Container during
@@ -85,8 +85,8 @@ module TAF
                            + '>') \
                           % [
         self.class.name,
-        self.slug.to_s,
-        self.game.slug.to_s,
+        self.eid.to_s,
+        self.game.eid.to_s,
         self.name.to_s,
         self.is_static.inspect,
         (self.is_container? \

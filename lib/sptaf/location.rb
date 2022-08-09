@@ -52,7 +52,7 @@ module TAF
   class Connexion
 
     #
-    include(Mixin::Thing)
+    include(Mixin::Element)
 
     #
     # @!macro doc.TAF.classmethod.flag.invoke

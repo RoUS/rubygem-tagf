@@ -30,7 +30,7 @@ module TAF
     # Define class methods and constants that will be added to all
     # object classes in the TAF namespace.
     #
-    module Thing
+    module Element
 
       #
       class Description < ::String
@@ -61,22 +61,22 @@ module TAF
       extend(ClassMethods)
 
       #
-      # The <em>`slug`</em> is the unique game-wide identifier for each
+      # The <em>`eid`</em> is the unique game-wide identifier for each
       # object.  As such, it only has a reader/getter defined so it
       # can't be accidentally altered, and is `nil` until set during
       # game object initialisation.  To change it, use the
-      # {Game#change_slug} method.
+      # {Game#change_eid} method.
       #
       # <strong>N.B.</strong>:
-      # An object's slug can be any sort of non-`nil` object, but
+      # An object's eid can be any sort of non-`nil` object, but
       # strings or numbers are recommended.  In game data files, strings
       # should be used when defining objects such as rooms, items,
       # <em>&.</em>
       #
       # @return [Object,nil]
-      #  the current value of the object's slug.
+      #  the current value of the object's eid.
       #
-      attr_reader(:slug)
+      attr_reader(:eid)
 
       # @!attribute [rw] game
       #
@@ -160,7 +160,7 @@ module TAF
       # (<em>`sym`</em>`=`) methods, and so if a value MUST be changed,
       # there are special semantics for making it happen.
       #
-      ONCE_AND_DONE	= %i[ game slug owned_by ]
+      ONCE_AND_DONE	= %i[ game eid owned_by ]
 
       #
       # How to refer to the element as a singular, such as "**a**
@@ -274,7 +274,7 @@ module TAF
         begin
           if (args[0].inventory.can_add?(self))
             newowner = args[0] unless (newowner = kwargs[:owned_by])
-            self.owned_by.inventory.delete(self.slug)
+            self.owned_by.inventory.delete(self.eid)
             newowner.inventory.add(self)
           end
         rescue InventoryLimitError => e
@@ -299,21 +299,21 @@ module TAF
       #
       # @param [Array] args
       # @!macro doc.TAF.formal.kwargs
-      # @option kwargs [Symbol] :slug (nil)
+      # @option kwargs [Symbol] :eid (nil)
       # @option kwargs [Symbol] :owned_by (nil)
       # @option kwargs [Symbol] :game (nil)
       # @raise [NoObjectOwner]
       # @raise [SettingLocked]
       # @raise [RuntimeError]
       # @raise [NoGameContext]
-      # @return [Thing] self
+      # @return [Element] self
       #
       def initialize_thing(*args, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \
                % [self.class.name, __method__.to_s])
         end
-        @slug		||= kwargs[:slug] || self.object_id
+        @eid		||= kwargs[:eid] || self.object_id
         if (self.owned_by.nil? \
             && ((! kwargs.key?(:owned_by)) \
                 || kwargs[:owned_by].nil?))
@@ -372,7 +372,7 @@ module TAF
       end                       # def initialize_thing
 
       nil
-    end                         # module TAF::Mixin::Thing
+    end                         # module TAF::Mixin::Element
 
     nil
   end                           # module TAF::Mixin

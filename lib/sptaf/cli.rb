@@ -32,7 +32,7 @@ module TAF
   class Verb
 
     #
-    include(Mixin::Thing)
+    include(Mixin::Element)
 
     #
     # @return [String]
@@ -82,7 +82,7 @@ module TAF
   class Imperative
 
     #
-    include(Mixin::Thing)
+    include(Mixin::Element)
 
     #
     # @!macro doc.TAF.formal.kwargs
@@ -100,7 +100,7 @@ module TAF
   class Noun
 
     #
-    include(Mixin::Thing)
+    include(Mixin::Element)
 
     #
     # @!macro doc.TAF.formal.kwargs
