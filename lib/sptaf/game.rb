@@ -46,7 +46,7 @@ module TAF
     attr_reader(:inventory)
 
     #
-    # @!macro doc.TAF.classmethod.flag.use
+    # @!macro doc.TAF.classmethod.flag.invoke
     flag(:loaded)
 
     #

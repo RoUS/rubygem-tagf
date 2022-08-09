@@ -112,19 +112,19 @@ module TAF
       attr_accessor(:shortdesc)
 
       #
-      # @!macro doc.TAF.classmethod.int_accessor.use
+      # @!macro doc.TAF.classmethod.int_accessor.invoke
       int_accessor(:illumination)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:pct_dim_per_turn)
 
       #
-      # @!macro doc.TAF.classmethod.flag.use
+      # @!macro doc.TAF.classmethod.flag.invoke
       flag(only_dim_near_player: true)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:mass)
 
       #
@@ -134,7 +134,7 @@ module TAF
       # a volume limitation.  (See #mass,
       # {Mixin::Container#capacity_items}.)
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:volume)
 
       #
@@ -144,11 +144,11 @@ module TAF
       # move; things like the player (Player) or any NPCs (NPC) are
       # moved using specific semantics.
       #
-      # @!macro doc.TAF.classmethod.flag.use
+      # @!macro doc.TAF.classmethod.flag.invoke
       flag(:is_static)
 
       #
-      # @!macro doc.TAF.classmethod.flag.use
+      # @!macro doc.TAF.classmethod.flag.invoke
       flag(:is_visible)
 
       #

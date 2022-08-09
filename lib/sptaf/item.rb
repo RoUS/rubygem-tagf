@@ -52,7 +52,7 @@ module TAF
     # an Item (or multiple Items), or it may be a Feature and
     # therefore not acquirable.
     #
-    # @!macro doc.TAF.classmethod.flag.use
+    # @!macro doc.TAF.classmethod.flag.invoke
     flag(:is_living)
 
     #

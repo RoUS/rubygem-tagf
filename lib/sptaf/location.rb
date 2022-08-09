@@ -55,7 +55,7 @@ module TAF
     include(Mixin::Thing)
 
     #
-    # @!macro doc.TAF.classmethod.flag.use
+    # @!macro doc.TAF.classmethod.flag.invoke
     flag(:reversible)
 
     #

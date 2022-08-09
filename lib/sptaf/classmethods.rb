@@ -105,7 +105,7 @@ module TAF
     end                         # def _inivaluate_attrib
     private(:_inivaluate_attrib)
 
-    # @ ! macro doc.TAF.classmethod.flag.def
+    # @ ! macro doc.TAF.classmethod.flag.declare
     def flag(*args, **kwargs)
       kwargs		= _inivaluate_attrib(false,
                                              *args,
@@ -164,7 +164,7 @@ module TAF
     #       the value of `value` that was passed in.
     #
 
-    # @!macro doc.TAF.classmethod.float_accessor.def
+    # @!macro doc.TAF.classmethod.float_accessor.declare
     def float_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s
       kwargs		= _inivaluate_attrib(0.0, *args, **kwargs)
@@ -202,7 +202,7 @@ module TAF
     alias_method(:float_reader, :float_accessor)
     alias_method(:float_writer, :float_accessor)
 
-    # @!macro doc.TAF.classmethod.int_accessor.def
+    # @!macro doc.TAF.classmethod.int_accessor.declare
     def int_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s
       kwargs		= _inivaluate_attrib(0, *args, **kwargs)

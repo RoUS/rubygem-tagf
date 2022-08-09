@@ -83,7 +83,7 @@ module TAF
       # Whether or not this container is permitted to have others
       # nested inside it.
       #
-      # @!macro doc.TAF.classmethod.flag.use
+      # @!macro doc.TAF.classmethod.flag.invoke
       flag(:allow_containers)
 
       #
@@ -104,7 +104,7 @@ module TAF
       # Think about a birdcage, which would want a door to keep any
       # birds from escaping.
       #
-      # @!macro doc.TAF.classmethod.flag.use
+      # @!macro doc.TAF.classmethod.flag.invoke
       flag(is_openable: false)
 
       #
@@ -113,7 +113,7 @@ module TAF
       # the ClassMethods#flag method to provide correct results if the
       # element can't even be opened.
       #
-      # @!macro doc.TAF.classmethod.flag.use
+      # @!macro doc.TAF.classmethod.flag.invoke
       # @overload is_open
       #   @return `true` or `false` if the element can be opened
       #   (#is_openable), otherwise `false`.
@@ -166,7 +166,7 @@ module TAF
       # Can you see through the container and identify what's inside?
       # Default is `false`.
       #
-      # @!macro doc.TAF.classmethod.flag.use
+      # @!macro doc.TAF.classmethod.flag.invoke
       flag(is_transparent: false)
 
       # @!attribute [rw] inventory
@@ -216,29 +216,29 @@ module TAF
       # 0).  Zero means no limit.  Items are game objects that are
       # non-static instances of {Container} or {Item}.
       #
-      # @!macro doc.TAF.classmethod.int_accessor.use
+      # @!macro doc.TAF.classmethod.int_accessor.invoke
       int_accessor(:capacity_items)
 
       #
       # Count of things currently in the object's inventory.
       #
-      # @!macro doc.TAF.classmethod.int_accessor.use
+      # @!macro doc.TAF.classmethod.int_accessor.invoke
       int_accessor(:current_items)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:capacity_mass)
       
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:current_mass)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:capacity_volume)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:current_volume)
 
       #

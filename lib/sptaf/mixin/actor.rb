@@ -59,11 +59,11 @@ module TAF
       end                         # module TAF::Mixin::Actors eigenclass
 
       #
-      # @!macro doc.TAF.classmethod.int_accessor.use
+      # @!macro doc.TAF.classmethod.int_accessor.invoke
       int_accessor(:maxhp)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:hp)
 
       #

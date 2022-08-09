@@ -58,7 +58,7 @@ module TAF
       attr_accessor(:paths)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.use
+      # @!macro doc.TAF.classmethod.float_accessor.invoke
       float_accessor(:light_level)
 
       #
