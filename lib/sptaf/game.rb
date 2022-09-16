@@ -32,6 +32,23 @@ module TAF
     include(Mixin::Container)
 
     #
+    attr_accessor(:author)
+
+    #
+    attr_accessor(:copyright)
+
+    #
+    attr_accessor(:licence)
+    alias_method(:license, :licence)
+    alias_method(:license=, :licence=)
+
+    #
+    attr_accessor(:version)
+
+    #
+    attr_accessor(:date)
+
+    #
     # This is the game's master inventory.  All objects (including
     # inventories) created for this game are registered in this
     # inventory.  While things can be deleted from it, they cannot be
@@ -130,7 +147,7 @@ module TAF
       @eid		||= self.object_id
       self.name		||= ''
       self.is_static!
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
       self.add(self)
       self.allow_containers!

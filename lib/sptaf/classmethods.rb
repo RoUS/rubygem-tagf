@@ -15,8 +15,8 @@
 #++
 # frozen_string_literal: true
 
-require_relative('debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
+#require_relative('debugging')
+#warn(__FILE__) if (TAF.debugging?(:file))
 require('ostruct')
 require('byebug')
 
@@ -75,7 +75,7 @@ module TAF
     #   a hash of <em>keysym:inival</em> tuples built from merging the
     #   <em>kwargs</em> hash onto the one constructed from the
     #   <em>args</em> array and the <em>default</em> value.
-    def _inivaluate_attrib(default=nil, *args, **kwargs, &block)
+    def _inivaluate_args(default=nil, *args, **kwargs, &block)
       unless ((argc = args.count).zero?)
         #
         # Turn any bare attributes into hashes with the appropriate
@@ -102,14 +102,14 @@ module TAF
         end
       end
       return kwargs
-    end                         # def _inivaluate_attrib
-    private(:_inivaluate_attrib)
+    end                         # def _inivaluate_args
+    private(:_inivaluate_args)
 
     # @ ! macro doc.TAF.classmethod.flag.declare
     def flag(*args, **kwargs)
-      kwargs		= _inivaluate_attrib(false,
-                                             *args,
-                                             **kwargs) { |v|
+      kwargs		= _inivaluate_args(false,
+                                           *args,
+                                           **kwargs) { |v|
         truthify(v)
       }
       kwargs.each do |attrib,default|
@@ -128,7 +128,8 @@ module TAF
           return ival
         }
         #
-        # Now the query method, which is basically a copy of the getter method.
+        # Now the query method, which is basically a copy of the
+        # getter method.
         #
         alias_method(f_attr.query, f_attr.getter)
 =begin
@@ -164,10 +165,14 @@ module TAF
     #       the value of `value` that was passed in.
     #
 
+    # @todo
+    #   Add the ability for attributes to have their own validation
+    #   blocks.
+    #
     # @!macro doc.TAF.classmethod.float_accessor.declare
     def float_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s
-      kwargs		= _inivaluate_attrib(0.0, *args, **kwargs)
+      kwargs		= _inivaluate_args(0.0, *args, **kwargs)
       kwargs.each do |attrib,default|
         f_attr		= decompose_attrib(attrib, default)
         unless (f_attr.default.kind_of?(Float))
@@ -205,7 +210,7 @@ module TAF
     # @!macro doc.TAF.classmethod.int_accessor.declare
     def int_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s
-      kwargs		= _inivaluate_attrib(0, *args, **kwargs)
+      kwargs		= _inivaluate_args(0, *args, **kwargs)
       kwargs.each do |attrib,default|
         f_attr		= decompose_attrib(attrib, default)
         unless (f_attr.default.kind_of?(Integer))

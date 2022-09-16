@@ -32,8 +32,6 @@ module TAF
   module Mixin
 
     #
-    include(::TAF)
-
     module Events
 
       #

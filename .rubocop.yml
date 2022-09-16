@@ -1,13 +1,82 @@
 AllCops:
   TargetRubyVersion: 2.6
+  NewCops: enable
+
+Style/BlockDelimiters:
+  Enabled: false
+
+Style/ClassCheck:
+  Enabled: false
+
+#
+# I personally prefer #kind_of? since it implicitly includes
+# inheritance over #is_a?, which sound like 'this and only this.'
+#
+Style/CommentedKeyword:
+  Enabled: false
+
+#
+# Ostensibly to blather somethin about using `next`, but gets confused
+# about continuation lines \ in Ruby code (such as used to make
+# conditions align).
+#
+Style/Next:
+  Enabled: false
+
+Style/ParenthesesAroundCondition:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  Enabled: false
+
+Style/RedundantParentheses:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+Style/RedundantSelf:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
 
 Style/StringLiterals:
-  Enabled: true
+  Enabled: false
   EnforcedStyle: double_quotes
 
 Style/StringLiteralsInInterpolation:
   Enabled: true
   EnforcedStyle: double_quotes
 
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Layout/ExtraSpacing:
+  Enabled: false
+
+Layout/IndentationStyle:        # I happen to *like* TABs in indent
+  Enabled: false
+
 Layout/LineLength:
   Max: 120
+
+Layout/SpaceAfterNot:
+  Enabled: false
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: false
+
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
+
+# Local Variables:
+# mode: yaml
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:

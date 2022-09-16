@@ -64,7 +64,7 @@ module TAF
         warn('[%s]->%s running' \
              % [self.class.name, __method__.to_s])
       end
-      initialize_thing(*args, **kwargs)
+      initialize_element(*args, **kwargs)
       if (self.name.nil?)
         raise_exception(NameRequired, self)
       end

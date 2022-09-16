@@ -100,7 +100,7 @@ module TAF
           hp:		0.0,
           attitude:	:neutral
         }
-        self.initialize_thing(*args, kwargs_defaults.merge(kwargs))
+        self.initialize_element(*args, kwargs_defaults.merge(kwargs))
         return self
       end                         # def initialize_actor
 

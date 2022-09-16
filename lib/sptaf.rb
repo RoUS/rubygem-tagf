@@ -18,6 +18,7 @@
 require('rubygems')
 require('bundler')
 Bundler.setup
+require('set')
 require('contracts')
 
 # @!macro doc.TAF.module
@@ -29,12 +30,12 @@ module TAF
   nil
 end                             # module TAF
 
+require('sptaf/classmethods')
 require('sptaf/debugging')
 
 warn(__FILE__) if (TAF.debugging?(:file))
 
 require('sptaf/version')
-require('sptaf/classmethods')
 require('sptaf/exceptions')
 
 unless ((RUBY_ENGINE == 'ruby') \
@@ -51,11 +52,26 @@ require('sptaf/mixin/events')
 module TAF
 
   #
-  # List of game-wide option flags to impose (or relax) certain restrictions.
+  # List of game-wide option flags to impose (or relax) certain
+  # restrictions.
   #
   GAME_OPTIONS		= %i[
                              RaiseOnInvalidValues
+                             EnableHitpoints
+                             EnforceLighting
+                             EnforceMass
+                             EnforceVolume
+                             EnforceItemCounts
+                             EnforceCapacities
                             ]
+
+  GAME_OPTION_CLUMPS	= {
+    EnforceCapacities:	%i[
+                           EnforceMass
+                           EnforceVolume
+                           EnforceItemCounts
+                          ],
+  }
 
   # @!macro [new] doc.TAF.module.eigenclass
   #   Eigenclass for a TAF module.  It provides class methods (like
@@ -65,11 +81,52 @@ module TAF
 
     #
     def game_options(*args, **kwargs)
-      
+      @game_options	||= Set.new
+      return @game_options.to_a if (args.empty? && kwargs.empty?)
+      requested		= _inivaluate_attrib(true, *args, **kwargs)
+      unknown		= requested.keys - GAME_OPTIONS
+      unknown.each do |opt|
+        warn('%s.%s: unknown game option: %s' \
+             % ['TAF', __method__.to_s, opt.to_s])
+        requested.delete(opt)
+      end
+      GAME_OPTION_CLUMPS.each do |brolly,clumped|
+        if (requested.keys.include?(brolly))
+          newval	= requested[brolly]
+          clumped.each do |opt|
+            requested[opt] = newval unless (requested.keys.include?(opt))
+          end
+        requested[brolly] = false
+        end
+      end                       # GAME_OPTION_CLUMPS.each
+      newopts		= requested.keys.select { |k| requested[k] }
+      @game_options.replace(Set.new(newopts))
+      return @game_options.to_a
     end                         # def game_options(*args, **kwargs)
 
     nil
   end                           # module TAF eigenclass
+
+  # Check to see whether one or more game options are currently
+  # enabled.  If any arguments aren't recognised as game options, a
+  # warning is sent to `stderr` and that argument is ignored.
+  #
+  # @param [Symbol] option
+  # @param [Array<Symbol>] args
+  # @return [Boolean]
+  #   `true` if **all** of the requested options are currently
+  #   enabled.
+  def game_options?(option, *args)
+    requested		= Set.new([option, *args].map { |o| o.to_sym })
+    unknown		= requested - GAME_OPTIONS
+    unknown.each do |opt|
+      warn('%s.%s: unknown game option: %s' \
+           % ['TAF', __method__.to_s, opt.to_s])
+      requested.delete(opt)
+    end
+    active		= TAF.game_options
+    return requested.all? { |opt| active.include?(opt) }
+  end                           # def game_options?(*args)
 
   #
   extend(ClassMethods)

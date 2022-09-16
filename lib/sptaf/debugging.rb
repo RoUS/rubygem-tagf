@@ -17,18 +17,20 @@
 
 require('rubygems')
 require('contracts')
+require('byebug')
 
 # @!macro doc.TAF.module
 module TAF
 
   #
   class << self
-    
+=begin
     UNIVERSAL_MODULES	= [
       Contracts::Core,
       TAF::ClassMethods,
       TAF::Exceptions,
     ]
+=end
 
     #
     # We can either `include` the classmethods module in the
@@ -37,6 +39,7 @@ module TAF
     # little better what's going on.
     #
     def invasion_force(klass=self)
+=begin
       UNIVERSAL_MODULES.each do |xmodule|
         next unless (defined?(xmodule))
         unless (klass.included_modules.include?(xmodule))
@@ -54,6 +57,7 @@ module TAF
           klass.extend(xmodule)
         end
       end
+=end
     end                         # def invasion_force
 
     invasion_force(self)
@@ -68,7 +72,7 @@ module TAF
 
     nil
   end                           # module TAF eigenclass
-  
+
   nil
 end
 

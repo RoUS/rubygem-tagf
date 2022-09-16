@@ -39,7 +39,7 @@ module TAF
              % [self.class.name, __method__.to_s])
       end
       self.paths	||= {}
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
       self.initialize_location(*args, **kwargs)
       self.game.add(self)
@@ -67,7 +67,7 @@ module TAF
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
     end                         # def initialize(*args, **kwargs)
 
     nil

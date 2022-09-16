@@ -38,7 +38,7 @@ module TAF
         warn('[%s]->%s running' \
              % [self.class.name, __method__.to_s])
       end
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
       args		= args.dup
       self.game		||= kwargs[:game]
       if (kwargs[:owned_by] && kwargs[:owned_by].respond_to?(:game))

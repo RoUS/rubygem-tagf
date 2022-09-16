@@ -15,8 +15,8 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
+#require('sptaf/debugging')
+#warn(__FILE__) if (TAF.debugging?(:file))
 require('sptaf')
 
 # @!macro doc.TAF.module
@@ -376,7 +376,6 @@ module TAF
 
       include(::TAF)
 
-      o#
       extend(Contracts::Core)
       
       Contract([Class,

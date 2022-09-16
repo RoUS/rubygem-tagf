@@ -308,7 +308,7 @@ module TAF
       # @raise [NoGameContext]
       # @return [Element] self
       #
-      def initialize_thing(*args, **kwargs)
+      def initialize_element(*args, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \
                % [self.class.name, __method__.to_s])
@@ -369,7 +369,7 @@ module TAF
         self.game.add(self)
         self.owned_by.add(self)
         return self
-      end                       # def initialize_thing
+      end                       # def initialize_element
 
       nil
     end                         # module TAF::Mixin::Element

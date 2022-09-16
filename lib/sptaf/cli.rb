@@ -69,7 +69,7 @@ module TAF
              % [self.class.name, __method__.to_s])
       end
       kwargs[:type] = :intransitive unless (kwargs[:type])
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
       return self
     end                         # def initialize(*args, **kwargs)
 
@@ -89,7 +89,7 @@ module TAF
     # @return [Imperative] self
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
       return self
     end                         # def initialize(*args, **kwargs)
 
@@ -108,7 +108,7 @@ module TAF
     #
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
     end                         # def initialize(*args, **kwargs)
 
     nil

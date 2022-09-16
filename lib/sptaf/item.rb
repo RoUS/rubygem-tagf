@@ -62,7 +62,7 @@ module TAF
              % [self.class.name, __method__.to_s])
       end
       self.is_static	= false
-      self.initialize_thing(*args, **kwargs)
+      self.initialize_element(*args, **kwargs)
       if (kwargs[:is_container])
         #
         # @todo

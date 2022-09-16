@@ -91,7 +91,7 @@ module TAF
       @eid		= '<%s>[%s].inventory' \
                           % [owned_by.class.name,
                              owned_by.eid.to_s]
-      self.initialize_thing([], **kwargs)
+      self.initialize_element([], **kwargs)
       self.game.add(self)
     end                         # def initialize
 
