@@ -1,3 +1,4 @@
+#! /usr/bin/env ruby
 #--
 # Copyright © 2022 Ken Coar
 #
@@ -20,6 +21,10 @@ require('ostruct')
 require('byebug')
 require('ruby-graphviz')
 
+elts		= OpenStruct.new
+elts.modules	||= []
+elts.classes	||= []
+
 attrmap		= OpenStruct.new(
   mixin:	{
     color:	'red',
@@ -33,12 +38,12 @@ attrmap		= OpenStruct.new(
     label:	'has',
     color:	'blue',
   },
-  includes:	{
-    label:	'includes',
+  included_by:	{
+    label:	'included-by',
     color:	'green',
   },
-  extends:	{
-    label:	'extends',
+  extended_by:	{
+    label:	'extended-by',
     color:	'cyan',
   })
 
@@ -46,8 +51,11 @@ mgraf		= GraphViz.new(:TAF,
                                type:	:digraph,
                                label:	'TAF')
 
-module_taf	= mgraf.add_nodes('module_TAF',
-                                  label:	'module TAF')
+module_taf	= mgraf.add_nodes('module_TAF')
+module_taf[:label] = 'module TAF'
+elts.module_taf	= module_taf
+elts.modules.push(module_taf)
+
 module_classmethods= mgraf.add_nodes('module_ClassMethods',
                                      label:	'module ClassMethods')
 mixins		= mgraf.add_nodes('module_Mixins',
@@ -86,26 +94,46 @@ class_connexion	= mgraf.add_nodes('class_Connexion',
                                   {
                                     label:	'class Connexion',
                                   }.merge(attrmap.klass))
-class_container	= mgraf.add_nodes('class Container',
-                                  attrmap.klass)
-class_faction	= mgraf.add_nodes('class Faction',
-                                  attrmap.klass)
-class_feature	= mgraf.add_nodes('class Feature',
-                                  attrmap.klass)
-class_game	= mgraf.add_nodes('class Game',
-                                  attrmap.klass)
-class_inventory	= mgraf.add_nodes('class Inventory',
-                                  attrmap.klass)
-class_item	= mgraf.add_nodes('class Item',
-                                  attrmap.klass)
-class_location	= mgraf.add_nodes('class Location',
-                                  attrmap.klass)
-class_npc	= mgraf.add_nodes('class NPC',
-                                  attrmap.klass)
-class_player	= mgraf.add_nodes('class Player',
-                                  attrmap.klass)
-class_reality	= mgraf.add_nodes('class Reality',
-                                  attrmap.klass)
+class_container	= mgraf.add_nodes('class_Container',
+                                  {
+                                    label:	'class Container',
+                                  }.merge(attrmap.klass))
+class_faction	= mgraf.add_nodes('class_Faction',
+                                  {
+                                    label:	'class Faction',
+                                  }.merge(attrmap.klass))
+class_feature	= mgraf.add_nodes('class_Feature',
+                                  {
+                                    label:	'class Feature',
+                                  }.merge(attrmap.klass))
+class_game	= mgraf.add_nodes('class_Game',
+                                  {
+                                    label:	'class Game',
+                                  }.merge(attrmap.klass))
+class_inventory	= mgraf.add_nodes('class_Inventory',
+                                  {
+                                    label:	'class Inventory',
+                                  }.merge(attrmap.klass))
+class_item	= mgraf.add_nodes('class_Item',
+                                  {
+                                    label:	'class Item',
+                                  }.merge(attrmap.klass))
+class_location	= mgraf.add_nodes('class_Location',
+                                  {
+                                    label:	'class Location',
+                                  }.merge(attrmap.klass))
+class_npc	= mgraf.add_nodes('class_NPC',
+                                  {
+                                    label:	'class NPC',
+                                  }.merge(attrmap.klass))
+class_player	= mgraf.add_nodes('class_Player',
+                                  {
+                                    label:	'class Player',
+                                  }.merge(attrmap.klass))
+class_reality	= mgraf.add_nodes('class_Reality',
+                                  {
+                                    label:	'class Reality',
+                                  }.merge(attrmap.klass))
 
 [
   [mixin_actor,		class_npc],
@@ -115,7 +143,6 @@ class_reality	= mgraf.add_nodes('class Reality',
   [mixin_container,	class_game],
   [mixin_container,	mixin_actor],
   [mixin_container,	mixin_location],
-  [mixin_debug,		module_taf],
   [mixin_debug,		module_taf],
   [mixin_element,	class_connexion],
   [mixin_element,	class_faction],
@@ -131,9 +158,9 @@ class_reality	= mgraf.add_nodes('class Reality',
   [module_taf,		mixin_exceptions],
   [module_taf,		module_classmethods],
 ].each do |(n1, n2)|
-  mgraf.add_edge(n1, n2, attrmap.includes)
+  mgraf.add_edge(n1, n2, attrmap.included_by)
 end
-debugger
+
 =begin
 
 #
@@ -155,7 +182,7 @@ end
   [module_classmethods,	mixin_location],
   [module_classmethods,	module_taf],
 ].each do |(n2, n1)|
-  mgraf.add_edge(n1, n2, attrmap.extends)
+  mgraf.add_edge(n1, n2, attrmap.extended_by)
 end
 
 =end
