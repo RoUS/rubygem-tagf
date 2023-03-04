@@ -17,8 +17,8 @@
 
 require('versionomy')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   # We're going with a minimum version of the `ruby` engine 2.7.0
@@ -55,7 +55,7 @@ module TAF
   end
   module_function(:VERSION)
 
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

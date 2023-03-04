@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-RSpec.describe Sptafr do
+RSpec.describe TAGF do
   it "has a version number" do
-    expect(Sptafr::VERSION).not_to be nil
+    expect(TAGF::VERSION).not_to be nil
   end
 
   it "does something useful" do

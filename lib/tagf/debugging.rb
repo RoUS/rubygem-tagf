@@ -15,20 +15,18 @@
 #++
 # frozen_string_literal: true
 
-require('rubygems')
-require('contracts')
-require('byebug')
+require('tagf')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   class << self
 =begin
     UNIVERSAL_MODULES	= [
       Contracts::Core,
-      TAF::ClassMethods,
-      TAF::Exceptions,
+      TAGF::ClassMethods,
+      TAGF::Exceptions,
     ]
 =end
 
@@ -43,14 +41,14 @@ module TAF
       UNIVERSAL_MODULES.each do |xmodule|
         next unless (defined?(xmodule))
         unless (klass.included_modules.include?(xmodule))
-          if (TAF.debugging?(:include))
+          if (TAGF.debugging?(:include))
             warn('<%s>[eigenclass] including module <%s>' \
                  % [ klass.name, xmodule.name ])
           end
           klass.include(xmodule)
         end
         unless (klass.singleton_class.included_modules.include?(xmodule))
-          if (TAF.debugging?(:extend))
+          if (TAGF.debugging?(:extend))
             warn('<%s>[eigenclass] extending module <%s>' \
                  % [ klass.name, xmodule.name ])
           end
@@ -60,36 +58,34 @@ module TAF
 =end
     end                         # def invasion_force
 
-    invasion_force(self)
+#    invasion_force(self)
 
-    # @!macro doc.TAF.module.classmethod.included
+    # @!macro doc.TAGF.module.classmethod.included
     def included(klass)
       whoami            = '<%s>[eigenclass.%s]' \
                           % [self.name, __method__.to_s]
-      invasion_force(klass)
+#      invasion_force(klass)
       return nil
     end                         # def included(klass)
 
     nil
-  end                           # module TAF eigenclass
+  end                           # module TAGF eigenclass
 
   nil
 end
 
-require('sptaf/mixin/debugging')
-require('set')
-require('byebug')
+require('tagf/mixin/debugging')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   include(Mixin::Debugging)
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
-warn(__FILE__) if (TAF.debugging?(:file))
+warn(__FILE__) if (TAGF.debugging?(:file))
 
 # Local Variables:
 # mode: ruby

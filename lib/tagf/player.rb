@@ -15,14 +15,14 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('set')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   class Player
@@ -113,7 +113,7 @@ module TAF
   end                           # class Player
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

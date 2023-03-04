@@ -47,14 +47,14 @@ attrmap		= OpenStruct.new(
     color:	'cyan',
   })
 
-mgraf		= GraphViz.new(:TAF,
+mgraf		= GraphViz.new(:TAGF,
                                type:	:digraph,
-                               label:	'TAF')
+                               label:	'TAGF')
 
-module_taf	= mgraf.add_nodes('module_TAF')
-module_taf[:label] = 'module TAF'
-elts.module_taf	= module_taf
-elts.modules.push(module_taf)
+module_tagf	= mgraf.add_nodes('module_TAGF')
+module_tagf[:label] = 'module TAGF'
+elts.module_tagf	= module_tagf
+elts.modules.push(module_tagf)
 
 module_classmethods= mgraf.add_nodes('module_ClassMethods',
                                      label:	'module ClassMethods')
@@ -143,20 +143,20 @@ class_reality	= mgraf.add_nodes('class_Reality',
   [mixin_container,	class_game],
   [mixin_container,	mixin_actor],
   [mixin_container,	mixin_location],
-  [mixin_debug,		module_taf],
+  [mixin_debug,		module_tagf],
   [mixin_element,	class_connexion],
   [mixin_element,	class_faction],
   [mixin_element,	class_inventory],
   [mixin_element,	class_item],
   [mixin_element,	class_reality],
   [mixin_element,	mixin_container],
-  [mixin_events,	module_taf],
-  [mixin_exceptions,	module_taf],
+  [mixin_events,	module_tagf],
+  [mixin_exceptions,	module_tagf],
   [mixin_location,	class_location],
-  [module_taf,		mixin_element],
-  [module_taf,		mixin_events],
-  [module_taf,		mixin_exceptions],
-  [module_taf,		module_classmethods],
+  [module_tagf,		mixin_element],
+  [module_tagf,		mixin_events],
+  [module_tagf,		mixin_exceptions],
+  [module_tagf,		module_classmethods],
 ].each do |(n1, n2)|
   mgraf.add_edge(n1, n2, attrmap.included_by)
 end
@@ -180,10 +180,106 @@ end
   [mixin_debug,		module_classmethods],
   [module_classmethods,	mixin_container],
   [module_classmethods,	mixin_location],
-  [module_classmethods,	module_taf],
+  [module_classmethods,	module_tagf],
 ].each do |(n2, n1)|
   mgraf.add_edge(n1, n2, attrmap.extended_by)
 end
+
+tagf_eigenclass.provides = %w[
+game_options
+]
+
+tagf.provides = %w[
+game_options?
+raise_exception
+is_game_element?
+pluralise
+truthify
+decompose_attrib
+]
+
+classmethods.provides = %w[
+_inivaluate_args
+flag
+float_accessor
+float_reader
+float_writer
+int_accessor
+int_reader
+int_writer
+]
+
+actor.provides = %w[
+initialize_actor
+add
+]
+
+container.provides = %w[
+flag_allow_containers
+is_empty?
+flag_is_surface
+flag_is_openable
+flag_is_open
+flag_is_transparent
+inventory
+inventory=
+capacity_items
+capacity_items=
+current_items
+current_items=
+capacity_mass
+capacity_mass=
+current_mass
+current_mass=
+capacity_volume
+capacity_volume=
+current_volume
+current_volume=
+pending_inventory
+pending_inventory=
+contains_item?
+update_inventory!
+add
+inventory_is_full
+initialize_container
+]
+
+element.provides = %w[
+eid
+game
+game=
+owned_by
+owned_by=
+name
+name=
+desc
+desc=
+shortdesc
+shortdesc=
+illumination
+illumination=
+pct_dim_per_turn
+pct_dim_per_turn=
+flag_only_dim_near_player
+mass
+mass=
+volume
+volume=
+flag_is_static
+flag_is_visible
+article
+article=
+preoposition
+preposition=
+describe
+is_container?
+has_inventory?
+has_items?
+add_inventory
+move_to
+contained_in
+initialize_element
+]
 
 =end
 

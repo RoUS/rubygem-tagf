@@ -15,15 +15,15 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
-  # @!macro doc.TAF.Mixin.module
+  # @!macro doc.TAGF.Mixin.module
   module Mixin
 
     #
@@ -43,7 +43,7 @@ module TAF
       #
       class << self
 
-        # @!macro doc.TAF.module.classmethod.included
+        # @!macro doc.TAGF.module.classmethod.included
         def included(klass)
           whoami		= '%s eigenclass.%s' \
                                   % [self.name, __method__.to_s]
@@ -56,14 +56,14 @@ module TAF
         end                       # def included(klass)
 
         nil
-      end                         # module TAF::Mixin::Actors eigenclass
+      end                         # module TAGF::Mixin::Actors eigenclass
 
       #
-      # @!macro doc.TAF.classmethod.int_accessor.invoke
+      # @!macro doc.TAGF.classmethod.int_accessor.invoke
       int_accessor(:maxhp)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:hp)
 
       #
@@ -86,7 +86,7 @@ module TAF
       attr_reader(:breadcrumbs)
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [???] self
       #
       def initialize_actor(*args, **kwargs)
@@ -105,7 +105,7 @@ module TAF
       end                         # def initialize_actor
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [???] self
       #
       def add(*args, **kwargs)
@@ -118,13 +118,13 @@ module TAF
       end                       # def add(*args, **kwargs)
 
       nil
-    end                         # module TAF::Mixin::Actor
+    end                         # module TAGF::Mixin::Actor
 
     nil
-  end                           # module TAF::Mixin
+  end                           # module TAGF::Mixin
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

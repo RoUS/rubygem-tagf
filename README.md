@@ -1,11 +1,11 @@
-#  SPTAF - Single-Player Text Adventure Framework
+#  TAGF - Single-Player Text Adventure Framework
 
 ## Usage
 
 ```ruby
 
-require('sptaf')
-include SPTAF
+require('tagf')
+include TAGF
 game = Game.new(eid: 'mytextgame',
                 name: 'The Secrect Caverns of the Shoggoths',
                 shortdesc: 'My first game',
@@ -282,7 +282,7 @@ Description goes here.
 
 Description goes here.
 
-## [Contributing to sptaf](id:contributing)
+## [Contributing to tagf](id:contributing)
 
 * Check out the latest master to make sure the feature hasn't been
   implemented or the bug hasn't been fixed yet.
@@ -301,7 +301,7 @@ Description goes here.
 
 ## [Copyright](id:copyright)
 
-`SPTAF` is copyright (c) 2022 by Ken Coar, and is made available
+`TAGF` is copyright (c) 2022 by Ken Coar, and is made available
 under the terms of the Apache Licence 2.0. See the
 [LICENCE file](./file.LICENCE.html) for further details.
 

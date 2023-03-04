@@ -15,26 +15,20 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
-  # @!macro doc.TAF.Mixin.module
-  module Mixin
+  #
+  module Refinement
 
-    #
-    # Define class methods and constants that will be added to all
-    # object classes in the TAF namespace.
-    #
-    module Element
+    module Description
 
-      #
-      class Description < ::String
-
+      refine(::String) do
         #
         # Allow a decription to be formatted as to width and proper
         # bullet indentation.
@@ -48,13 +42,32 @@ module TAF
           return self
         end                     # def wordwrap
 
-      end                       # class Description
+        nil
+      end                       # refine(::String)
+
+      nil
+    end                         # module TAGF::Refinement::Description
+
+    nil
+  end                           # module TAGF::Refinement
+
+  # @!macro doc.TAGF.Mixin.module
+  module Mixin
+
+    #
+    # Define class methods and constants that will be added to all
+    # object classes in the TAF namespace.
+    #
+    module Element
 
       #
-      include(::TAF)
+      using(TAGF::Refinement::Description)
 
       #
-      if (TAF.debugging?(:extend))
+      include(TAGF::Mixin::Base)
+
+      #
+      if (TAGF.debugging?(:extend))
         warn('%s extending itself with %s' \
              % [ self.name, ClassMethods.name ])
       end
@@ -112,19 +125,19 @@ module TAF
       attr_accessor(:shortdesc)
 
       #
-      # @!macro doc.TAF.classmethod.int_accessor.invoke
+      # @!macro doc.TAGF.classmethod.int_accessor.invoke
       int_accessor(:illumination)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:pct_dim_per_turn)
 
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       flag(only_dim_near_player: true)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:mass)
 
       #
@@ -134,7 +147,7 @@ module TAF
       # a volume limitation.  (See #mass,
       # {Mixin::Container#capacity_items}.)
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:volume)
 
       #
@@ -144,11 +157,11 @@ module TAF
       # move; things like the player (Player) or any NPCs (NPC) are
       # moved using specific semantics.
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       flag(:is_static)
 
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       flag(:is_visible)
 
       #
@@ -298,7 +311,7 @@ module TAF
 
       #
       # @param [Array] args
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @option kwargs [Symbol] :eid (nil)
       # @option kwargs [Symbol] :owned_by (nil)
       # @option kwargs [Symbol] :game (nil)
@@ -372,12 +385,12 @@ module TAF
       end                       # def initialize_element
 
       nil
-    end                         # module TAF::Mixin::Element
+    end                         # module TAGF::Mixin::Element
 
     nil
-  end                           # module TAF::Mixin
+  end                           # module TAGF::Mixin
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

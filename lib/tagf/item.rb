@@ -15,13 +15,13 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   class Item
@@ -52,7 +52,7 @@ module TAF
     # an Item (or multiple Items), or it may be a Feature and
     # therefore not acquirable.
     #
-    # @!macro doc.TAF.classmethod.flag.invoke
+    # @!macro doc.TAGF.classmethod.flag.invoke
     flag(:is_living)
 
     #
@@ -66,7 +66,7 @@ module TAF
       if (kwargs[:is_container])
         #
         # @todo
-        #   Reconcile this with TAF.mixin, its super, and
+        #   Reconcile this with TAGF.mixin, its super, and
         #   self.include.
         #
         self.singleton_class.include(Mixin::Container)
@@ -101,7 +101,7 @@ module TAF
     nil
   end                           # class Item
 
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

@@ -15,13 +15,13 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   class Inventory
@@ -32,7 +32,7 @@ module TAF
     #
     include(Enumerable)
 
-    # @!macro [attach] doc.TAF.classmethod.flag
+    # @!macro [attach] doc.TAGF.classmethod.flag
     #   @overload $1
     #     Return the current value of `$1`, which is always either
     #     `true` or `false`.  It will have no other values.
@@ -362,7 +362,7 @@ module TAF
   end                           # class Inventory
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

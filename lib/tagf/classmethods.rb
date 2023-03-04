@@ -16,13 +16,49 @@
 # frozen_string_literal: true
 
 #require_relative('debugging')
-#warn(__FILE__) if (TAF.debugging?(:file))
-require('ostruct')
-require('byebug')
+#warn(__FILE__) if (TAGF.debugging?(:file))
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
+  #
+  # 'Class' methods for the `TAGF` module, which serve as a central
+  # static point for things shared across the package.
+  #
+  module PackageClassMethods
+    
+    #
+    def game_options(*args, **kwargs)
+      @game_options	||= Set.new
+      return @game_options.to_a if (args.empty? && kwargs.empty?)
+      requested		= _inivaluate_attrib(true, *args, **kwargs)
+      unknown		= requested.keys - GAME_OPTIONS
+      unknown.each do |opt|
+        warn('%s.%s: unknown game option: %s' \
+             % ['TAGF', __method__.to_s, opt.to_s])
+        requested.delete(opt)
+      end
+      GAME_OPTION_CLUMPS.each do |brolly,clumped|
+        if (requested.keys.include?(brolly))
+          newval	= requested[brolly]
+          clumped.each do |opt|
+            requested[opt] = newval unless (requested.keys.include?(opt))
+          end
+        requested[brolly] = false
+        end
+      end                       # GAME_OPTION_CLUMPS.each
+      newopts		= requested.keys.select { |k| requested[k] }
+      @game_options.replace(Set.new(newopts))
+      return @game_options.to_a
+    end                         # def game_options(*args, **kwargs)
+
+    nil
+  end                           # module TAGF::PackageClassMethods
+
+  # @!macro [new] doc.TAGF.module.eigenclass
+  #   Eigenclass for a TAGF module.  It provides class methods (like
+  #   additional attribute declaration methods) for anything that
+  #   extends the TAGF module into its singleton class.
   #
   # Define class methods and constants that will be added to all
   # modules and classes in the TAF namespace.  These definitions live
@@ -34,21 +70,83 @@ module TAF
   module ClassMethods
 
     #
-    include(::TAF)
+    extend(self)
 
-    # @!macro doc.TAF.module.classmethod.included
+    #
+    include(TAGF::Mixin::Base)
+
+    #
+    include(Contracts::Core)
+
+    #
+    extend(TAGF::Mixin::Base)
+
+    #
+    # Modules for automatic inclusion for `include`:
+    #
+    INCLUSION_MODULES	= [
+      TAGF::Mixin::Base,
+    ]
+
+    EXTENSION_MODULES	= [
+      TAGF::ClassMethods,
+      TAGF::Mixin::Base,
+    ]
+
+    # @!macro doc.TAGF.module.classmethod.included
     def included(klass)
-      whoami		= '%s eigenclass.%s' \
-                          % [self.name, __method__.to_s]
-      TAF.invasion_force(klass)
+      whoami		= '%s.%s; %s.include(%s)' \
+                          % [self.name,
+                             __method__.to_s,
+                             klass.name,
+                             self.name]
+      warn(whoami)
+      warn(format('  %s.include(%s) processed',
+                  klass.name,
+                  self.name))
+      #
+      # Include any missing required modules into the invoking class.
+      #
+      warn(format('  %s.included_modules=%s',
+                  klass.name,
+                  klass.included_modules.to_s))
+      warn(format('  %s.ancestors=%s',
+                  klass.name,
+                  klass.ancestors.to_s))
+      INCLUSION_MODULES.each do |minc|
+        unless (klass.included_modules.include?(minc) \
+                || klass.ancestors.include?(minc))
+          warn(format('  also including %s into %s',
+                      minc.name,
+                      self.name))
+          klass.include(minc)
+        end
+      end
+
+      EXTENSION_MODULES.each do |minc|
+        unless (klass.singleton_class.included_modules.include?(minc) \
+                || klass.singleton_class.ancestors.include?(minc))
+          warn(format('  also extending %s with %s',
+                      klass.name,
+                      minc.name))
+          klass.extend(minc)
+        end
+      end
+
+
+      super
       return nil
     end                         # def included(klass)
 
-    # @!macro doc.TAF.module.classmethod.included
+    # @!macro doc.TAGF.module.classmethod.extended
     def extended(klass)
-      whoami		= '%s eigenclass.%s' \
-                          % [self.name, __method__.to_s]
-      TAF.invasion_force(klass)
+      whoami		= '%s#%s; %s.extend(%s)' \
+                          % [self.name,
+                             __method__.to_s,
+                             klass.name,
+                             self.name]
+      warn(whoami)
+      super
       return nil
     end                         # def extended(klass)
 
@@ -105,7 +203,7 @@ module TAF
     end                         # def _inivaluate_args
     private(:_inivaluate_args)
 
-    # @ ! macro doc.TAF.classmethod.flag.declare
+    # @ ! macro doc.TAGF.classmethod.flag.declare
     def flag(*args, **kwargs)
       kwargs		= _inivaluate_args(false,
                                            *args,
@@ -152,7 +250,6 @@ module TAF
       nil
     end                         # def flag
 
-
     #   @overload $1
     #     @return [Float]
     #       the current value of `$1`.
@@ -169,7 +266,7 @@ module TAF
     #   Add the ability for attributes to have their own validation
     #   blocks.
     #
-    # @!macro doc.TAF.classmethod.float_accessor.declare
+    # @!macro doc.TAGF.classmethod.float_accessor.declare
     def float_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s
       kwargs		= _inivaluate_args(0.0, *args, **kwargs)
@@ -207,7 +304,7 @@ module TAF
     alias_method(:float_reader, :float_accessor)
     alias_method(:float_writer, :float_accessor)
 
-    # @!macro doc.TAF.classmethod.int_accessor.declare
+    # @!macro doc.TAGF.classmethod.int_accessor.declare
     def int_accessor(*args, **kwargs)
       attrmethod	= __method__.to_s
       kwargs		= _inivaluate_args(0, *args, **kwargs)
@@ -246,14 +343,14 @@ module TAF
     alias_method(:int_writer, :int_accessor)
 
     nil
-  end                           # module TAF::ClassMethods
+  end                           # module TAGF::ClassMethods
 
   #
   extend(ClassMethods)
 
   nil
-end                             # module TAF
-require('sptaf/exceptions')
+end                             # module TAGF
+require('tagf/exceptions')
 
 # Local Variables:
 # mode: ruby

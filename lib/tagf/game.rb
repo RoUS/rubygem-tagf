@@ -15,15 +15,15 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('psych')
 require('yaml')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   class Game
@@ -63,7 +63,7 @@ module TAF
     attr_reader(:inventory)
 
     #
-    # @!macro doc.TAF.classmethod.flag.invoke
+    # @!macro doc.TAGF.classmethod.flag.invoke
     flag(:loaded)
 
     #
@@ -202,7 +202,7 @@ module TAF
     # @raise [ImmovableElementDestinationError]
     # @return [void]
     def validate_container(target, newcontent, **kwargs)
-      unless (TAF.is_game_element?(target))
+      unless (TAGF.is_game_element?(target))
         raise_exception(NotGameElement, target)
       end
       unless (target.is_container?)
@@ -217,7 +217,7 @@ module TAF
       if ((newcontent == Inventory) && target.has_inventory?)
         raise_exception(AlreadyHasInventory, target)
       end
-      unless (TAF.is_game_element?(newcontent))
+      unless (TAGF.is_game_element?(newcontent))
         raise_exception(NotGameElement, newcontent)
       end
       if (newcontent.is_static? && (! target.is_static?))
@@ -385,7 +385,7 @@ module TAF
   end                           # class Game
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

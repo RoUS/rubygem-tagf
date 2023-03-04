@@ -18,10 +18,10 @@
 require('byebug')
 require('binding_of_caller')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
-  # @!macro doc.TAF.Mixin.module
+  # @!macro doc.TAGF.Mixin.module
   module Mixin
 
     #
@@ -62,7 +62,7 @@ module TAF
         end
       end                       # def notify_initialising
 
-      # @!macro doc.TAF.Mixin.module.eigenclass Debugging
+      # @!macro doc.TAGF.Mixin.module.eigenclass Debugging
       class << self
 
         #
@@ -97,7 +97,7 @@ module TAF
           return new_settings
         end                         # def set_debugging_options(*args, **kwargs)
 
-        # @!macro doc.TAF.module.classmethod.included
+        # @!macro doc.TAGF.module.classmethod.included
         def included(klass)
           whoami	= '%s eigenclass.%s' \
                           % [self.name, __method__.to_s]
@@ -113,10 +113,10 @@ module TAF
       end                       # module Debugging eigenclass
 
       nil
-    end                         # modulle Debugging
+    end                         # modulle TAGF::Mixin::Debugging
 
     nil
-  end                           # module Mixin
+  end                           # module TAGF::Mixin
 
   #
   def debugging?(item)
@@ -126,13 +126,13 @@ module TAF
     
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
-require('sptaf/debugging')
-require('sptaf')
-TAF.include(TAF::Mixin::Debugging)
-require('sptaf/classmethods')
-TAF::Mixin::Debugging.extend(TAF::ClassMethods)
+require('tagf/debugging')
+require('tagf')
+TAGF.include(TAGF::Mixin::Debugging)
+require('tagf/classmethods')
+TAGF::Mixin::Debugging.extend(TAGF::ClassMethods)
 
 # Local Variables:
 # mode: ruby

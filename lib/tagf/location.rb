@@ -15,13 +15,13 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   class Location
@@ -30,7 +30,7 @@ module TAF
     include(Mixin::Location)
 
     #
-    # @!macro doc.TAF.formal.kwargs
+    # @!macro doc.TAGF.formal.kwargs
     # @return [Location] self
     #
     def initialize(*args, **kwargs)
@@ -55,7 +55,7 @@ module TAF
     include(Mixin::Element)
 
     #
-    # @!macro doc.TAF.classmethod.flag.invoke
+    # @!macro doc.TAGF.classmethod.flag.invoke
     flag(:reversible)
 
     #
@@ -74,7 +74,7 @@ module TAF
   end                           # class Connexion
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

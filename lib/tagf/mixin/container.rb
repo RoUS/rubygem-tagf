@@ -15,15 +15,15 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
-  # @!macro doc.TAF.Mixin.module
+  # @!macro doc.TAGF.Mixin.module
   module Mixin
 
     #
@@ -32,27 +32,6 @@ module TAF
     # items.
     #
     module Container
-
-      # @!macro doc.TAF.Mixin.module.eigenclass Container
-      class << self
-
-        #
-        include(ClassMethods)
-
-        # @!macro doc.TAF.module.classmethod.included
-        def included(klass)
-          whoami	= '%s eigenclass.%s' \
-                          % [self.name, __method__.to_s]
-=begin
-          warn('%s called for %s' \
-               % [whoami, klass.name])
-=end
-          super
-          return nil
-        end                     # def included(klass)
-
-        nil
-      end                       # module Containers eigenclass
 
       #
       # All Containers are Elements.
@@ -83,7 +62,7 @@ module TAF
       # Whether or not this container is permitted to have others
       # nested inside it.
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       flag(:allow_containers)
 
       #
@@ -103,7 +82,7 @@ module TAF
       # Is the container a surface, like a desk or table?  If so, it's
       # always open.
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       flag(:is_surface)
 
       #
@@ -111,7 +90,7 @@ module TAF
       # Think about a birdcage, which would want a door to keep any
       # birds from escaping.
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       flag(is_openable: false)
 
       #
@@ -120,7 +99,7 @@ module TAF
       # the ClassMethods#flag method to provide correct results if the
       # element can't even be opened.
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       # @overload is_open
       #   @return `true` or `false` if the element can be opened
       #   (#is_openable), otherwise `false`.
@@ -182,7 +161,7 @@ module TAF
       # Can you see through the container and identify what's inside?
       # Default is `false`.
       #
-      # @!macro doc.TAF.classmethod.flag.invoke
+      # @!macro doc.TAGF.classmethod.flag.invoke
       flag(is_transparent: false)
 
       # @!attribute [rw] inventory
@@ -200,7 +179,7 @@ module TAF
       #     object's [new] inventory list.
       #   @raise [TypeError]
       #     `attribute 'inventory' requires an instance of class
-      #     TAF::Inventory` if the argument is not an actual instance
+      #     TAGF::Inventory` if the argument is not an actual instance
       #     of Inventory.
       #   @return [Inventory] object's new inventory object.
       #
@@ -209,7 +188,7 @@ module TAF
         unless (value.kind_of?(Inventory))
           raise_exception(TypeError,
                           ("attribute '#s' requires an instance " \
-                           + 'of class TAF::Inventory') \
+                           + 'of class TAGF::Inventory') \
                           % [__method__.to_s.sub(%r!=$!, '')])
         end
         unless (@inventory.nil?)
@@ -232,36 +211,36 @@ module TAF
       # 0).  Zero means no limit.  Items are game objects that are
       # non-static instances of {Container} or {Item}.
       #
-      # @!macro doc.TAF.classmethod.int_accessor.invoke
+      # @!macro doc.TAGF.classmethod.int_accessor.invoke
       int_accessor(:capacity_items)
 
       #
       # Count of things currently in the object's inventory.
       #
-      # @!macro doc.TAF.classmethod.int_accessor.invoke
+      # @!macro doc.TAGF.classmethod.int_accessor.invoke
       int_accessor(:current_items)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:capacity_mass)
       
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:current_mass)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:capacity_volume)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:current_volume)
 
       #
       attr_reader(:pending_inventory)
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [Boolean]
       #
       def contains_item?(*args, **kwargs)
@@ -302,7 +281,7 @@ module TAF
       # inventory.
       #
       # @param [Element] arg
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @option kwargs [Symbol] :duh (nil)
       #   No options defined at this time.
       # @raise [HasNoInventory]
@@ -364,7 +343,7 @@ module TAF
       end                       # def inventory_is_full(exc=nil)
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [Container] self
       #
       def initialize_container(*args, **kwargs)
@@ -380,13 +359,13 @@ module TAF
       end                       # def initialize_container
 
       nil
-    end                         # module Container
+    end                         # module TAGF::Mixin::Container
 
     nil
-  end                           # module Mixin
+  end                           # module TAGF::Mixin
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

@@ -31,7 +31,7 @@ include Rake::DSL
 #
 # Load our local tasks.
 #
-Dir['tasks/**/*.rake'].each { |t| load t }
+Dir['tasks/**/*.rake'].each { |t| load(t) }
 
 task(:default => :test)
 

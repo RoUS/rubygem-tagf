@@ -15,27 +15,28 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
-  #
-  # Defines exception classes specific to the {TAF} module.  All are
-  # namespaced under `TAF::Exceptions`.
-  #
-  # Some exceptions are used internally for signalling conditions,
-  # such as attempts to put more into a container than it can hold.
-  #
+  # @!macro doc.TAGF.Mixin.module
   module Mixin
 
+    #
+    #
+    # Defines exception classes specific to the {TAF} module.  All are
+    # namespaced under `TAGF::Exceptions`.
+    #
+    # Some exceptions are used internally for signalling conditions,
+    # such as attempts to put more into a container than it can hold.
     #
     module Events
 
       #
-      include(::TAF)
+      include(::TAGF::Mixin::Base)
 
       EventList			= {
         EventTurnBegin:		:turn_begin,
@@ -137,13 +138,13 @@ module TAF
       end                       # def onDropped
 
       nil
-    end                         # module TAF::Mixin::Events
+    end                         # module TAGF::Mixin::Events
 
     nil
-  end                           # module TAF::Mixin
+  end                           # module TAGF::Mixin
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

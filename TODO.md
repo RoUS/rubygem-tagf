@@ -1,14 +1,41 @@
-# TODO items for MethUtil Ruby gem
+# TODO items for TAGF Ruby gem
 
-* Adapt to keyword arguments introduced in Ruby 2
-* Options for opts2attributes (use the attribute writer if there is
-  one).  If there isn't:
-  a. ignore it
-  a. store it into the corresponding instance variable
-     1. regardless of any existing value
-     1. only if the variable doesn't exist, else do nothing
-     1. raise an exception if the variable exists
-  a. raise an exception
+* Move detailed documentation out of `README` and into a separate
+  file.
+* Fix all references to `sptaf` and `TAF` to `tagf` and `TAGF`
+  respectively.
+* Abstract out all methods in the top `TAGF` module to a separate
+  `TAGF::Base` module; `TAGF` should be namespace only/
+* Sort out `included` and `extended` module class methods so that
+  including any of the mixins will properly include all the ancestors
+  and set up the class methods for the invoking entity.
+* See about replacing monkey patch of `String` with a refining module.
+* Investigate inheritance of modules brought in with `using` method.
+* Add visibility/opacity to `Location` (for fog/darkness effects,
+  *&c.*).
+* Add Thor (?) generators for building (rooms, items, connexions, and
+  so on), verifying the locations as a graph to make sure everything
+  is reachable — and escapeable.
+* Add functionality for doors.
+* Add functionality for locks (doors, chests, padlocks) and
+  keys/tokens to lock/unlock them.
+* Levels as an alternative (or in addition) to meandering cave-like
+  structures.
+* Add concept pf traps?
+  * Perception-like checks for detection
+  * [Re]settable by PCs, DM, auto-reset, *&c.*
+* Scriptable monster/NPC actions and reactions (think ADVENT's snake
+  with and without the bird).
+  * Work on how to add scripting to [YAML?] definition file
+  * Figure out how to manage flag re/setting for stepping through
+    complex patterns, such as solving a combination lock 
+* Ability to short-circuit logic paths that become unavailable (again,
+  think of what happens in ADVENT if you prematurely kill the bird).
+* Consumables (such as torches, ADVENT's lantern batteries, *&c.*).
+* Figure out how to chain together `Location`s to provide for seamless
+  hallways, stairs, and other labyrinthinic structures.
+* Build `describe` method that can do as deep a dive as requested for
+  nested `Container`s with inventories.
 
   
 <!-- Local Variables: -->

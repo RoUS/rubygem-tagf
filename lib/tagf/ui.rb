@@ -15,14 +15,12 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
-require('ostruct')
-require('byebug')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   # Directions, possibly prefixed with `go` (as in `south` or
@@ -60,7 +58,7 @@ module TAF
     attr_accessor(:target)
 
     #
-    # @!macro doc.TAF.formal.kwargs
+    # @!macro doc.TAGF.formal.kwargs
     # @return [Verb] self
     #
     def initialize(*args, **kwargs)
@@ -85,7 +83,7 @@ module TAF
     include(Mixin::Element)
 
     #
-    # @!macro doc.TAF.formal.kwargs
+    # @!macro doc.TAGF.formal.kwargs
     # @return [Imperative] self
     def initialize(*args, **kwargs)
       warn('[%s]->%s running' % [self.class.name, __method__.to_s])
@@ -103,7 +101,7 @@ module TAF
     include(Mixin::Element)
 
     #
-    # @!macro doc.TAF.formal.kwargs
+    # @!macro doc.TAGF.formal.kwargs
     # @return [Noun] self
     #
     def initialize(*args, **kwargs)
@@ -199,7 +197,7 @@ module TAF
 =end
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

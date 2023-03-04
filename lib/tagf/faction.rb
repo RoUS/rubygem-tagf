@@ -15,13 +15,13 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   class Faction
@@ -56,7 +56,7 @@ module TAF
     end                         # def update_all_members!
 
     #
-    # @!macro doc.TAF.formal.kwargs
+    # @!macro doc.TAGF.formal.kwargs
     # @return [Faction] self
     #
     def initialize(*args, **kwargs)
@@ -75,7 +75,7 @@ module TAF
   end                           # class Faction
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

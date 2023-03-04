@@ -15,38 +15,47 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
-  class Feature
+  class NPC
 
     #
-    include(Mixin::Container)
+    include(Mixin::Actor)
 
     #
-    # @!macro doc.TAF.formal.kwargs
-    # @return [Feature] self
+    # @!macro doc.TAGF.formal.kwargs
+    # @return [NPC] self
     #
     def initialize(*args, **kwargs)
       if (debugging?(:initialize))
         warn('[%s]->%s running' \
              % [self.class.name, __method__.to_s])
       end
+      @breadcrumbs	= []
       self.initialize_element(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
+      self.initialize_actor(*args, **kwargs)
+      unless (self.inventory)
+        self.game.create_inventory_on(self,
+                                      game:	self.game,
+                                      owned_by:	self)
+      end
       self.is_static!
-    end                         # def initialize(*args, **kwargs)
+      self.game.add(self)
+    end                         # def initialize
 
-  end                           # class Feature
+    nil
+  end                           # class NPC
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

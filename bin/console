@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require('bundler/setup')
-require('sptaf')
+require('tagf')
 
 # You can add fixtures and/or initialization code here to make experimenting
 # with your gem easier. You can also use a different console, if you like.
@@ -11,5 +11,5 @@ require('sptaf')
 # require "pry"
 # Pry.start
 
-require "irb"
+require('irb')
 IRB.start(__FILE__)

@@ -15,27 +15,27 @@
 #++
 # frozen_string_literal: true
 
-require_relative('lib/sptaf/version')
+require_relative('lib/tagf/version')
 
 Gem::Specification.new do |gem|
-  gem.name		= 'sptaf'
-  gem.version		= TAF::VERSION
+  gem.name		= 'tagf'
+  gem.version		= TAGF::VERSION
 
   if (gem.respond_to?(:required_rubygems_version=))
     gem.required_rubygems_version = Gem::Requirement.new('>= 1.7.2')
   end
   gem.authors		= ['Ken Coar']
-  gem.email		= ['The.Rodent.of.Unusual.Size+taf@gmail.com']
+  gem.email		= ['The.Rodent.of.Unusual.Size+tagf@gmail.com']
 
   gem.date		= '2022-05-28'
-  gem.summary		= 'Extensions for easier customising of exceptions.'
-  gem.description	= 'Extensions for easier customising of exceptions++'
-  gem.homepage		= 'http://github.com/RoUS/exceptable'
+  gem.summary		= 'Text Adventure Game Framework gem'
+  gem.description	= 'Provide a basis for mostly data-driven text game construction.'
+  gem.homepage		= 'http://github.com/RoUS/tagf'
 
   gem.licenses		= ['Apache 2.0']
   gem.rubygems_version 	= '1.7.2'
   gem.required_ruby_version \
-        		= TAF::RUBY_VERSION_MIN_GEMSPEC
+        		= TAGF::RUBY_VERSION_MIN_GEMSPEC
   gem.metadata['rubygems_mfa_required'] = 'String' # eh? true
   gem.metadata['allowed_push_host'] \
   			= 'TODO: Set to your gem server "https://example.com"'

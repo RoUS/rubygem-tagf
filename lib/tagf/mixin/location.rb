@@ -15,14 +15,14 @@
 #++
 # frozen_string_literal: true
 
-require('sptaf/debugging')
-warn(__FILE__) if (TAF.debugging?(:file))
+require('tagf/debugging')
+warn(__FILE__) if (TAGF.debugging?(:file))
 require('byebug')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
-  # @!macro doc.TAF.Mixin.module
+  # @!macro doc.TAGF.Mixin.module
   module Mixin
 
     #
@@ -31,13 +31,13 @@ module TAF
     #
     module Location
 
-      # @!macro doc.TAF.Mixin.module.eigenclass Location
+      # @!macro doc.TAGF.Mixin.module.eigenclass Location
       class << self
 
         #
         include(ClassMethods)
 
-        # @!macro doc.TAF.module.classmethod.included
+        # @!macro doc.TAGF.module.classmethod.included
         def included(klass)
           whoami		= '%s eigenclass.%s' \
                                   % [self.name, __method__.to_s]
@@ -58,7 +58,7 @@ module TAF
       attr_accessor(:paths)
 
       #
-      # @!macro doc.TAF.classmethod.float_accessor.invoke
+      # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:light_level)
 
       #
@@ -69,18 +69,18 @@ module TAF
         end
         self.paths	= {}
         #      self.initialize_container(*args, **kwargs)
-        #      self.inventory	= ::TAF::Inventory.new(game:	self,
+        #      self.inventory	= ::TAGF::Inventory.new(game:	self,
         #                                              owned_by: self)
       end                       # def initialize_location
 
       nil
-    end                         # module Location
+    end                         # module TAGF::Mixin::Location
 
     nil
-  end                           # module Mixin
+  end                           # module TAGF::Mixin
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

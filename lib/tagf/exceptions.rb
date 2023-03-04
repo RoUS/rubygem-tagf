@@ -15,29 +15,33 @@
 #++
 # frozen_string_literal: true
 
-#require('sptaf/debugging')
-#warn(__FILE__) if (TAF.debugging?(:file))
-require('sptaf')
+#require('tagf/debugging')
+#warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf')
 
-# @!macro doc.TAF.module
-module TAF
+# @!macro doc.TAGF.module
+module TAGF
 
   #
   # Defines exception classes specific to the {TAF} module.  All are
-  # namespaced under `TAF::Exceptions`.
+  # namespaced under `TAGF::Exceptions`.
   #
   # Some exceptions are used internally for signalling conditions,
   # such as attempts to put more into a container than it can hold.
   #
   module Exceptions
 
-    include(::TAF)
+    #
+    include(TAGF::Mixin::Base)
 
     #
     class ErrorBase < StandardError
 
       #
-      include(::TAF)
+      extend(TAGF::ClassMethods)
+
+      #
+      include(TAGF::Mixin::Base)
 
       #
       def _set_message(text)
@@ -61,13 +65,18 @@ module TAF
     module InventoryLimitExceeded
 
       #
-      extend(ClassMethods)
+      extend(TAGF::ClassMethods)
 
       #
-      class LimitItems < ::TAF::Exceptions::ErrorBase
+      include(TAGF::Mixin::Base)
+
+      #
+      class LimitItems < ::TAGF::Exceptions::ErrorBase
 
         #
-        # @!macro doc.TAF.formal.kwargs
+        # @!macro doc.TAGF.formal.kwargs
+        # @return [InventoryLimitExceeded::LimitItems] self
+        #
         def initialize(*args, **kwargs)
           if (debugging?(:initialize))
             warn('[%s]->%s running' \
@@ -97,6 +106,7 @@ module TAF
         nil
       end                       # class LimitItems
 
+      nil
     end                         # module InventoryLimitExceeded
 
     LimitItems		= InventoryLimitExceeded::LimitItems
@@ -105,7 +115,9 @@ module TAF
     class NoLoadFile < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [NoLoadFile] self
+      #
       def initialize(*args, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \
@@ -128,7 +140,9 @@ module TAF
     class BadLoadFile < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [BadLoadFile] self
+      #
       def initialize(*args, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \
@@ -160,7 +174,9 @@ module TAF
     class NotExceptionClass < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [NotExceptionClass] self
+      #
       def initialize(*args, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \
@@ -184,7 +200,9 @@ module TAF
     class NotGameElement < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [NotGameElement] self
+      #
       def initialize(*args, **kwargs)
         if (debugging?(:initialize))
           warn('[%s]->%s running' \
@@ -208,7 +226,7 @@ module TAF
     class NoObjectOwner < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [NoObjectOwner] self
       #
       def initialize(*args, **kwargs)
@@ -234,7 +252,7 @@ module TAF
     class KeyObjectMismatch < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [KeyObjectMismatch] self
       #
       def initialize(oeid=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
@@ -263,7 +281,7 @@ module TAF
     class NoGameContext < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [NoGameContext] self
       #
       def initialize(*args, **kwargs)
@@ -286,7 +304,7 @@ module TAF
     class SettingLocked < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [SettingLocked] self
       #
       def initialize(*args, **kwargs)
@@ -313,7 +331,7 @@ module TAF
     class ImmovableObject < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [ImmovableObject] self
       #
       def initialize(*args, **kwargs)
@@ -346,7 +364,7 @@ module TAF
     class NotAContainer < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [NotAContainer] self
       #
       def initialize(*args, **kwargs)
@@ -374,8 +392,6 @@ module TAF
     #
     class UnscrewingInscrutable < ErrorBase
 
-      include(::TAF)
-
       extend(Contracts::Core)
       
       Contract([Class,
@@ -386,8 +402,9 @@ module TAF
                 Class,
                 Symbol,
                 Object] => Contracts::Builtin::Any)
+
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [UnscrewingInscrutable] self
       #
       def initialize(*args, **kwargs)
@@ -417,12 +434,13 @@ module TAF
       end                       # def initialize
 
       nil
-    end                         # class NotAContainer
+    end                         # class UnscrewingInscrutable
+
     #
     class MasterInventory < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [MasterInventory] self
       #
       def initialize(*args, **kwargs)
@@ -456,7 +474,7 @@ module TAF
     class HasNoInventory < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [HasNoInventory] self
       #
       def initialize(*args, **kwargs)
@@ -489,7 +507,7 @@ module TAF
     class AlreadyHasInventory < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [AlreadyHasInventory] self
       #
       def initialize(*args, **kwargs)
@@ -524,7 +542,7 @@ module TAF
     class AlreadyInInventory < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [AlreadyInInventory] self
       #
       def initialize(*args, **kwargs)
@@ -561,11 +579,11 @@ module TAF
     end                         # class AlreadyInInventory
 
     #
-    class ImmovalElementDestinationError < ErrorBase
+    class ImmovableElementDestinationError < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
-      # @return [ImmovalElementDestinationError] self
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [ImmovableElementDestinationError] self
       #
       def initialize(*args, **kwargs)
         if (debugging?(:initialize))
@@ -592,13 +610,13 @@ module TAF
       end                       # def initialize
 
       nil
-    end                         # class ImmovalElementDestinationError
+    end                         # class ImmovableElementDestinationError
 
     #
     class DuplicateObject < ErrorBase
 
       #
-      # @!macro doc.TAF.formal.kwargs
+      # @!macro doc.TAGF.formal.kwargs
       # @return [DuplicateObject] self
       #
       def initialize(*args, **kwargs)
@@ -629,10 +647,10 @@ module TAF
     class DuplicateLocation < DuplicateObject ; end
 
     nil
-  end                           # module Exceptions
+  end                           # module TAGF::Exceptions
 
   nil
-end                             # module TAF
+end                             # module TAGF
 
 # Local Variables:
 # mode: ruby

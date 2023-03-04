@@ -1,7 +1,7 @@
 @game
 Feature: Testing the basic 'game' class
 
-  The TAF::Game class is the root of the runtime experience.
+  The TAGF::Game class is the root of the runtime experience.
   It's the first thing created, and it creates everything
   else under its ægis.
 

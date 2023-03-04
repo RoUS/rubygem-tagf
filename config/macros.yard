@@ -19,35 +19,35 @@
 #   This file contains macros and reusable strings for insertion
 #   into other source files.
 
-# @!macro [new] doc.TAF.module
-#   Top-level module namespacing all of the pieces of the `sptaf` gem.
+# @!macro [new] doc.TAGF.module
+#   Top-level module namespacing all of the pieces of the `tagf` gem.
 
-# @!macro [new] doc.TAF.Mixin.module
+# @!macro [new] doc.TAGF.Mixin.module
 #   Module namespacing all the modules specifically designed to be
 #   mixed into classes and other modules.
 
-# @!macro [new] doc.TAF.formal.kwargs
+# @!macro [new] doc.TAGF.formal.kwargs
 #   @param [Hash] kwargs
 #     hash with symbolic keys providing additional information to
 #     the method.
 
-# @!macro [new] doc.TAF.module.classmethod.included
+# @!macro [new] doc.TAGF.module.classmethod.included
 #   Method invoked whenever this module is included as a mixin.  It
 #   is passed the class (or module) object that is including it.  We
 #   extend the caller's eigenclass with the {ClassMethods} module,
-#   which adds various class methods (like {TAF::ClassMethods#flag}).
+#   which adds various class methods (like {TAGF::ClassMethods#flag}).
 #
 #   @param [Class,Module] klass
 #     Object that is including this module as a mixin.
 #   @return [void]
 
-# @!macro [new] doc.TAF.Mixin.module.eigenclass
+# @!macro [new] doc.TAGF.Mixin.module.eigenclass
 #
 # Eigenclass for the $0 module; essentially just defines
 # the `included` method for the mixin.
 #
 
-# @!macro [new] doc.TAF.classmethod.flag.declare
+# @!macro [new] doc.TAGF.classmethod.flag.declare
 #   @!method [rw] $0(*args, **kwargs)
 #   Declares the specified symbols as accessors for Boolean
 #   values.  For each symbol, four (4) methods are defined:
@@ -77,7 +77,7 @@
 #   @return [void]
 #
 
-# @!macro [new] doc.TAF.classmethod.flag.invoke
+# @!macro [new] doc.TAGF.classmethod.flag.invoke
 #   @!attribute [rw] $1 (false)
 #   @overload $1 (false)
 #     Access the current value of the `$1` attribute, which is
@@ -109,10 +109,10 @@
 #     Unconditionally sets `$1` to `true`.
 #     @return [Boolean] `true`.
 
-# @!macro [new] doc.TAF.classmethod.float_accessor.declare
+# @!macro [new] doc.TAGF.classmethod.float_accessor.declare
 #   TBS
 
-# @!macro [new] doc.TAF.classmethod.float_accessor.invoke
+# @!macro [new] doc.TAGF.classmethod.float_accessor.invoke
 #   @!attribute [rw] $1
 #   @overload $1
 #     Access the current value of the `$1` attribute, which is
@@ -140,10 +140,10 @@
 #     @return [Object]
 #       the value to which the attribute was set.
 
-# @!macro [new] doc.TAF.classmethod.int_accessor.declare
+# @!macro [new] doc.TAGF.classmethod.int_accessor.declare
 #   TBS
 
-# @!macro [new] doc.TAF.classmethod.int_accessor.invoke
+# @!macro [new] doc.TAGF.classmethod.int_accessor.invoke
 #   @!attribute [rw] $1
 #   @overload $1
 #     @return [Integer]
