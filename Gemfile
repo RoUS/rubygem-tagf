@@ -44,9 +44,11 @@ group(:default, :development, :test) do
   gem('bundler',	'>= 1.0.7')
   gem('binding_of_caller')
   gem('contracts',	'< 0.17.0')
+  gem('cri')
   gem('linguistics')
   gem('ostruct',	'>= 0.5.5')
   gem('psych')
+  gem('rb-readline')
   gem('tagf',
       path:		'.')
   gem('thor')

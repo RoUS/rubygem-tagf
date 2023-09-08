@@ -1,5 +1,11 @@
 # TODO items for TAGF Ruby gem
 
+* Work on ability to load a game from YAML.
+  * Pass the YAML results through a syntax checker.  (Something for
+    the 'Thor' tool mentioned later.)
+  * Perhaps _per_-class `import` class method to take a parsed element
+    definition and create a new instance from it?  Deeply tied to the
+    YAML syntax at first blush.
 * Move detailed documentation out of `README` and into a separate
   file.
 * Fix all references to `sptaf` and `TAF` to `tagf` and `TAGF`
@@ -16,6 +22,8 @@
 * Add Thor (?) generators for building (rooms, items, connexions, and
   so on), verifying the locations as a graph to make sure everything
   is reachable — and escapeable.
+  * Enhance command-line tools to be able to use `here-docs` for
+    things like descriptions (started in `ui.rb`).
 * Add functionality for doors.
 * Add functionality for locks (doors, chests, padlocks) and
   keys/tokens to lock/unlock them.
