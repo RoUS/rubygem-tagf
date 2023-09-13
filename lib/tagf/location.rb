@@ -34,9 +34,10 @@ module TAGF
     # @return [Location] self
     #
     def initialize(*args, **kwargs)
-      if (debugging?(:initialize))
-        warn('[%s]->%s running' \
-             % [self.class.name, __method__.to_s])
+      if (TAGF.debugging?(:initialize))
+        warn(format('[%s]->%s running',
+                    self.class.name,
+                    __method__.to_s))
       end
       self.paths	||= {}
       self.initialize_element(*args, **kwargs)
@@ -66,7 +67,11 @@ module TAGF
 
     #
     def initialize(*args, **kwargs)
-      warn('[%s]->%s running' % [self.class.name, __method__.to_s])
+      if (TAGF.debugging?(:initialize))
+        warn(format('[%s]->%s running',
+                    self.class.name,
+                    __method__.to_s))
+      end
       self.initialize_element(*args, **kwargs)
     end                         # def initialize(*args, **kwargs)
 

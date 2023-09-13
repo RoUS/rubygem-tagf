@@ -42,15 +42,17 @@ module TAGF
         next unless (defined?(xmodule))
         unless (klass.included_modules.include?(xmodule))
           if (TAGF.debugging?(:include))
-            warn('<%s>[eigenclass] including module <%s>' \
-                 % [ klass.name, xmodule.name ])
+            warn(format('<%s>[eigenclass] including module <%s>',
+                        klass.name,
+                        xmodule.name))
           end
           klass.include(xmodule)
         end
         unless (klass.singleton_class.included_modules.include?(xmodule))
           if (TAGF.debugging?(:extend))
-            warn('<%s>[eigenclass] extending module <%s>' \
-                 % [ klass.name, xmodule.name ])
+            warn(format('<%s>[eigenclass] extending module <%s>',
+                        klass.name,
+                        xmodule.name))
           end
           klass.extend(xmodule)
         end
@@ -62,8 +64,9 @@ module TAGF
 
     # @!macro doc.TAGF.module.classmethod.included
     def included(klass)
-      whoami            = '<%s>[eigenclass.%s]' \
-                          % [self.name, __method__.to_s]
+      whoami            = format('<%s>[eigenclass.%s]',
+                                 self.name,
+                                 __method__.to_s)
 #      invasion_force(klass)
       return nil
     end                         # def included(klass)

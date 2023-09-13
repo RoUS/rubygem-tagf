@@ -56,7 +56,9 @@ module TAGF
 
     #
     # Define class methods and constants that will be added to all
-    # object classes in the TAF namespace.
+    # object classes and eigenclasses in the TAF namespace.  Having
+    # this in the eigenclass ancestry authenticates an object as being
+    # a valid game element.
     #
     module Element
 
@@ -68,8 +70,9 @@ module TAGF
 
       #
       if (TAGF.debugging?(:extend))
-        warn('%s extending itself with %s' \
-             % [ self.name, ClassMethods.name ])
+        warn(format('%s extending itself with %s',
+                    self.name,
+                    ClassMethods.name))
       end
       extend(ClassMethods)
 
@@ -207,7 +210,7 @@ module TAGF
 
         self.inventory.features.each do |f|
           next unless (f.is_visible?)
-          result	+= "  You see %s." % [f.name]
+          result	+= format("  You see %s.", f.name)
           #
           # @todo
           #   This needs to be worked; if the preposition is 'on' then
@@ -322,9 +325,10 @@ module TAGF
       # @return [Element] self
       #
       def initialize_element(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
+        if (TAGF.debugging?(:initialize))
+          warn(format('[%s]->%s running',
+                      self.class.name,
+                      __method__.to_s))
         end
         @eid		||= kwargs[:eid] || self.object_id
         if (self.owned_by.nil? \
@@ -359,9 +363,9 @@ module TAGF
             self.instance_variable_set(attr_f.ivar, newval)
           else
             raise_exception(RuntimeError,
-                            (('(kwargs) attempt to set ' \
-                              + 'non-attribute "%s"') \
-                             % attr_f.str))
+                            format('(kwargs) attempt to set ' \
+                                   + 'non-attribute "%s"',
+                                   attr_f.str))
           end
         end                     # kwargs.each
 

@@ -54,6 +54,7 @@ definitions:
       alii: []
 
 campaign: Minimal Adventure
+name: Minimal Adventure
 eid: Minimadventure
 description: TBD
 options:

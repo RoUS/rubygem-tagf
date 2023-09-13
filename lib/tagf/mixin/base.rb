@@ -75,8 +75,10 @@ module TAGF
 	requested	= Set.new([option, *args].map { |o| o.to_sym })
 	unknown		= requested - GAME_OPTIONS
 	unknown.each do |opt|
-	  warn('%s.%s: unknown game option: %s' \
-	       % ['TAGF', __method__.to_s, opt.to_s])
+	  warn(format('%s.%s: unknown game option: %s',
+	              'TAGF',
+                      __method__.to_s,
+                      opt.to_s))
 	  requested.delete(opt)
 	end
 	active		= TAGF.game_options
@@ -144,6 +146,7 @@ module TAGF
 	return result ? true : false
       end			# is_game_element?(target)
       module_function(:is_game_element?)
+      public(:is_game_element?)
 
       #
       # Given a word (presumably a singular noun) and a count, return

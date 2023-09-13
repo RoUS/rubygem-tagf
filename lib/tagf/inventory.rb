@@ -28,6 +28,7 @@ module TAGF
 
     #
     include(Mixin::Element)
+    extend(Mixin::Element)
 
     #
     include(Enumerable)
@@ -65,19 +66,20 @@ module TAGF
     # Adaptive name for an object's inventory.
     #
     def name
-      text		= "Inventory for %s '%s'" \
-                          % [self.owned_by.class.name,
-                             (self.owned_by.name || self.owned_by.eid).to_s]
+      text		= format("Inventory for %s '%s'",
+                                 self.owned_by.class.name,
+                                 (self.owned_by.name \
+                                  || self.owned_by.eid).to_s)
       return text
     end                         # def name
 
     #
     def initialize(**kwargs)
-      if (debugging?(:initialize))
-        warn('<%s>[%s].%s running' \
-             % [self.class.name,
-                self.eid.to_s,
-                __method__.to_s])
+      if (TAGF.debugging?(:initialize))
+        warn(format('<%s>[%s].%s running',
+                    self.class.name,	
+                    self.eid.to_s,
+                    __method__.to_s))
       end
       @contents		= {}
       unless (owned_by = kwargs[:owned_by])
@@ -88,31 +90,29 @@ module TAGF
       # Use the inventory key of the owner to make navigation
       # simpler.
       #
-      @eid		= '<%s>[%s].inventory' \
-                          % [owned_by.class.name,
-                             owned_by.eid.to_s]
+      @eid		= format('<%s>[%s].inventory',
+                                 owned_by.class.name,
+                                 owned_by.eid.to_s)
       self.initialize_element([], **kwargs)
       self.game.add(self)
     end                         # def initialize
 
     #
     def inspect
-      result		= ('#<%s:"%s" ' \
-                           + ' game="%s"' \
-                           + ', name="%s"' \
-                           + ', %i %s' \
-                           + ', %i %s' \
-                           + '>') \
-                          % [
-        self.class.name,
-        self.eid.to_s,
-        self.game.eid.to_s,
-        self.name.to_s,
-        @contents.count,
-        pluralise('object', @contents.count),
-        self.items.count,
-        pluralise('item', self.items.count)
-      ]
+      result		= format('#<%s:"%s" ' \
+                                 + ' game="%s"' \
+                                 + ', name="%s"' \
+                                 + ', %i %s' \
+                                 + ', %i %s' \
+                                 + '>',
+                                 self.class.name,
+                                 self.eid.to_s,
+                                 self.game.eid.to_s,
+                                 self.name.to_s,
+                                 @contents.count,
+                                 pluralise('object', @contents.count),
+                                 self.items.count,
+                                 pluralise('item', self.items.count))
       return result
     end                         # def inspect
 
@@ -220,16 +220,16 @@ module TAGF
           raise_exception(AlreadyInInventory, arg, oldobj)
         end
       end
-      if (debugging?(:inventory))
-        warn('<%s>[%s].%s: Adding <%s>[%s] to <%s>[%s] inventory' \
-             % [self.class.name,
-                self.eid.to_s,
-                __method__.to_s,
-                arg.class.name,
-                arg.eid.to_s,
-                self.class.name,
-                self.eid
-               ])
+      if (TAGF.debugging?(:inventory))
+        warn(format('<%s>[%s].%s: Adding <%s>[%s] ' \
+                    + 'to <%s>[%s] inventory',
+                    self.class.name,
+                    self.eid.to_s,
+                    __method__.to_s,
+                    arg.class.name,
+                    arg.eid.to_s,
+                    self.class.name,
+                    self.eid))
       end
       @contents[key]	= arg
       return self

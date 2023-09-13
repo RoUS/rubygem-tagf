@@ -64,8 +64,9 @@ module TAGF
     def visiting(place, **kwargs)
       unless (place.kind_of?(Location))
         raise_exception(TypeError,
-                        ('%s:%s is not a location' \
-                         % [place.class.name, place.to_s]))
+                        format('%s:%s is not a location',
+                               place.class.name,
+                               place.to_s))
       end
       visit_count		= @locations[place].to_i + 1
       @locations[place]		= visit_count
@@ -88,8 +89,9 @@ module TAGF
     def visits_to(place)
       unless (place.kind_of?(Location))
         raise_exception(TypeError,
-                        ('%s:%s is not a location' \
-                         % [place.class.name, place.to_s]))
+                        format('%s:%s is not a location',
+                               place.class.name,
+                               place.to_s))
       end
       visit_count		= @locations[place].to_i
       return visit_count
@@ -97,9 +99,10 @@ module TAGF
 
     #
     def initialize(*args, **kwargs)
-      if (debugging?(:initialize))
-        warn('[%s]->%s running' \
-             % [self.class.name, __method__.to_s])
+      if (TAGF.debugging?(:initialize))
+        warn(format('[%s]->%s running',
+                    self.class.name,
+                    __method__.to_s))
       end
       @breadcrumbs	= []
       @locations	= {}

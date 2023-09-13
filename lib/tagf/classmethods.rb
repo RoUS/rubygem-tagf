@@ -34,8 +34,10 @@ module TAGF
       requested		= _inivaluate_attrib(true, *args, **kwargs)
       unknown		= requested.keys - GAME_OPTIONS
       unknown.each do |opt|
-        warn('%s.%s: unknown game option: %s' \
-             % ['TAGF', __method__.to_s, opt.to_s])
+        warn(format('%s.%s: unknown game option: %s',
+                    'TAGF',
+                    __method__.to_s,
+                    opt.to_s))
         requested.delete(opt)
       end
       GAME_OPTION_CLUMPS.each do |brolly,clumped|
@@ -95,11 +97,11 @@ module TAGF
 
     # @!macro doc.TAGF.module.classmethod.included
     def included(klass)
-      whoami		= '%s.%s; %s.include(%s)' \
-                          % [self.name,
-                             __method__.to_s,
-                             klass.name,
-                             self.name]
+      whoami		= format('%s.%s; %s.include(%s)',
+                                 self.name,
+                                 __method__.to_s,
+                                 klass.name,
+                                 self.name)
       warn(whoami)
       warn(format('  %s.include(%s) processed',
                   klass.name,
@@ -140,11 +142,11 @@ module TAGF
 
     # @!macro doc.TAGF.module.classmethod.extended
     def extended(klass)
-      whoami		= '%s#%s; %s.extend(%s)' \
-                          % [self.name,
-                             __method__.to_s,
-                             klass.name,
-                             self.name]
+      whoami		= format('%s#%s; %s.extend(%s)',
+                                 self.name,
+                                 __method__.to_s,
+                                 klass.name,
+                                 self.name)
       warn(whoami)
       super
       return nil

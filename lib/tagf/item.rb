@@ -57,9 +57,10 @@ module TAGF
 
     #
     def initialize(*args, **kwargs)
-      if (debugging?(:initialize))
-        warn('[%s]->%s running' \
-             % [self.class.name, __method__.to_s])
+      if (TAGF.debugging?(:initialize))
+        warn(format('[%s]->%s running',
+                    self.class.name,
+                    __method__.to_s))
       end
       self.is_static	= false
       self.initialize_element(*args, **kwargs)
@@ -77,24 +78,22 @@ module TAGF
 
     #
     def inspect
-      result		= ('#<%s:"%s" ' \
-                           + 'game="%s"' \
-                           + ', name="%s"' \
-                           + ', static=%s' \
-                           + ', %s' \
-                           + '>') \
-                          % [
-        self.class.name,
-        self.eid.to_s,
-        self.game.eid.to_s,
-        self.name.to_s,
-        self.is_static.inspect,
-        (self.is_container? \
-         ? (self.inventory.empty? \
-            ? 'container (empty)' \
-            : 'container ([...])') \
-         : 'no inventory')
-      ]
+      result		= format('#<%s:"%s" ' \
+                                 + 'game="%s"' \
+                                 + ', name="%s"' \
+                                 + ', static=%s' \
+                                 + ', %s' \
+                                 + '>',
+                                 self.class.name,
+                                 self.eid.to_s,
+                                 self.game.eid.to_s,
+                                 self.name.to_s,
+                                 self.is_static.inspect,
+                                 (self.is_container? \
+                                  ? (self.inventory.empty? \
+                                     ? 'container (empty)' \
+                                     : 'container ([...])') \
+                                  : 'no inventory'))
       return result
     end                         # def inspect
 

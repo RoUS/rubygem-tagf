@@ -32,6 +32,9 @@ module TAGF
     include(Mixin::Container)
 
     #
+    include(Exceptions)
+
+    #
     attr_accessor(:author)
 
     #
@@ -130,9 +133,10 @@ module TAGF
     # @return [Game]
     #   self
     def initialize(*args, **kwargs)
-      if (debugging?(:initialize))
-        warn('[%s]->%s running' \
-             % [self.class.name, __method__.to_s])
+      if (TAGF.debugging?(:initialize))
+        warn(format('[%s]->%s running',
+                    self.class.name,
+                    __method__.to_s))
       end
       @creation_overrides = {
         game:		self,
@@ -202,6 +206,7 @@ module TAGF
     # @raise [ImmovableElementDestinationError]
     # @return [void]
     def validate_container(target, newcontent, **kwargs)
+      debugger
       unless (TAGF.is_game_element?(target))
         raise_exception(NotGameElement, target)
       end
@@ -315,12 +320,10 @@ module TAGF
 
     #
     def inspect
-      result		= '#<%s:"%s" name="%s">' \
-                          % [
-        self.class.name,
-        self.eid.to_s,
-        self.name.to_s
-      ]
+      result		= format('#<%s:"%s" name="%s">',
+                                 self.class.name,
+                                 self.eid.to_s,
+                                 self.name.to_s)
       return result
     end                         # def inspect
 
@@ -342,7 +345,7 @@ module TAGF
       inventories.unshift(self.game.inventory)
       inventories_edited = []
       if (inventories.empty?)
-        warn("No inventories found containing eid '%s'" % [oldeid])
+        warn(format("No inventories found containing eid '%s'", oldeid))
       else
         obj.instance_variable_set(:@eid, neweid)
         inventories.each do |i|

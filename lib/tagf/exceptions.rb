@@ -54,6 +54,16 @@ module TAGF
       end                       # def _set_message
       protected(:_set_message)
 
+      #
+      def _dbg_exception_start(msym)
+        if (TAGF.debugging?(:initialize))
+          warn(format('[%s]->%s running',
+                      self.class.name,
+                      msym.to_s))
+        end
+        return nil
+      end                       # def _dbg_exception_start
+
       nil
     end                         # class ErrorBase
 
@@ -78,10 +88,7 @@ module TAGF
         # @return [InventoryLimitExceeded::LimitItems] self
         #
         def initialize(*args, **kwargs)
-          if (debugging?(:initialize))
-            warn('[%s]->%s running' \
-                 % [self.class.name, __method__.to_s])
-          end
+          _dbg_exception_start(__method__)
           inv		= args[0]
           newitem	= args[1]
           if (inv.kind_of?(String))
@@ -91,14 +98,15 @@ module TAGF
             owner_klass	= owner.class.name
             owner_name	= owner.name
             owner_eid	= owner.eid
-            msg		= ('inventory for %s:"%s" is full; ' \
-                           + '%i/%i %s, cannot add "%s"') \
-                          % [owner_klass,
-                             (owner_name || owner_eid).to_s,
-                             owner.items_current,
-                             owner.capacity_items,
-                             pluralise('item', owner.capacity_items),
-                             (newitem.name || newitem.eid).to_s]
+            msg		= format('inventory for %s:"%s" is full; ' \
+                                 + '%i/%i %s, cannot add "%s"',
+                                 owner_klass,
+                                 (owner_name || owner_eid).to_s,
+                                 owner.items_current,
+                                 owner.capacity_items,
+                                 pluralise('item',
+                                           owner.capacity_items),
+                                 (newitem.name || newitem.eid).to_s)
           end
           self._set_message(msg)
         end                     # def initialize
@@ -119,12 +127,9 @@ module TAGF
       # @return [NoLoadFile] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg		= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
         else
           objtype	= arg.class.name
@@ -144,23 +149,21 @@ module TAGF
       # @return [BadLoadFile] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg		= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
         else
           if ((loadfile = kwargs[:file]).nil?)
             msg		= 'invalid file specified for game load'
           else
             if ((exc = kwargs[:exception]) && exc.kind_of?(Exception))
-              msg	= 'invalid file "%s" specified: %s' \
-                          % [loadfile, exc.to_s]
+              msg	= format('invalid file "%s" specified: %s',
+                                 loadfile,
+                                 exc.to_s)
             else
-              msg	= 'invalid file "%s" specified' \
-                          % [loadfile]
+              msg	= format('invalid file "%s" specified',
+                                 loadfile)
             end
           end
         end
@@ -178,17 +181,15 @@ module TAGF
       # @return [NotExceptionClass] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg		= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
         else
           objtype	= arg.class.name
-          msg		= 'not an exception class: %s:%s' \
-                          % [objtype, arg.to_s]
+          msg		= format('not an exception class: %s:%s',
+                                 objtype,
+                                 arg.to_s)
         end
         self._set_message(msg)
       end                       # def initialize
@@ -204,17 +205,15 @@ module TAGF
       # @return [NotGameElement] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg		= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
         else
           objtype	= arg.class.name
-          msg		= 'not a game object: <%s>[%s]' \
-                          % [objtype, arg.to_s]
+          msg		= format('not a game object: <%s>[%s]',
+                                 objtype,
+                                 arg.to_s)
         end
         self._set_message(msg)
       end                       # def initialize
@@ -230,17 +229,16 @@ module TAGF
       # @return [NoObjectOwner] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg		= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
         else
           objtype	= arg.class.name
-          msg		= 'no owner specified on creation of: %s:%s' \
-                          % [objtype, arg.to_s]
+          msg		= format('no owner specified ' \
+                                 + 'on creation of: %s:%s',
+                                 objtype,
+                                 arg.to_s)
         end
         self._set_message(msg)
       end                       # def initialize
@@ -256,21 +254,19 @@ module TAGF
       # @return [KeyObjectMismatch] self
       #
       def initialize(oeid=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         oeid		= args[0] || kwargs[:eid]
         obj		= args[1] || kwargs[:object]
         ckobj		= args[2] || kwargs[:ckobject]
         iname		= args[3] || kwargs[:inventory_name]
 
-        msg		= ("value for key '%s' in %s fails to match: " \
-                           + "%s:'%s' instead of %s:'%s'") \
-                          % [oeid.to_s,
-                             iname,
-                             (ckobj.name || ckobj.eid).to_s,
-                             (obj.name || obj.eid).to_s]
+        msg		= format("value for key '%s' in %s " \
+                                 + "fails to match: %s:'%s' " \
+                                 + "instead of %s:'%s'",
+                                 oeid.to_s,
+                                 iname,
+                                 (ckobj.name || ckobj.eid).to_s,
+                                 (obj.name || obj.eid).to_s)
         self._set_message(msg)
       end                       # def initialize
 
@@ -285,11 +281,8 @@ module TAGF
       # @return [NoGameContext] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
-        if (args[0].kind_of?(String))
+        _dbg_exception_start(__method__)
+        if ((args.count == 1) && args[0].kind_of?(String))
           msg	= args[0]
         else
           msg	= 'attempt to create in-game object failed (#game not set)'
@@ -308,16 +301,14 @@ module TAGF
       # @return [SettingLocked] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg	= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg	= arg
         elsif (arg.kind_of?(Symbol))
-          msg	= "attribute '#{arg.to_s}' is already set " \
-                  + 'and cannot be changed'
+          msg	= format("attribute '%s' is already set " \
+                         + 'and cannot be changed',
+                         arg.to_s)
         else
           msg	= 'specific attribute cannot be changed once set'
         end
@@ -335,23 +326,23 @@ module TAGF
       # @return [ImmovableObject] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg	= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg	= arg
         else
           obj	= args[0]
           objtype = obj.class.name.sub(%r!^.*::!, '')
           name	= obj.name || obj.eid
           if (name)
-            msg	= "%s object '%s' is static and cannot be relocated" \
-                  % [objtype, name]
+            msg	= format("%s object '%s' is static " \
+                         + 'and cannot be relocated',
+                         objtype,
+                         name)
           else
-            msg	= "%s object is static and cannot be relocated" \
-                  % [objtype]
+            msg	= format('%s object is static ' \
+                         + 'and cannot be relocated',
+                         objtype)
           end
         end
         self._set_message(msg)
@@ -368,26 +359,53 @@ module TAGF
       # @return [NotAContainer] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg		= args[0]
         name		= nil
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
         else
           obj		= args[0]
           objtype	= obj.class.name
-          name		= '<%s>[%s]' % [ objtype, obj.eid.to_s ]
-          msg		= "element %s is not a container" \
-                          % [name ? name : objtype]
+          name		= format('<%s>[%s]', objtype, obj.eid.to_s)
+          msg		= format('element %s is not a container',
+                                 name ? name : objtype)
         end
         self._set_message(msg)
       end                       # def initialize
 
       nil
     end                         # class NotAContainer
+
+    #
+    # In-game language syntax errors.
+    #
+
+    #
+    class AliasRedefinition < ErrorBase
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [AliasRedefinition] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__method__)
+        arg		= args[0]
+        name		= nil
+        if ((args.count == 1) && arg.kind_of?(String))
+          msg		= arg
+        else
+          obj		= args[0]
+          objtype	= obj.class.name
+          name		= format('<%s>[%s]', objtype, obj.eid.to_s)
+          msg		= format('element %s is not a container',
+                                 name ? name : objtype)
+        end
+        self._set_message(msg)
+      end                       # def initialize
+
+      nil
+    end                         # class AliasRedefined
 
     #
     class UnscrewingInscrutable < ErrorBase
@@ -408,13 +426,10 @@ module TAGF
       # @return [UnscrewingInscrutable] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg		= args[0]
         name		= nil
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
         else
           msgargs	= []
@@ -426,9 +441,9 @@ module TAGF
           msgargs.push(args[3].eid.to_s)
           msgargs.push(args[4].to_s.sub(%r![^[:alnum:]]$!, ''))
           msgargs.push(args[5].to_s)
-          msg		= ('<%s>[%s].%s cannot be set to %s ' \
-                           + 'if <%s>[%s].%s is %s') \
-                          % msgargs
+          msg		= format('<%s>[%s].%s cannot be set to %s ' \
+                                 + 'if <%s>[%s].%s is %s',
+                                 *msgargs)
         end
         self._set_message(msg)
       end                       # def initialize
@@ -444,24 +459,23 @@ module TAGF
       # @return [MasterInventory] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         arg	= args[0]
-        if (arg.kind_of?(String))
+        if ((args.count == 1) && arg.kind_of?(String))
           msg	= arg
         else
           obj	= args[0]
           objtype	= obj.class.name.sub(%r!^.*::!, '')
           name	= obj.name || obj.eid
           if (name)
-            msg	= ("cannot remove %s object '%s' from " \
-                   + 'the master inventory') \
-                  % [objtype, name]
+            msg	= format("cannot remove %s object '%s' " \
+                         + 'from the master inventory',
+                         objtype,
+                         name)
           else
-            msg	= "cannot remove %s object from the master inventory" \
-                  % [objtype]
+            msg	= format('cannot remove %s object ' \
+                         + 'from the master inventory',
+                         objtype)
           end
         end
         self._set_message(msg)
@@ -478,10 +492,7 @@ module TAGF
       # @return [HasNoInventory] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         if ((args.count == 1) && args[0].kind_of?(String))
           msg		= args[0]
         elsif (args[0].kind_of?(Mixin::Element))
@@ -490,11 +501,13 @@ module TAGF
           when 0
             msg		= 'object has no inventory'
           when 1
-            msg		= ("%s object '%s' has no inventory") \
-                          % [args[0].class.name,name]
+            msg		= format("%s object '%s' has no inventory",
+                                 args[0].class.name,
+                                 name)
           else
-            msg		= 'unforeseen arguments to exception: %s' \
-                          % args.inspect
+            msg		= format('unforeseen arguments to ' \
+                                 + 'exception: %s',
+                                 args.inspect)
           end                   # case(args.count)
         end
         self._set_message(msg)
@@ -511,26 +524,26 @@ module TAGF
       # @return [AlreadyHasInventory] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
         else
           target	= arg[0]
           unless (target.has_inventory?)
             raise_exception(RuntimeError,
-                            ('%s called against an element (<%s>[%s]) ' \
-                             "which *doesn't* have an inventory") \
-                            % [self.class.name,
-                               target.class.name,
-                               target.eid.to_s],
+                            format('%s called against ' \
+                                   + 'an element (<%s>[%s]) ' \
+                                   + "which *doesn't* have " \
+                                   + 'an inventory',
+                                   self.class.name,
+                                   target.class.name,
+                                   target.eid.to_s),
                             levels: -1)
           end
-          msg		= ('cannot replace existing inventory ' \
-                           + 'for <%s>[%s]') \
-                            % [target.class.name, target.eid.to_s]
+          msg		= format('cannot replace ' \
+                                 + 'existing inventory for <%s>[%s]',
+                                 target.class.name,
+                                 target.eid.to_s)
         end
         self._set_message(msg)
       end                       # def initialize
@@ -546,10 +559,7 @@ module TAGF
       # @return [AlreadyInInventory] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
@@ -558,18 +568,21 @@ module TAGF
           when 0
             msg		= 'object already in inventory'
           when 1
-            msg		= ("%s object '%s' already in inventory") \
-                          % [args[0].class.name,
-                             (args[0].name || args[0].eid).to_s]
+            msg		= format("%s object '%s' " \
+                                 + 'already in inventory',
+                                 args[0].class.name,
+                                 (args[0].name || args[0].eid).to_s)
           when 2
-            msg		= ("%s object '%s' already in inventory, " \
-                           + 'cannot add %s with same eid') \
-                          % [args[0].class.name,
-                             (args[0].name || args[0].eid).to_s,
-                             args[1].class.name]
+            msg		= format("%s object '%s' " \
+                                 + 'already in inventory, ' \
+                                 + 'cannot add %s with same eid',
+                                 args[0].class.name,
+                                 (args[0].name || args[0].eid).to_s,
+                                 args[1].class.name)
           else
-            msg		= 'unforeseen arguments to exception: %s' \
-                          % args.inspect
+            msg		= format('unforeseen arguments ' \
+                                 + 'to exception: %s',
+                                 args.inspect)
           end                   # case(args.count)
         end
         self._set_message(msg)
@@ -586,25 +599,23 @@ module TAGF
       # @return [ImmovableElementDestinationError] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
         else
           target	= args[0]
           newcontent	= args[1]
           if (newcontent.kind_of?(Class))
-            newobject	= '<%s>' % [newcontent.class.name]
+            newobject	= format('<%s>', newcontent.class.name)
           else
-            newobject	= '<%s>[%s]' \
-                          % [newcontent.class.name,
-                             newcontent.eid.to_s]
+            newobject	= format('<%s>[%s]',
+                                 newcontent.class.name,
+                                 newcontent.eid.to_s)
           end
-          msg		= ('element %s is static and cannot be ' \
-                           + 'stored in inventory of %s') \
-                            % [target, newcontent]
+          msg		= format('element %s is static and cannot be ' \
+                                 + 'stored in inventory of %s',
+                                 target,
+                                 newcontent)
         end
         self._set_message(msg)
       end                       # def initialize
@@ -620,19 +631,19 @@ module TAGF
       # @return [DuplicateObject] self
       #
       def initialize(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
-        end
+        _dbg_exception_start(__method__)
         type	= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count == 1) && args[0].kind_of?(String))
           msg	= args[0]
         elsif (args[0].respond_to?(:eid))
-          msg	= 'attempt to register new %s using existing UID %s' \
-                  % [type,args[0].eid]
+          msg	= format('attempt to register ' \
+                         'new %s using existing UID %s',
+                         type,
+                         args[0].eid)
         else
-          msg	= 'attempt to register new %s with existing UID' \
-                  % type
+          msg	= format('attempt to register new %s ' \
+                         + 'with existing UID',
+                         type)
         end
         self._set_message(msg)
       end                       # def initialize

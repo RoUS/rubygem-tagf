@@ -54,11 +54,11 @@ module TAGF
       def notify_initialising
         scope		= binding.of_caller(1)
         elem		= scope.eval('self')
-        if (debugging?(:initialize))
-          warn('<%s>[%s].%s running' \
-               % [elem.class.name,
-                  elem.eid.to_s,
-                  scope.eval('__method__.to_s')])
+        if (TAGF.debugging?(:initialize))
+          warn(format('<%s>[%s].%s running',
+                      elem.class.name,
+                      elem.eid.to_s,
+                      scope.eval('__method__.to_s')))
         end
       end                       # def notify_initialising
 
@@ -69,11 +69,10 @@ module TAGF
         def set_debugging_options(*args, **kwargs)
           report	= debugging?(:debugging)
           if (report)
-            warn('<%s>.%s existing debugging options: %s' \
-                 % [ self.class.name,
-                     __method__.to_s,
-                     DEBUG_OPTIONS.to_a.sort.inspect
-                   ])
+            warn(format('<%s>.%s existing debugging options: %s',
+                        self.class.name,
+                        __method__.to_s,
+                        DEBUG_OPTIONS.to_a.sort.inspect))
           end
           enable	= args \
                           | [ [*kwargs[:set]] \
@@ -88,22 +87,23 @@ module TAGF
 
           DEBUG_OPTIONS.replace(new_settings)
           if (report || debugging?(:debugging))
-            warn('<%s>.%s new debugging options: %s' \
-                 % [self.class.name,
-                    __method__.to_s,
-                    DEBUG_OPTIONS.to_a.sort.inspect
-                   ])
+            warn(format('<%s>.%s new debugging options: %s',
+                        self.class.name,
+                        __method__.to_s,
+                        DEBUG_OPTIONS.to_a.sort.inspect))
           end
           return new_settings
         end                         # def set_debugging_options(*args, **kwargs)
 
         # @!macro doc.TAGF.module.classmethod.included
         def included(klass)
-          whoami	= '%s eigenclass.%s' \
-                          % [self.name, __method__.to_s]
+          whoami	= format('%s eigenclass.%s',
+                                 self.name,
+                                 __method__.to_s)
 =begin
-             warn('%s called for %s' \
-                  % [whoami, klass.name])
+             warn(format('%s called for %s',
+                  	 whoami,
+			 klass.name))
 =end
           super
           return nil

@@ -45,11 +45,13 @@ module TAGF
 
         # @!macro doc.TAGF.module.classmethod.included
         def included(klass)
-          whoami		= '%s eigenclass.%s' \
-                                  % [self.name, __method__.to_s]
+          whoami		= format('%s eigenclass.%s',
+                                         self.name,
+                                         __method__.to_s)
 =begin
-          warn('%s called for %s' \
-               % [whoami, klass.name])
+          warn(format('%s called for %s',
+                      whoami,
+		      klass.name))
 =end
           super
           return nil
@@ -90,9 +92,10 @@ module TAGF
       # @return [???] self
       #
       def initialize_actor(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('[%s]->%s running' \
-               % [self.class.name, __method__.to_s])
+        if (TAGF.debugging?(:initialize))
+          warn(format('[%s]->%s running',
+                      self.class.name,
+                      __method__.to_s))
         end
         @breadcrumbs	= []
         kwargs_defaults	= {

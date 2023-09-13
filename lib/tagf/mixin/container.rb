@@ -187,20 +187,22 @@ module TAGF
       def inventory=(value)
         unless (value.kind_of?(Inventory))
           raise_exception(TypeError,
-                          ("attribute '#s' requires an instance " \
-                           + 'of class TAGF::Inventory') \
-                          % [__method__.to_s.sub(%r!=$!, '')])
+                          format("attribute '#s' requires " \
+                                 + "an instance of " \
+                                 + 'class TAGF::Inventory',
+                                 __method__.to_s.sub(%r!=$!, '')))
         end
         unless (@inventory.nil?)
           bt		= caller
           bt.pop
           bt.pop
-          warn(('%s <eid=%s, name="%s"> already has an inventory, ' \
-                + "overwriting\n  %s") \
-               % [self.class.name,
-                  self.eid,
-                  self.name,
-                  bt.join("\n  ")])
+          warn(format('%s <eid=%s, name="%s"> ' \
+                      + 'already has an inventory, ' \
+                      + "overwriting\n  %s",
+                      self.class.name,
+                      self.eid,
+                      self.name,
+                      bt.join("\n  ")))
         end
         @inventory	= value
         return @inventory
@@ -249,27 +251,30 @@ module TAGF
 
       #
       def update_inventory!
-        if (debugging?(:inventory))
-          warn('Updating inventory for <%s>[%s]' \
-               % [ self.class.name, self.eid.to_s ])
+        if (TAGF.debugging?(:inventory))
+          warn(format('Updating inventory for <%s>[%s]',
+                      self.class.name,
+                      self.eid.to_s))
           if (self.pending_inventory.empty?)
-            warn('No pending inventory updates for <%s>[%s]' \
-                 % [ self.class.name, self.eid.to_s ])
+            warn(format('No pending inventory updates for <%s>[%s]',
+                        self.class.name,
+                        self.eid.to_s))
             return self.inventory
           elsif (self.inventory.nil?)
-            warn('Inventory for <%s>[%s] not yet ready' \
-                 % [ self.class.name, self.eid.to_s ])
+            warn(format('Inventory for <%s>[%s] not yet ready',
+                        self.class.name,
+                        self.eid.to_s))
             return nil
           end
         end
         while (invobj = self.pending_inventory.pop)
-          if (debugging?(:inventory))
-            warn('Dequeuing and adding <%s>[%s] to <%s>[%s] inventory' \
-                 % [invobj.class.name,
-                    invobj.eid.to_s,
-                    self.class.name,
-                    self.eid.to_s
-                   ])
+          if (TAGF.debugging?(:inventory))
+            warn(format('Dequeuing and adding <%s>[%s] ' \
+                        + 'to <%s>[%s] inventory',
+                        invobj.class.name,
+                        invobj.eid.to_s,
+                        self.class.name,
+                        self.eid.to_s))
           end
           result	= self.inventory.add(invobj)
         end
@@ -293,16 +298,16 @@ module TAGF
         end
         if (self.inventory.nil?)
           unless (self.pending_inventory.include?(arg))
-            if (debugging?(:inventory))
-              warn('<%s>[%s].%s: Enqueuing <%s>[%s] for addition to <%s>[%s] inventory' \
-                   % [self.class.name,
-                      self.eid.to_s,
-                      __method__.to_s,
-                      arg.class.name,
-                      arg.eid.to_s,
-                      self.class.name,
-                      self.eid.to_s
-                     ])
+            if (TAGF.debugging?(:inventory))
+              warn(format('<%s>[%s].%s: Enqueuing <%s>[%s] ' \
+                          + 'for addition to <%s>[%s] inventory',
+                          self.class.name,
+                          self.eid.to_s,
+                          __method__.to_s,
+                          arg.class.name,
+                          arg.eid.to_s,
+                          self.class.name,
+                          self.eid.to_s))
             end
             self.pending_inventory.push(arg)
           end
@@ -310,16 +315,16 @@ module TAGF
         else
           self.update_inventory! unless (self.pending_inventory.empty?)
         end
-        if (debugging?(:inventory))
-          warn('<%s>[%s].%s: Adding <%s>[%s] to <%s>[%s] inventory' \
-               % [self.class.name,
-                  self.eid.to_s,
-                  __method__.to_s,
-                  arg.class.name,
-                  arg.eid.to_s,
-                  self.class.name,
-                  self.eid.to_s
-                 ])
+        if (TAGF.debugging?(:inventory))
+          warn(format('<%s>[%s].%s: Adding <%s>[%s] ' \
+                      + 'to <%s>[%s] inventory',
+                      self.class.name,
+                      self.eid.to_s,
+                      __method__.to_s,
+                      arg.class.name,
+                      arg.eid.to_s,
+                      self.class.name,
+                      self.eid.to_s))
         end
         result		= self.inventory.add(arg)
         return result
@@ -338,7 +343,7 @@ module TAGF
         else
           msg		= "%s's inventory is full."
         end
-        warn((msg + suffix) % [self.name, exc.to_s])
+        warn(format(msg + suffix, self.name, exc.to_s))
         return nil
       end                       # def inventory_is_full(exc=nil)
 
@@ -347,11 +352,11 @@ module TAGF
       # @return [Container] self
       #
       def initialize_container(*args, **kwargs)
-        if (debugging?(:initialize))
-          warn('<%s>[%s].%s running' \
-               % [self.class.name,
-                  self.eid.to_s,
-                  __method__.to_s])
+        if (TAGF.debugging?(:initialize))
+          warn(format('<%s>[%s].%s running',
+                      self.class.name,
+                      self.eid.to_s,
+                      __method__.to_s))
         end
         @pending_inventory	||= []
         self.game.create_inventory_on(self, owned_by: self)
