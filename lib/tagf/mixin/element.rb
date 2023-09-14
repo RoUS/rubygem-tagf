@@ -325,11 +325,7 @@ module TAGF
       # @return [Element] self
       #
       def initialize_element(*args, **kwargs)
-        if (TAGF.debugging?(:initialize))
-          warn(format('[%s]->%s running',
-                      self.class.name,
-                      __method__.to_s))
-        end
+        TAGF::Mixin::Debugging.invocation
         @eid		||= kwargs[:eid] || self.object_id
         if (self.owned_by.nil? \
             && ((! kwargs.key?(:owned_by)) \

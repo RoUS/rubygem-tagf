@@ -33,6 +33,7 @@ module TAGF
 
     #
     include(Exceptions)
+    include(Mixin::Debugging)
 
     #
     attr_accessor(:author)
@@ -133,11 +134,8 @@ module TAGF
     # @return [Game]
     #   self
     def initialize(*args, **kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('[%s]->%s running',
-                    self.class.name,
-                    __method__.to_s))
-      end
+      debugger
+      TAGF::Mixin::Debugging.invocation
       @creation_overrides = {
         game:		self,
         owned_by:	self,

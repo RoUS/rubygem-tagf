@@ -60,11 +60,7 @@ module TAGF
     # @return [Faction] self
     #
     def initialize(*args, **kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('[%s]->%s running',
-                    self.class.name,
-                    __method__.to_s))
-      end
+      TAGF::Mixin::Debugging.invocation
       initialize_element(*args, **kwargs)
       if (self.name.nil?)
         raise_exception(NameRequired, self)

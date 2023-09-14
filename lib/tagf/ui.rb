@@ -236,11 +236,7 @@ module TAGF
     # @return [Verb] self
     #
     def initialize(*args, **kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('[%s]->%s running',
-                    self.class.name,
-                    __method__.to_s))
-      end
+      TAGF::Mixin::Debugging.invocation
       kwargs[:type] = :intransitive unless (kwargs[:type])
       self.initialize_element(*args, **kwargs)
       return self
@@ -261,11 +257,7 @@ module TAGF
     # @!macro doc.TAGF.formal.kwargs
     # @return [Imperative] self
     def initialize(*args, **kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('[%s]->%s running',
-                    self.class.name,
-                    __method__.to_s))
-      end
+      TAGF::Mixin::Debugging.invocation
       self.initialize_element(*args, **kwargs)
       return self
     end                         # def initialize(*args, **kwargs)
@@ -284,11 +276,7 @@ module TAGF
     # @return [Noun] self
     #
     def initialize(*args, **kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('[%s]->%s running',
-                    self.class.name,
-                    __method__.to_s))
-      end
+      TAGF::Mixin::Debugging.invocation
       self.initialize_element(*args, **kwargs)
     end                         # def initialize(*args, **kwargs)
 

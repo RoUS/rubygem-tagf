@@ -1,5 +1,13 @@
-# TODO items for TAGF Ruby gem
+# TODO items (unordered) for TAGF Ruby gem
 
+* Allow saving game serialised as YAML, via #Marshal (possibly
+  compressed), encrypted
+* Importing and exporting should do the smallest granularity first, so
+  that the game already has things like contents declared when
+  defining containers.  Or not  Maybe just build all elements and then
+  connect them afterward?
+* Allow for `#debugging?` to take a list of symbols; figure out
+  whether they should be ANDed or ORed by default
 * Work on ability to load a game from YAML.
   * Pass the YAML results through a syntax checker.  (Something for
     the 'Thor' tool mentioned later.)

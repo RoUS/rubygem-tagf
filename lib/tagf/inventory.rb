@@ -75,12 +75,7 @@ module TAGF
 
     #
     def initialize(**kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('<%s>[%s].%s running',
-                    self.class.name,	
-                    self.eid.to_s,
-                    __method__.to_s))
-      end
+      TAGF::Mixin::Debugging.invocation
       @contents		= {}
       unless (owned_by = kwargs[:owned_by])
         raise_exception(NoObjectOwner, self)

@@ -49,11 +49,7 @@ module TAGF
     # @return [Reality] self
     #
     def initialize(*args, **kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('[%s]->%s running',
-                    self.class.name,
-                    __method__.to_s))
-      end
+      TAGF::Mixin::Debugging.invocation
       initialize_element(*args, **kwargs)
       return self
     end                         # def initialize(*args, **kwargs)

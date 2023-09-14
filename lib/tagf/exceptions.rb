@@ -56,11 +56,7 @@ module TAGF
 
       #
       def _dbg_exception_start(msym)
-        if (TAGF.debugging?(:initialize))
-          warn(format('[%s]->%s running',
-                      self.class.name,
-                      msym.to_s))
-        end
+        TAGF::Mixin::Debugging.invocation
         return nil
       end                       # def _dbg_exception_start
 

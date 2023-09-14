@@ -45,22 +45,53 @@ module TAGF
       DEBUG_OPTIONS		= Set.new
 
       #
+      # Check the list of deugging options (all symbols) to see if the
+      # requested one is in the current set.  Return `true` if so.
+      # Typically used options are method names like `:initialize`.
+      #
+      # @todo
+      #   Allow multiple options (like `[:include, :extend]`).
+      # @param [Symbol] item
+      # @return [Boolean]
       def debugging?(item)
         return (DEBUG_OPTIONS.include?(item.to_sym)) ? true : false
       end                       # def debugging?(item)
       module_function(:debugging?)
 
+      # Display a method on `stderr` about a particular method or
+      # class of method beginning execution.  By default, the method
+      # described is the one that invoked #invocation, but this
+      # can be overridden by passing an actual method symbol (such as
+      # `:initialize`).
       #
-      def notify_initialising
-        scope		= binding.of_caller(1)
+      # The format of the message written to `stderr` is:
+      #
+      #    <1>[2].3 invocation beginning
+      #
+      # where
+      #
+      # #. is the name of the class or module in which the method
+      #    resides
+      # #. is the EID (element ID) of the object in which the
+      #    method is being invoked, and
+      # #. is the name of the method itself.
+      #
+      # @param [Symbol,nil] altmethod(nil)
+      # @return [void]
+      def invocation(altmethod=nil, altmessage=nil, frame=1)
+        scope		= binding.of_caller(frame)
         elem		= scope.eval('self')
-        if (TAGF.debugging?(:initialize))
-          warn(format('<%s>[%s].%s running',
-                      elem.class.name,
-                      elem.eid.to_s,
-                      scope.eval('__method__.to_s')))
-        end
-      end                       # def notify_initialising
+        invmethod	= altmethod || scope.eval('__method__')
+        invmessage	= altmessage || 'beginning invocation'
+        return unless (TAGF.debugging?(invmethod))
+        warn(format('<%s>[%s].%s %s',
+                    elem.class.name,
+                    elem.eid.to_s,
+                    invmethod.to_s,
+                    invmessage))
+        return
+      end                       # def invocation
+      module_function(:invocation)
 
       # @!macro doc.TAGF.Mixin.module.eigenclass Debugging
       class << self

@@ -34,11 +34,7 @@ module TAGF
     # @return [Feature] self
     #
     def initialize(*args, **kwargs)
-      if (TAGF.debugging?(:initialize))
-        warn(format('[%s]->%s running',
-                    self.class.name,
-                    __method__.to_s))
-      end
+      TAGF::Mixin::Debugging.invocation
       self.initialize_element(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
       self.is_static!

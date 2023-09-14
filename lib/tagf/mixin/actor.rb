@@ -92,11 +92,7 @@ module TAGF
       # @return [???] self
       #
       def initialize_actor(*args, **kwargs)
-        if (TAGF.debugging?(:initialize))
-          warn(format('[%s]->%s running',
-                      self.class.name,
-                      __method__.to_s))
-        end
+        TAGF::Mixin::Debugging.invocation
         @breadcrumbs	= []
         kwargs_defaults	= {
           maxhp:	0,

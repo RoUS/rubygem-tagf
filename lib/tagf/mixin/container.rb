@@ -352,12 +352,7 @@ module TAGF
       # @return [Container] self
       #
       def initialize_container(*args, **kwargs)
-        if (TAGF.debugging?(:initialize))
-          warn(format('<%s>[%s].%s running',
-                      self.class.name,
-                      self.eid.to_s,
-                      __method__.to_s))
-        end
+        TAGF::Mixin::Debugging.invocation
         @pending_inventory	||= []
         self.game.create_inventory_on(self, owned_by: self)
         return self
