@@ -8,6 +8,8 @@
   connect them afterward?
 * Allow for `#debugging?` to take a list of symbols; figure out
   whether they should be ANDed or ORed by default
+  * Done (using AND by default), but there are **two** `#debugging?`
+    methods in `mixin/debugging.rb` !
 * Work on ability to load a game from YAML.
   * Pass the YAML results through a syntax checker.  (Something for
     the 'Thor' tool mentioned later.)

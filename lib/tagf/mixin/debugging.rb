@@ -53,9 +53,10 @@ module TAGF
       #   Allow multiple options (like `[:include, :extend]`).
       # @param [Symbol] item
       # @return [Boolean]
-      def debugging?(item)
-        return (DEBUG_OPTIONS.include?(item.to_sym)) ? true : false
-      end                       # def debugging?(item)
+      def debugging?(*items)
+        isyms		= Set.new(items.map(&:to_sym))
+        return ((DEBUG_OPTIONS & isyms) == isyms) ? true : false
+      end                       # def debugging?(*items)
       module_function(:debugging?)
 
       # Display a method on `stderr` about a particular method or
