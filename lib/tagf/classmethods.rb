@@ -95,6 +95,10 @@ module TAGF
       TAGF::Mixin::Base,
     ]
 
+    # Name of the element key as used in definition (YAML) files.
+    #
+    attr_accessor(:elkey)
+
     # @!macro doc.TAGF.module.classmethod.included
     def included(klass)
       whoami		= format('%s.%s; %s.include(%s)',

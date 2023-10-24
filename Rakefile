@@ -28,6 +28,25 @@ require('bundler/gem_tasks')
 
 include Rake::DSL
 
+require('rake/testtask')
+Rake::TestTask.new(:test) do |t|
+
+  t.libs	<< 'test'
+  t.libs	<< 'lib'
+  # helper(simplecov) must be required before loading power_assert
+  helper_path	= File.realpath('test/test_helper.rb')
+  t.ruby_opts	= ['-w', "-r#{helper_path}"]
+  t.test_files	= FileList['test/**/*_test.rb'].exclude do |i|
+    begin
+      next false unless defined?(RubyVM)
+      RubyVM::InstructionSequence.compile(File.read(i))
+      false
+    rescue SyntaxError
+      true
+    end                         # begin
+  end                           # t.test_files = FileList[]
+end                             # Rake::TestTask.new(:test) do
+
 #
 # Load our local tasks.
 #

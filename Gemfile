@@ -41,6 +41,7 @@ ruby('>= 2.7')
 #   gem "activesupport", ">= 2.3.5"
 
 group(:default, :development, :test) do
+  gem('abbrev')
   gem('bundler',	'>= 1.0.7')
   gem('binding_of_caller')
   gem('contracts',	'< 0.17.0')
@@ -75,19 +76,22 @@ group(:development, :test) do
   gem('rdiscount')
   gem('coveralls')
   gem('cucumber')
+  gem('gettext')
   gem('github-markup')
   #
   # Needed for Yard, of all things
   #
   gem('irb')
+  gem('mocha')
   gem('pp')
-  gem('rake',		'< 11.0')
+  gem('rake',		'~> 13.0')
   gem('redcarpet')
   gem('rdoc')
   gem('rspec',		'~> 3.0')
   gem('rubocop',	'~> 1.21')
   gem('rubocop-rake')
   gem('simplecov')
+  gem('test-unit',	'~> 3.0')
   gem('yard', 		'~> 0.9.11')
 end
 

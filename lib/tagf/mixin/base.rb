@@ -170,6 +170,8 @@ module TAGF
         return result
       end                       # def pluralise
 
+      Truthy_Strings	= %w[ y yes t true on ]
+
       #
       # Convert a value into a Boolean.  This varies slightly from
       # normal Ruby semantics in that an integer 0 is considered
@@ -182,10 +184,37 @@ module TAGF
       #   the result of the evaluation.
       #
       def truthify(testvalue)
-        if (testvalue.kind_of?(Integer) && testvalue.zero?)
+        #
+        # Fast-track actual Booleans.
+        #
+        if ([true, false].include?(testvalue))
+          result	= testvalue
+        elsif (testvalue.nil?)
           result	= false
+        #
+        # If it's some kind of number, zero is false.
+        #
+        elsif (testvalue.kind_of?(Numeric))
+          result	= (! testvalue.zero?)
+        #
+        # If it's a string, see if it's one of our truthy keywords.
+        #
+        elsif (testvalue.kind_of?(String))
+          if (Truthy_Strings.include?(testvalue.downcase))
+            result	= true
+          else
+            result	= (! testvalue.to_f.zero?)
+          end
+        #
+        # See if it can be turned into a float, whatever it is.
+        #
+        elsif (testvalue.respond_to?(:to_f))
+          result	= testvalue.to_f.zero?
+        #
+        # Shrug.  False it is.
+        #
         else
-          result	= testvalue ? true : false
+          result	= false
         end
         return result
       end                       # def truthify(testvalue)
