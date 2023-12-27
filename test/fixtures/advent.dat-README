@@ -1,0 +1,17 @@
+advent.dat
+----------
+
+Table 1: Long location descriptions.
+Table 2: Short location descriptions.
+Table 3: Map & movement data:
+  Column 1:  Current location
+  Column 2:  Target location (display Table1[Column 2] after move)
+  Column 3+: Keywords causing this motion
+Table 4: Vocabulary
+  Items 2-70 are motion keywords
+  Items 1001-1023 are items, scenery items, and adversaries
+
+Table 5: Static game states
+  Hundreds digit used to identify alternate states
+Table 6: Hints and events
+
