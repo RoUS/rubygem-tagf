@@ -89,6 +89,16 @@ data			= {
   # strings (such as 'S' and 'SOUTH').
   #
   keywords:		{},
+  #
+  # 'Game states,' whatever that means, from Table 5.  Integer
+  # key/index and a string value.
+  #
+  states:		{},
+  #
+  # 'Events' — notices and messages explicitly called out from the
+  # source code.
+  #
+  events:		{},
 }
 
 #
@@ -194,34 +204,94 @@ while (line = tables[tnum].shift)
   locdata[:cx][target]	|= [ *how ]
 end
 
-=begin
-table[:locations]	= ldata
-tnum			= 2
-  #
-  # Read the first table: long descriptions.
-  #
-  while (lnum >= 0)
-    line		= f.readline.chomp
-  end                           # End of long descriptions
-  lnum			= 0
-  while (lnum >= 0)
-    line		= f.readline.chomp
-    (lnum,ldesc)	= line.split(%r!\t!)
-    lnum		= lnum.to_i
-    break if (lnum == -1)
-    locdata		= ldata[lnum]
-    locdata[:short]	<< ldesc.strip if (ldesc.kind_of?(String))
+#
+# Table 4: vocabulary (keywords).  Integer followed by a keyword
+# assigned to it.  Multiple occurrences allowed for each integer key.
+#
+lwnum			= -1
+ckwnum			= 0
+tnum			= 4
+dtable			= data[:keywords]
+while (line = tables[tnum].shift)
+  (kwnum,kword)		= line.split(%r!\t!)
+  kwnum			= kwnum.to_i
+  if (dtable[kwnum].nil?)
+    dtable[kwnum]	= {
+      keywords:		[ *kword ],
+      flags:		[],
+    }
+  end
+  kwdata		= dtable[kwnum]
+  kwdata[:keywords]	|= [ *kword ]
+  if (kwnum.between?(2, 70))
+    kwdata[:flags]	|= [ :motion ]
+  elsif (kwnum.between?(1001, 1023))
+    kwdata[:flags]	|= [ :item ]
   end
 end
-=end
+
+#
+# Table 5: Static game states (?).  Hundreds digit used to identify
+# alternate states.
+#
+lwnum			= -1
+ckwnum			= 0
+tnum			= 5
+dtable			= data[:states]
+while (line = tables[tnum].shift)
+  (sindex,svalue)	= line.split(%r!\t!)
+  svalue.strip!
+  sindex		= sindex.to_i
+  altstate		= sindex / 100
+  sbase			= sindex - (altstate * 100)
+  if (dtable[sbase].nil?)
+    dtable[sbase]	= {}
+  end
+  dtable[sbase][altstate] = svalue
+end
+
+#
+# Table 6: Hints and events.  Format is essentially identical to Table
+# 1, except that the indices are hardcoded into the source.
+#
+enum			= -1
+cenum			= 0
+tnum			= 6
+dtable			= data[:events]
+while (line = tables[tnum].shift)
+  (enum,edesc)		= line.split(%r!\t!)
+  enum			= enum.to_i
+  if (enum != cenum)
+    if (dtable[enum].nil?)
+      dtable[enum]	= {
+        eid:		nil,
+        enum:		enum,
+        text:		nil,
+      }
+    end
+    edata		= dtable[enum]
+    cenum		= enum
+  end
+  if (edesc.kind_of?(String))
+    edesc.strip!
+    if (edata[:text])
+      edata[:text]	<< "\n" << edesc
+    else
+      edata[:text]	= edesc
+    end
+  else
+    warn(format('Entry %i in table %i has non-string value',
+                enum, tnum))
+  end
+end
+
 puts(data.to_yaml)
-=begin
+
 puts('# Local Variables:
 # mode: yaml
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
 # End:
 ')
-=end
 
 # Local Variables:
 # mode: ruby

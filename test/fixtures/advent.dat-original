@@ -380,50 +380,50 @@
 3	enter
 3	door
 3	gate
-4	upstr
-5	downs
-6	fores
-7	forwa
-7	conti
-7	onwar
+4	upstream
+5	downstream
+6	forest
+7	forward
+7	continue
+7	onward
 8	back
-8	retur
-8	retre
-9	valle
+8	return
+8	retreat
+9	valley
 10	stair
 11	out
-11	outsi
+11	outside
 11	exit
 11	leave
-12	build
+12	building
 12	bld
 12	house
 13	gully
-14	strea
+14	stream
 15	rock
 16	bed
-17	crawl
-18	cobbl
-19	inwar
-19	insid
+17	crawlway
+18	cobble
+19	inward
+19	inside
 19	in
-20	surfa
+20	surface
 21	null
-21	nowhe
+21	nowhere
 22	dark
-23	passa
+23	passage
 24	low
-25	canyo
-26	awkwa
-29	upwar
+25	canyon
+26	awkward
+29	upward
 29	up
 29	u
 29	above
 30	d
-30	downw
+30	downward
 30	down
 31	pit
-32	outdo
+32	outdoors
 33	crack
 34	steps
 35	dome
@@ -433,7 +433,7 @@
 39	jump
 40	magic
 41	over
-42	acros
+42	across
 43	East
 43	e
 44	West
@@ -444,111 +444,115 @@
 46	s
 47	slit
 48	xyzzy
-49	depre
-50	entra
-51	debri
+49	depression
+50	entrance
+51	debris
 52	hole
 53	wall
-54	broke
+54	broken
 55	y2
 56	climb
 57	look
-57	exami
+57	examine
 57	touch
-57	looka
+57	lookat
 58	floor
 59	room
+60	NorthEast
 60	ne
 61	slab
-61	slabr
+61	slabroom
+62	SouthEast
 62	se
+63	SouthWest
 63	sw
+64	NorthWest
 64	nw
 65	plugh
-66	secre
+66	secret
 67	cave
 68	turn
 69	cross
-70	bedqu
+70	bedquilt
 1001	keys
 1001	key
 1002	lamp
-1002	headl
+1002	headlamp
 1003	grate
 1004	cage
 1005	rod
 1006	steps
 1007	bird
-1010	nugge
+1010	nugget
 1010	gold
 1011	snake
-1012	fissu
-1013	diamo
-1014	silve
+1012	fissure
+1013	diamond
+1014	silver
 1014	bars
 1015	jewel
 1016	coins
-1017	dwarv
+1017	dwarves
 1017	dwarf
 1018	knife
-1018	knive
+1018	knives
 1018	rock
-1018	weapo
-1018	bould
+1018	weapon
+1018	boulder
 1019	food
-1019	ratio
+1019	rations
 1020	water
-1020	bottl
+1020	bottle
 1021	axe
 1022	knife
 1023	chest
 1023	box
-1023	treas
+1023	treasure
 2001	take
 2001	carry
 2001	keep
-2001	picku
+2001	pickup
 2001	pick
 2001	wear
 2001	catch
 2001	steal
-2001	captu
+2001	capture
 2001	find
 2001	where
 2001	get
-2002	relea
+2002	release
 2002	free
-2002	disca
+2002	discard
 2002	drop
 2002	dump
 2003	dummy
-2004	unloc
+2004	unlock
 2004	open
 2004	lift
-2005	nothi
+2005	nothing
 2005	hold
 2006	lock
 2006	close
 2007	light
 2007	on
-2008	extin
+2008	extinguish
 2008	off
-2009	strik
+2009	strike
 2010	calm
 2010	wave
 2010	shake
 2010	sing
-2010	cleav
+2010	cleave
 2011	walk
 2011	run
-2011	trave
+2011	travel
 2011	go
-2011	proce
-2011	conti
-2011	explo
+2011	proceed
+2011	continue
+2011	explore
 2011	goto
-2011	follo
-2012	attac
+2011	follow
+2012	attack
 2012	kill
 2012	stab
 2012	fight
@@ -563,7 +567,7 @@
 3051	what
 3064	tree
 3066	dig
-3066	exciv
+3066	excavate
 3067	blast
 3068	lost
 3069	mist
@@ -576,7 +580,7 @@
 3	 The grate is locked.
 103	 The grate is open.
 204	 There is a small wicker cage discarded nearby.
-205	 A three foot black rod with a rusty star on an end lies nearby.
+205	 A three foot black rod, with a rusty star on one end, lies nearby.
 206	 Rough stone steps lead down the pit.
 7	 A cheerful little bird is sitting here singing.
 107	 There is a little bird in the cage.
@@ -602,7 +606,7 @@
 1	 to work in the cave.  I will be your eyes and hands.  Direct
 1	 me with commands of 1 or 2 words.
 1	 (Errors, suggestions, complaints to Crowther)
-1	 (If stuck type 'help' for some hints)
+1	 (If stuck, type 'help' for some hints)
 2	 A little dwarf with a big knife blocks your way.
 3	 A little dwarf just walked around a corner,saw you, threw
 3	 a little axe at you which missed, cursed, and ran away.
@@ -666,7 +670,7 @@
 50	 Good try, but that is an old worn-out magic word.
 51	 I know of places, actions, and things.  Most of my vocabulary
 51	 describes places and is used to move you there.  To move try
-51	 words like forest, building, downstream, enter, East, West
+51	 words like forest, building, downstream, enter, East, West,
 51	 North, South, up, or down.  I know about a few special objects,
 51	 like a black rod hidden in the cave.  These objects can be
 51	 manipulated using one of the action words that I know.  Usually

@@ -1,0 +1,350 @@
+%YAML 1.1
+---
+game:
+  eid: ADVENT
+  name: Mammoth Cave
+  description: TBD
+  shortdesc: Based on the ADVENT game
+  locations:
+    - eid: '1'
+      name: start
+      description: |
+        You are standing at the end of a road before a small brick
+        building.  Around you is a forest.  A small stream flows out
+        of the building and down a gully.
+    - eid: '2'
+      name: hilltop
+      description: |
+        You have walked up a hill, still in the forest.  The road now
+        slopes back down the other side of the hill.  There is a
+        building in the distance.
+    - eid: '3'
+      name: house
+      description: |
+        You are inside a building, a well house for a large spring.
+    - eid: '4'
+      name: streambed
+      description: |
+        You are in a valley in the forest beside a stream tumbling
+        along a rocky bed.
+    - eid: '5'
+      name: forest1
+      description: |
+        You are in open forest, with a deep valley to one side.
+    - eid: '6'
+      name: forest2
+      description: |
+        You are in open forest near both a valley and a  road.
+    - eid: '7'
+      name: rocky-slit
+      description: |
+        At your feet all the water of the stream splashes into a 2
+        inch slit in the rock.  Downstream the streambed is bare rock.
+    - eid: '8'
+      name: grate
+      description: |
+        You are in a 20 foot depression floored with bare dirt.  Set
+        into the dirt is a strong steel grate mounted in concrete.  A
+        dry streambed leads into the depression.
+    - eid: '9'
+      name: below-grate
+      description: |
+        You are in a small chamber beneath a 3x3 steel grate to the
+        surface.  A low crawl over cobbles leads inward to the West.
+    - eid: '10'
+      name: low-passage
+      description: |
+        You are crawling over cobbles in a low passage.  There is a
+        dim light at the East end of the passage.
+    - eid: '11'
+      name: xyzzy
+      description: |
+        You are in a debris room, filled with stuff washed in from
+        the surface.  A low wide passage with cobbles becomes
+        plugged with mud and debris here, but an awkward canyon
+        leads upward and West.
+        A note on the wall says 'Magic Word XYZZY'.
+    - eid: '12'
+      name: awkward-canyon
+      description: |
+        You are in an awkward sloping East/West canyon.
+    - eid: '13'
+      name: splendid-chamber
+      description: |
+        You are in a splendid chamber thirty feet high.  The walls
+        are frozen rivers of orange stone.  An awkward canyon and a
+        good passage exit from East and West sides of the chamber.
+    - eid: '14'
+      description: |
+        At your feet is a small pit breathing traces of white mist.
+        An East passage ends here except for a small crack leading on.
+    - eid: '15'
+      description: |
+        You are at one end of a vast hall stretching forward out of
+        sight to the West.  There are openings to either side.
+        Nearby, a wide stone staircase leads downward.  The hall is
+        filled with wisps of white mist swaying to and fro almost as
+        if alive.  A cold wind blows up the staircase.  There is a
+        passage at the top of a dome behind you.
+    - eid: '16'
+      description: |
+        The crack is far too small for you to follow.
+    - eid: '17'
+      description: |
+        You are on the East bank of a fissure slicing clear across
+        the Hall.  The mist is quite thick here, and the fissure is
+        too wide to jump.
+    - eid: '18'
+      name: nugget-room
+      description: |
+        This is a low room with a crude note on the wall.  It says
+        'You won't get it up the steps'.
+    - eid: '19'
+      name: mt-king
+      description: |
+        You are in the Hall of the Mountain King, with passages off in
+        all directions.
+    - eid: '20'
+      description: |
+        You are at the bottom of the pit with a broken neck.
+    - eid: '21'
+      description: |
+        You didn't make it.
+    - eid: '22'
+      description: |
+        The dome is unclimbable.
+    - eid: '23'
+      description: |
+        You can't go in through a locked steel grate!
+    - eid: '24'
+      description: |
+        You don't fit down a two inch hole!
+    - eid: '25'
+      description: |
+        You can't go through a locked steel grate.
+    - eid: '27'
+      description: |
+        You are on the West side of the fissure in the Hall of Mists.
+    - eid: '28'
+      description: |
+        You are in a low N/S passage at a hole in the floor.
+        The hole goes down to an E/W passage.
+    - eid: '29'
+      name: mt-king-s
+      description: |
+        You are in the South side chamber.
+    - eid: '30'
+      name: mt-king-w
+      description: |
+        You are in the West side chamber of the Hall of the Mountain
+        King.  A passage continues West and up here.
+    - eid: '31'
+      description: |
+        There is no way across the fissure.
+    - eid: '32'
+      description: |
+        You can't get by the snake.
+    - eid: '33'
+      name: y2
+      description: |
+        You are in a large room, with a passage to the South, a
+        passage to the West, and a wall of broken rock to the East.
+        There is a large 'Y2' on a rock in the room's center.
+    - eid: '34'
+      name: cracked-jumble
+      description: |
+        You are in a jumble of rock, with cracks everywhere.
+    - eid: '35'
+      description: |
+        You are at a window on a huge pit, which goes up and down out
+        of sight.  A floor is indistinctly visible over 50 feet below.
+        Directly opposite you and 25 feet away there is a similar
+        window.
+    - eid: '36'
+      name: dirty-passage
+      description: |
+        You are in a dirty broken passage.  To the East is a crawl.
+        To the West is a large passage.  Above you is a hole to
+        another passage.
+    - eid: '37'
+      description: |
+        You are on the brink of a small clean climbable pit.
+        A crawl leads West.
+    - eid: '38'
+      description: |
+        You are in the bottom of a small pit with a little
+        stream, which enters and exits through tiny slits.
+    - eid: '39'
+      description: |
+        You are in a large room full of dusty rocks.  There is a
+        big hole in the floor.  There are cracks everywhere, and
+        a passage leading East.
+    - eid: '40'
+      description: |
+        You have crawled through a very low wide passage parallel
+        to and North of the Hall of Mists.
+    - eid: '41'
+      name: hall-of-mists-w
+      description: |
+        You are at the West end of the Hall of Mists.  A low wide
+        crawl continues West and another goes North.  To the South is
+        a little passage 6 feet off the floor.
+    - eid: '42'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '43'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '44'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '45'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '46'
+      description: |
+        Dead end.
+    - eid: '47'
+      description: |
+        Dead end.
+    - eid: '48'
+      description: |
+        Dead end.
+    - eid: '49'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '50'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '51'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '52'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '53'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '54'
+      description: |
+        Dead end.
+    - eid: '55'
+      description: |
+        You are in a maze of twisty little passages, all alike.
+    - eid: '56'
+      description: |
+        Dead end.
+    - eid: '57'
+      description: |
+        You are on the brink of a thirty foot pit with a massive
+        orange column down one wall.  You could climb down here
+        but you could not get back up.  The maze continues at this
+        level.
+    - eid: '58'
+      description: |
+        Dead end.
+    - eid: '59'
+      description: |
+        You have crawled through a very low wide passage parallel
+        to and North of the Hall of Mists.
+    - eid: '60'
+      name: long-hall-e
+      description: |
+        You are at the East end of a very long hall apparently
+        without side chambers.  To the East a low wide crawl slants
+        up.  To the North a round two foot hole slants down.
+    - eid: '61'
+      name: long-hall-w
+      description: |
+        You are at the West end of a very long featureless hall.
+    - eid: '62'
+      description: |
+        You are at a crossover of a high N/S passage and a low E/W
+        one.
+    - eid: '63'
+      description: |
+        Dead end.
+    - eid: '64'
+      name: complex-junction
+      description: |
+        You are at a complex junction.  A low hands and knees passage
+        from the North joins a higher crawl from the East to make a
+        walking passage going West There is also a large room above.
+        The air is damp here.  A sign in midair here says 'Cave under
+        construction beyond this point.  Proceed at own risk.'
+    - eid: '65'
+      name: bedquilt
+      description: |
+        You are in bedquilt, a long East/West passage with holes
+        everywhere.  To explore at random select North, South, up, or
+        down.
+    - eid: '66'
+      name: swisscheese
+      description: |
+        You are in a room whose walls resemble swiss cheese.  Obvious
+        passages go West, East, NE, and NW.  Part of the room is
+        occupied by a large bedrock block.
+    - eid: '67'
+      name: twopit
+      description: |
+        You are in the twopit room.  The floor here is littered with
+        thin rock slabs, which make it easy to descend the pits.
+        There is a path here bypassing the pits to connect passages
+        from East and West.  There are holes all over, but the only
+        big one is on the wall directly over the East pit where you
+        can't get to it.
+    - eid: '68'
+      name: slab-room
+      description: |
+        You are in a large low circular chamber whose floor is an
+        immense slab fallen from the ceiling (slab room).  East and
+        West there once were large passages, but they are now filled
+        with boulders.  Low small passages go North and South, and the
+        South one quickly bends West around the boulders.
+    - eid: '69'
+      description: |
+        You are in a secret N/S canyon above a large room.
+    - eid: '70'
+      description: |
+        You are in a secret N/S canyon above a sizable passage.
+    - eid: '71'
+      name: secret-junction
+      description: |
+        You are in a secret canyon at a junction of three canyons,
+        bearing North, South, and SE.  The North one is as tall as the
+        other two combined.
+    - eid: '72'
+      description: |
+        You are in a large low room.  Crawls lead N, SE, and SW.
+    - eid: '73'
+      description: |
+        Dead end crawl.
+    - eid: '74'
+      name: secret-canyon
+      description: |
+        You are in a secret canyon which here runs E/W.  It crosses
+        over a very tight canyon 15 feet below.  If you go down you
+        may not be able to get back up.
+    - eid: '75'
+      description: |
+        You are at a wide place in a very tight N/S canyon.
+    - eid: '76'
+      description: |
+        The canyon here becomes too tight to go further South.
+    - eid: '77'
+      description: |
+        You are in a tall E/W canyon.  A low tight crawl goes 3 feet
+        North and seems to open up.
+    - eid: '78'
+      description: |
+        The canyon runs into a mass of boulders - dead end.
+    - eid: '79'
+      description: |
+        The stream flows out through a pair of 1 foot diameter sewer
+        pipes.  It would be advisable to use the door.
+
+# Local Variables:
+# mode: yaml
+# indent-tabs-mode: nil
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:

@@ -1,0 +1,2015 @@
+%YAML 1.1
+---
+---
+:locations:
+  2:
+    :eid:
+    :locnum: 2
+    :desc: |-
+      You have walked up a hill, still in the forest.
+      The road now slopes back down the other side of the hill.
+      There is a building in the distance.
+    :brief:
+    :cx:
+      1:
+      - 8
+      5:
+      - 6
+  3:
+    :eid:
+    :locnum: 3
+    :desc: You are inside a building, a well house for a large spring.
+    :brief: You're inside building.
+    :cx: {}
+  4:
+    :eid:
+    :locnum: 4
+    :desc: |-
+      You are in a valley in the forest beside a stream tumbling
+      along a rocky bed.
+    :brief: You're in valley
+    :cx:
+      1:
+      - 4
+      5:
+      - 6
+      7:
+      - 5
+      8:
+      - 49
+  5:
+    :eid:
+    :locnum: 5
+    :desc: You are in open forest, with a deep valley to one side.
+    :brief: You're in forest
+    :cx:
+      4:
+      - 9
+      300:
+      - 6
+      5:
+      - 44
+  6:
+    :eid:
+    :locnum: 6
+    :desc: You are in open forest near both a valley and a road.
+    :brief: You're in forest
+    :cx:
+      1:
+      - 2
+      4:
+      - 9
+      5:
+      - 6
+  7:
+    :eid:
+    :locnum: 7
+    :desc: |-
+      At your feet all the water of the stream splashes into a
+      2 inch slit in the rock.  Downstream the streambed is bare rock.
+    :brief: You're at slit in streambed
+    :cx:
+      1:
+      - 12
+      4:
+      - 4
+      5:
+      - 6
+      8:
+      - 5
+      24:
+      - 47
+  8:
+    :eid:
+    :locnum: 8
+    :desc: |-
+      You are in a 20 foot depression floored with bare dirt.  Set into
+      the dirt is a strong steel grate mounted in concrete.  A dry
+      streambed leads into the depression.
+    :brief: You're outside grate
+    :cx:
+      5:
+      - 6
+      1:
+      - 12
+      7:
+      - 4
+      301:
+      - 3
+  9:
+    :eid:
+    :locnum: 9
+    :desc: |-
+      You are in a small chamber beneath a 3x3 steel grate to the
+      surface.  A low crawl over cobbles leads inward to the West.
+    :brief: You're below the grate
+    :cx:
+      302:
+      - 11
+      10:
+      - 17
+      14:
+      - 31
+      11:
+      - 51
+  10:
+    :eid:
+    :locnum: 10
+    :desc: |-
+      You are crawling over cobbles in a low passage.  There is a
+      dim light at the East end of the passage.
+    :brief: You're in cobble crawl
+    :cx:
+      9:
+      - 11
+      11:
+      - 19
+      14:
+      - 31
+  11:
+    :eid:
+    :locnum: 11
+    :desc: |-
+      You are in a debris room, filled with stuff washed in from
+      the surface.  A low wide passage with cobbles becomes
+      plugged with mud and debris here, but an awkward canyon
+      leads upward and West.
+      A note on the wall says 'Magic Word XYZZY'.
+    :brief: You're in debris room.
+    :cx:
+      310:
+      - 49
+      10:
+      - 17
+      12:
+      - 25
+      3:
+      - 48
+      14:
+      - 31
+  12:
+    :eid:
+    :locnum: 12
+    :desc: You are in an awkward sloping East/West canyon.
+    :brief:
+    :cx:
+      310:
+      - 49
+      11:
+      - 30
+      13:
+      - 19
+      14:
+      - 31
+  13:
+    :eid:
+    :locnum: 13
+    :desc: |-
+      You are in a splendid chamber thirty feet high.  The walls
+      are frozen rivers of orange stone.  An awkward canyon and a
+      good passage exit from East and West sides of the chamber.
+    :brief: You're in bird chamber.
+    :cx:
+      310:
+      - 49
+      11:
+      - 51
+      12:
+      - 25
+      14:
+      - 23
+  14:
+    :eid:
+    :locnum: 14
+    :desc: |-
+      At your feet is a small pit breathing traces of white mist.  An
+      East passage ends here except for a small crack leading on.
+    :brief: You're at top of small pit.
+    :cx:
+      310:
+      - 49
+      11:
+      - 51
+      13:
+      - 23
+      303:
+      - 30
+      16:
+      - 33
+  15:
+    :eid:
+    :locnum: 15
+    :desc: |-
+      You are at one end of a vast hall stretching forward out of
+      sight to the West.  There are openings to either side.  Nearby, a wide
+      stone staircase leads downward.  The hall is filled with
+      wisps of white mist swaying to and fro almost as if alive.
+      A cold wind blows up the staircase.  There is a passage
+      at the top of a dome behind you.
+    :brief: You're in hall of mists.
+    :cx:
+      18:
+      - 36
+      17:
+      - 7
+      19:
+      - 10
+      304:
+      - 29
+      34:
+      - 55
+      62:
+      - 69
+  16:
+    :eid:
+    :locnum: 16
+    :desc: The crack is far too small for you to follow.
+    :brief:
+    :cx:
+      14:
+      - 1
+  17:
+    :eid:
+    :locnum: 17
+    :desc: |-
+      You are on the East bank of a fissure slicing clear across
+      the hall.  The mist is quite thick here, and the fissure is
+      too wide to jump.
+    :brief: You're on East bank of fissure.
+    :cx:
+      15:
+      - 8
+      305:
+      - 7
+      306:
+      - 40
+  18:
+    :eid:
+    :locnum: 18
+    :desc: |-
+      This is a low room with a crude note on the wall.
+      It says 'You won't get it up the steps'.
+    :brief: You're in nugget of gold room.
+    :cx:
+      15:
+      - 38
+  19:
+    :eid:
+    :locnum: 19
+    :desc: |-
+      You are in the hall of the mountain king, with passages
+      off in all directions.
+    :brief: You're in hall of mt king.
+    :cx:
+      15:
+      - 10
+      307:
+      - 45
+      308:
+      - 46
+      309:
+      - 44
+      74:
+      - 66
+  20:
+    :eid:
+    :locnum: 20
+    :desc: You are at the bottom of the pit with a broken neck.
+    :brief:
+    :cx:
+      26:
+      - 1
+  21:
+    :eid:
+    :locnum: 21
+    :desc: You didn't make it.
+    :brief:
+    :cx:
+      26:
+      - 1
+  22:
+    :eid:
+    :locnum: 22
+    :desc: The dome is unclimbable.
+    :brief:
+    :cx:
+      15:
+      - 1
+  23:
+    :eid:
+    :locnum: 23
+    :desc: You can't go in through a locked steel grate!
+    :brief:
+    :cx:
+      8:
+      - 1
+  24:
+    :eid:
+    :locnum: 24
+    :desc: You don't fit down a two inch hole!
+    :brief:
+    :cx:
+      7:
+      - 1
+  25:
+    :eid:
+    :locnum: 25
+    :desc: You can't go through a locked steel grate.
+    :brief:
+    :cx:
+      9:
+      - 1
+  27:
+    :eid:
+    :locnum: 27
+    :desc: You are on the West side of the fissure in the hall of mists.
+    :brief:
+    :cx:
+      17:
+      - 8
+      40:
+      - 45
+      41:
+      - 44
+  28:
+    :eid:
+    :locnum: 28
+    :desc: |-
+      You are in a low N/S passage at a hole in the floor.
+      The hole goes down to an E/W passage.
+    :brief:
+    :cx:
+      19:
+      - 38
+      33:
+      - 45
+      36:
+      - 30
+  29:
+    :eid:
+    :locnum: 29
+    :desc: You are in the South side chamber.
+    :brief:
+    :cx:
+      19:
+      - 38
+  30:
+    :eid:
+    :locnum: 30
+    :desc: |-
+      You are in the West side chamber of hall of Mt King.
+      A passage continues West and up here.
+    :brief:
+    :cx:
+      19:
+      - 38
+      62:
+      - 44
+  31:
+    :eid:
+    :locnum: 31
+    :desc: There is no way across the fissure.
+    :brief:
+    :cx:
+      17:
+      - 1
+  32:
+    :eid:
+    :locnum: 32
+    :desc: You can't get by the snake.
+    :brief:
+    :cx:
+      19:
+      - 1
+  33:
+    :eid:
+    :locnum: 33
+    :desc: |-
+      You are in a large room, with a passage to the South,
+      a passage to the West, and a wall of broken rock to
+      the East.  There is a large 'Y2' on a rock in the room's center.
+    :brief: You're at y2
+    :cx:
+      3:
+      - 65
+      28:
+      - 46
+      34:
+      - 43
+      35:
+      - 44
+  34:
+    :eid:
+    :locnum: 34
+    :desc: You are in a jumble of rock, with cracks everywhere.
+    :brief:
+    :cx:
+      33:
+      - 30
+      15:
+      - 29
+  35:
+    :eid:
+    :locnum: 35
+    :desc: |-
+      You are at a window on a huge pit, which goes up and
+      down out of sight.  A floor is indistinctly visible
+      over 50 feet below.  Directly opposite you and 25 feet away
+      there is a similar window.
+    :brief: You're at window on pit
+    :cx:
+      33:
+      - 43
+  36:
+    :eid:
+    :locnum: 36
+    :desc: |-
+      You are in a dirty broken passage.  To the East is a crawl.
+      To the West is a large passage.  Above you is a hole to
+      another passage.
+    :brief: You're in dirty passage
+    :cx:
+      37:
+      - 43
+      28:
+      - 29
+      39:
+      - 44
+  37:
+    :eid:
+    :locnum: 37
+    :desc: |-
+      You are on the brink of a small clean climbable pit.
+      A crawl leads West.
+    :brief:
+    :cx:
+      36:
+      - 44
+      38:
+      - 30
+  38:
+    :eid:
+    :locnum: 38
+    :desc: |-
+      You are in the bottom of a small pit with a little
+      stream, which enters and exits through tiny slits.
+    :brief:
+    :cx:
+      37:
+      - 56
+  39:
+    :eid:
+    :locnum: 39
+    :desc: |-
+      You are in a large room full of dusty rocks.  there is a
+      big hole in the floor.  there are cracks everywhere, and
+      a passage leading East.
+    :brief: You're in dusty rock room.
+    :cx:
+      36:
+      - 43
+      64:
+      - 30
+      65:
+      - 70
+  40:
+    :eid:
+    :locnum: 40
+    :desc: |-
+      You have crawled through a very low wide passage parallel
+      to and North of the hall of mists.
+    :brief:
+    :cx:
+      41:
+      - 1
+  41:
+    :eid:
+    :locnum: 41
+    :desc: |-
+      You are at the West end of hall of mists.  A low wide crawl
+      continues West and another goes North.  To the South is a
+      little passage 6 feet off the floor.
+    :brief: You're at West end of hall of mists.
+    :cx:
+      42:
+      - 46
+      27:
+      - 43
+      59:
+      - 45
+      60:
+      - 44
+  42:
+    :eid:
+    :locnum: 42
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      41:
+      - 44
+      43:
+      - 43
+      44:
+      - 46
+  43:
+    :eid:
+    :locnum: 43
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      42:
+      - 44
+      44:
+      - 46
+      45:
+      - 43
+  44:
+    :eid:
+    :locnum: 44
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      42:
+      - 45
+      43:
+      - 43
+      48:
+      - 30
+      50:
+      - 46
+  45:
+    :eid:
+    :locnum: 45
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      43:
+      - 45
+      46:
+      - 43
+      47:
+      - 46
+  46:
+    :eid:
+    :locnum: 46
+    :desc: Dead end
+    :brief:
+    :cx:
+      45:
+      - 44
+  47:
+    :eid:
+    :locnum: 47
+    :desc: Dead end
+    :brief:
+    :cx:
+      45:
+      - 45
+  48:
+    :eid:
+    :locnum: 48
+    :desc: Dead end
+    :brief:
+    :cx:
+      44:
+      - 29
+  49:
+    :eid:
+    :locnum: 49
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      50:
+      - 30
+      51:
+      - 44
+  50:
+    :eid:
+    :locnum: 50
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      44:
+      - 43
+      49:
+      - 44
+      52:
+      - 46
+  51:
+    :eid:
+    :locnum: 51
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      49:
+      - 44
+      52:
+      - 43
+      53:
+      - 46
+  52:
+    :eid:
+    :locnum: 52
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      50:
+      - 45
+      51:
+      - 44
+      53:
+      - 29
+      55:
+      - 43
+  53:
+    :eid:
+    :locnum: 53
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      51:
+      - 44
+      52:
+      - 45
+      54:
+      - 46
+  54:
+    :eid:
+    :locnum: 54
+    :desc: Dead end
+    :brief:
+    :cx:
+      53:
+      - 43
+  55:
+    :eid:
+    :locnum: 55
+    :desc: You are in a maze of twisty little passages, all alike.
+    :brief:
+    :cx:
+      52:
+      - 44
+      56:
+      - 30
+      57:
+      - 43
+  56:
+    :eid:
+    :locnum: 56
+    :desc: Dead end
+    :brief:
+    :cx:
+      55:
+      - 29
+  57:
+    :eid:
+    :locnum: 57
+    :desc: |-
+      You are on the brink of a thirty foot pit with a massive
+      orange column down one wall.  You could climb down here
+      but you could not get back up.  The maze continues at this
+      level.
+    :brief: You're at brink of pit.
+    :cx:
+      55:
+      - 44
+      58:
+      - 46
+      13:
+      - 30
+  58:
+    :eid:
+    :locnum: 58
+    :desc: Dead end
+    :brief:
+    :cx:
+      57:
+      - 44
+  59:
+    :eid:
+    :locnum: 59
+    :desc: |-
+      You have crawled through a very low wide passage parallel
+      to and North of the hall of mists.
+    :brief:
+    :cx:
+      27:
+      - 1
+  60:
+    :eid:
+    :locnum: 60
+    :desc: |-
+      You are at the East end of a very long hall apparently
+      without side chambers.  To the East a low wide crawl slants
+      up.  To the North a round two foot hole slants down.
+    :brief: You're at East end of long hall.
+    :cx:
+      41:
+      - 43
+      61:
+      - 44
+      62:
+      - 45
+  61:
+    :eid:
+    :locnum: 61
+    :desc: You are at the West end of a very long featureless hall.
+    :brief:
+    :cx:
+      60:
+      - 43
+  62:
+    :eid:
+    :locnum: 62
+    :desc: You are at a crossover of a high N/S passage and a low E/W one.
+    :brief:
+    :cx:
+      60:
+      - 44
+      63:
+      - 45
+      30:
+      - 43
+      15:
+      - 46
+  63:
+    :eid:
+    :locnum: 63
+    :desc: Dead end
+    :brief:
+    :cx:
+      62:
+      - 46
+  64:
+    :eid:
+    :locnum: 64
+    :desc: |-
+      You are at a complex junction.  A low hands and knees
+      passage from the North joins a higher crawl
+      from the East to make  a walking passage going West
+      There is also a large room above.  The air is damp here.
+      A sign in midair here says 'cave under construction beyond
+      this point.  Proceed at own risk.'
+    :brief:
+    :cx:
+      39:
+      - 29
+      65:
+      - 44
+  65:
+    :eid:
+    :locnum: 65
+    :desc: |-
+      You are in bedquilt, a long East/West passage with holes everywhere.
+      To explore at random select North, South, up, or down.
+    :brief:
+    :cx:
+      64:
+      - 43
+      66:
+      - 44
+      68:
+      - 61
+      311:
+      - 46
+      312:
+      - 29
+  66:
+    :eid:
+    :locnum: 66
+    :desc: |-
+      You are in a room whose walls resemble swiss cheese.
+      Obvious passages go West,East,ne, and
+      nw.  Part of the room is occupied by a large bedrock block.
+    :brief: You're in swiss cheese room.
+    :cx:
+      313:
+      - 45
+      65:
+      - 60
+      67:
+      - 44
+      77:
+      - 25
+      314:
+      - 46
+  67:
+    :eid:
+    :locnum: 67
+    :desc: |-
+      You are in the twopit room.  The floor
+      here is littered with thin rock slabs, which make it
+      easy to descend the pits.  There is a path here bypassing
+      the pits to connect passages from East and West.  There
+      are holes all over, but the only big one is on the wall
+      directly over the East pit where you can't get to it.
+    :brief: You're in twopit room.
+    :cx:
+      66:
+      - 43
+      72:
+      - 60
+  68:
+    :eid:
+    :locnum: 68
+    :desc: |-
+      You are in a large low circular chamber whose floor is an
+      immense slab fallen from the ceiling(slab room).  East and
+      West there once were large passages, but they are now filled
+      with boulders.  Low small passages go North and South, and the
+      South one quickly bends West around the boulders.
+    :brief: You're in slab room.
+    :cx:
+      66:
+      - 46
+      69:
+      - 29
+  69:
+    :eid:
+    :locnum: 69
+    :desc: You are in a secret ns canyon above a large room.
+    :brief:
+    :cx:
+      68:
+      - 30
+      74:
+      - 46
+  70:
+    :eid:
+    :locnum: 70
+    :desc: You are in a secret N/S canyon above a sizable passage.
+    :brief:
+    :cx:
+      71:
+      - 45
+  71:
+    :eid:
+    :locnum: 71
+    :desc: |-
+      You are in secret canyon at a junction of three canyons,
+      bearing North, South, and se.  The North one is as tall
+      as the other two combined.
+    :brief:
+    :cx:
+      39:
+      - 29
+      65:
+      - 62
+      70:
+      - 46
+  72:
+    :eid:
+    :locnum: 72
+    :desc: You are in a large low room.  Crawls lead n, se, and sw.
+    :brief:
+    :cx:
+      67:
+      - 63
+      73:
+      - 45
+  73:
+    :eid:
+    :locnum: 73
+    :desc: dead end crawl.
+    :brief:
+    :cx:
+      72:
+      - 46
+  74:
+    :eid:
+    :locnum: 74
+    :desc: |-
+      You are in secret canyon which here runs E/W.  It crosses over
+      a very tight canyon 15 feet below.  If you go down you may
+      not be able to get back up
+    :brief:
+    :cx:
+      19:
+      - 43
+      69:
+      - 44
+      75:
+      - 30
+  75:
+    :eid:
+    :locnum: 75
+    :desc: You are at a wide place in a very tight N/S canyon.
+    :brief:
+    :cx:
+      76:
+      - 46
+      77:
+      - 45
+  76:
+    :eid:
+    :locnum: 76
+    :desc: The canyon here becomes to tight to go further South.
+    :brief:
+    :cx:
+      75:
+      - 45
+  77:
+    :eid:
+    :locnum: 77
+    :desc: |-
+      You are in a tall E/W canyon.  A low tight crawl goes 3 feet
+      North and seems to open up.
+    :brief:
+    :cx:
+      75:
+      - 43
+      78:
+      - 44
+      66:
+      - 45
+  78:
+    :eid:
+    :locnum: 78
+    :desc: The canyon runs into a mass of boulders - dead end.
+    :brief:
+    :cx:
+      77:
+      - 46
+  79:
+    :eid:
+    :locnum: 79
+    :desc: |-
+      the stream flows out through a pair of 1 foot diameter sewer
+      pipes.  It would be advisable to use the door.
+    :brief:
+    :cx:
+      3:
+      - 1
+  1:
+    :eid:
+    :locnum: 1
+    :desc:
+    :brief: You're at end of road again.
+    :cx:
+      2:
+      - 2
+      3:
+      - 3
+      4:
+      - 4
+      5:
+      - 6
+      8:
+      - 49
+:keywords:
+  2:
+    :keywords:
+    - road
+    :flags:
+    - :motion
+  3:
+    :keywords:
+    - enter
+    - door
+    - gate
+    :flags:
+    - :motion
+  5:
+    :keywords:
+    - downstream
+    :flags:
+    - :motion
+  6:
+    :keywords:
+    - forest
+    :flags:
+    - :motion
+  7:
+    :keywords:
+    - forward
+    - continue
+    - onward
+    :flags:
+    - :motion
+  8:
+    :keywords:
+    - back
+    - return
+    - retreat
+    :flags:
+    - :motion
+  9:
+    :keywords:
+    - valley
+    :flags:
+    - :motion
+  10:
+    :keywords:
+    - stair
+    :flags:
+    - :motion
+  11:
+    :keywords:
+    - out
+    - outside
+    - exit
+    - leave
+    :flags:
+    - :motion
+  12:
+    :keywords:
+    - building
+    - bld
+    - house
+    :flags:
+    - :motion
+  13:
+    :keywords:
+    - gully
+    :flags:
+    - :motion
+  14:
+    :keywords:
+    - stream
+    :flags:
+    - :motion
+  15:
+    :keywords:
+    - rock
+    :flags:
+    - :motion
+  16:
+    :keywords:
+    - bed
+    :flags:
+    - :motion
+  17:
+    :keywords:
+    - crawlway
+    :flags:
+    - :motion
+  18:
+    :keywords:
+    - cobble
+    :flags:
+    - :motion
+  19:
+    :keywords:
+    - inward
+    - inside
+    - in
+    :flags:
+    - :motion
+  20:
+    :keywords:
+    - surface
+    :flags:
+    - :motion
+  21:
+    :keywords:
+    - 'null'
+    - nowhere
+    :flags:
+    - :motion
+  22:
+    :keywords:
+    - dark
+    :flags:
+    - :motion
+  23:
+    :keywords:
+    - passage
+    :flags:
+    - :motion
+  24:
+    :keywords:
+    - low
+    :flags:
+    - :motion
+  25:
+    :keywords:
+    - canyon
+    :flags:
+    - :motion
+  26:
+    :keywords:
+    - awkward
+    :flags:
+    - :motion
+  29:
+    :keywords:
+    - upward
+    - up
+    - u
+    - above
+    :flags:
+    - :motion
+  30:
+    :keywords:
+    - d
+    - downward
+    - down
+    :flags:
+    - :motion
+  31:
+    :keywords:
+    - pit
+    :flags:
+    - :motion
+  32:
+    :keywords:
+    - outdoors
+    :flags:
+    - :motion
+  33:
+    :keywords:
+    - crack
+    :flags:
+    - :motion
+  34:
+    :keywords:
+    - steps
+    :flags:
+    - :motion
+  35:
+    :keywords:
+    - dome
+    :flags:
+    - :motion
+  36:
+    :keywords:
+    - left
+    :flags:
+    - :motion
+  37:
+    :keywords:
+    - right
+    :flags:
+    - :motion
+  38:
+    :keywords:
+    - hall
+    :flags:
+    - :motion
+  39:
+    :keywords:
+    - jump
+    :flags:
+    - :motion
+  40:
+    :keywords:
+    - magic
+    :flags:
+    - :motion
+  41:
+    :keywords:
+    - over
+    :flags:
+    - :motion
+  42:
+    :keywords:
+    - across
+    :flags:
+    - :motion
+  43:
+    :keywords:
+    - East
+    - e
+    :flags:
+    - :motion
+  44:
+    :keywords:
+    - West
+    - w
+    :flags:
+    - :motion
+  45:
+    :keywords:
+    - North
+    - n
+    :flags:
+    - :motion
+  46:
+    :keywords:
+    - South
+    - s
+    :flags:
+    - :motion
+  47:
+    :keywords:
+    - slit
+    :flags:
+    - :motion
+  48:
+    :keywords:
+    - xyzzy
+    :flags:
+    - :motion
+  49:
+    :keywords:
+    - depression
+    :flags:
+    - :motion
+  50:
+    :keywords:
+    - entrance
+    :flags:
+    - :motion
+  51:
+    :keywords:
+    - debris
+    :flags:
+    - :motion
+  52:
+    :keywords:
+    - hole
+    :flags:
+    - :motion
+  53:
+    :keywords:
+    - wall
+    :flags:
+    - :motion
+  54:
+    :keywords:
+    - broken
+    :flags:
+    - :motion
+  55:
+    :keywords:
+    - y2
+    :flags:
+    - :motion
+  56:
+    :keywords:
+    - climb
+    :flags:
+    - :motion
+  57:
+    :keywords:
+    - look
+    - examine
+    - touch
+    - lookat
+    :flags:
+    - :motion
+  58:
+    :keywords:
+    - floor
+    :flags:
+    - :motion
+  59:
+    :keywords:
+    - room
+    :flags:
+    - :motion
+  60:
+    :keywords:
+    - NorthEast
+    - ne
+    :flags:
+    - :motion
+  61:
+    :keywords:
+    - slab
+    - slabroom
+    :flags:
+    - :motion
+  62:
+    :keywords:
+    - SouthEast
+    - se
+    :flags:
+    - :motion
+  63:
+    :keywords:
+    - SouthWest
+    - sw
+    :flags:
+    - :motion
+  64:
+    :keywords:
+    - NorthWest
+    - nw
+    :flags:
+    - :motion
+  65:
+    :keywords:
+    - plugh
+    :flags:
+    - :motion
+  66:
+    :keywords:
+    - secret
+    :flags:
+    - :motion
+  67:
+    :keywords:
+    - cave
+    :flags:
+    - :motion
+  68:
+    :keywords:
+    - turn
+    :flags:
+    - :motion
+  69:
+    :keywords:
+    - cross
+    :flags:
+    - :motion
+  70:
+    :keywords:
+    - bedquilt
+    :flags:
+    - :motion
+  1001:
+    :keywords:
+    - keys
+    - key
+    :flags:
+    - :item
+  1002:
+    :keywords:
+    - lamp
+    - headlamp
+    :flags:
+    - :item
+  1003:
+    :keywords:
+    - grate
+    :flags:
+    - :item
+  1004:
+    :keywords:
+    - cage
+    :flags:
+    - :item
+  1005:
+    :keywords:
+    - rod
+    :flags:
+    - :item
+  1006:
+    :keywords:
+    - steps
+    :flags:
+    - :item
+  1007:
+    :keywords:
+    - bird
+    :flags:
+    - :item
+  1010:
+    :keywords:
+    - nugget
+    - gold
+    :flags:
+    - :item
+  1011:
+    :keywords:
+    - snake
+    :flags:
+    - :item
+  1012:
+    :keywords:
+    - fissure
+    :flags:
+    - :item
+  1013:
+    :keywords:
+    - diamond
+    :flags:
+    - :item
+  1014:
+    :keywords:
+    - silver
+    - bars
+    :flags:
+    - :item
+  1015:
+    :keywords:
+    - jewel
+    :flags:
+    - :item
+  1016:
+    :keywords:
+    - coins
+    :flags:
+    - :item
+  1017:
+    :keywords:
+    - dwarves
+    - dwarf
+    :flags:
+    - :item
+  1018:
+    :keywords:
+    - knife
+    - knives
+    - rock
+    - weapon
+    - boulder
+    :flags:
+    - :item
+  1019:
+    :keywords:
+    - food
+    - rations
+    :flags:
+    - :item
+  1020:
+    :keywords:
+    - water
+    - bottle
+    :flags:
+    - :item
+  1021:
+    :keywords:
+    - axe
+    :flags:
+    - :item
+  1022:
+    :keywords:
+    - knife
+    :flags:
+    - :item
+  1023:
+    :keywords:
+    - chest
+    - box
+    - treasure
+    :flags:
+    - :item
+  2001:
+    :keywords:
+    - take
+    - carry
+    - keep
+    - pickup
+    - pick
+    - wear
+    - catch
+    - steal
+    - capture
+    - find
+    - where
+    - get
+    :flags: []
+  2002:
+    :keywords:
+    - release
+    - free
+    - discard
+    - drop
+    - dump
+    :flags: []
+  2003:
+    :keywords:
+    - dummy
+    :flags: []
+  2004:
+    :keywords:
+    - unlock
+    - open
+    - lift
+    :flags: []
+  2005:
+    :keywords:
+    - nothing
+    - hold
+    :flags: []
+  2006:
+    :keywords:
+    - lock
+    - close
+    :flags: []
+  2007:
+    :keywords:
+    - light
+    - 'on'
+    :flags: []
+  2008:
+    :keywords:
+    - extinguish
+    - 'off'
+    :flags: []
+  2009:
+    :keywords:
+    - strike
+    :flags: []
+  2010:
+    :keywords:
+    - calm
+    - wave
+    - shake
+    - sing
+    - cleave
+    :flags: []
+  2011:
+    :keywords:
+    - walk
+    - run
+    - travel
+    - go
+    - proceed
+    - continue
+    - explore
+    - goto
+    - follow
+    :flags: []
+  2012:
+    :keywords:
+    - attack
+    - kill
+    - stab
+    - fight
+    - hit
+    :flags: []
+  2013:
+    :keywords:
+    - pour
+    :flags: []
+  2014:
+    :keywords:
+    - eat
+    :flags: []
+  2015:
+    :keywords:
+    - drink
+    :flags: []
+  2016:
+    :keywords:
+    - rub
+    :flags: []
+  3050:
+    :keywords:
+    - opens
+    :flags: []
+  3051:
+    :keywords:
+    - help
+    - "?"
+    - what
+    :flags: []
+  3064:
+    :keywords:
+    - tree
+    :flags: []
+  3066:
+    :keywords:
+    - dig
+    - excavate
+    :flags: []
+  3067:
+    :keywords:
+    - blast
+    :flags: []
+  3068:
+    :keywords:
+    - lost
+    :flags: []
+  3069:
+    :keywords:
+    - mist
+    :flags: []
+  3049:
+    :keywords:
+    - throw
+    :flags: []
+  3079:
+    :keywords:
+    - fuck
+    :flags: []
+:states:
+  1:
+    2: There are some keys on the ground here.
+  2:
+    2: There is a shiny brass lamp nearby.
+  3:
+    0: The grate is locked.
+    1: The grate is open.
+  4:
+    2: There is a small wicker cage discarded nearby.
+  5:
+    2: A three foot black rod, with a rusty star on one end, lies nearby.
+  6:
+    2: Rough stone steps lead down the pit.
+  7:
+    0: A cheerful little bird is sitting here singing.
+    1: There is a little bird in the cage.
+  8:
+    0: The grate is locked.
+    1: The grate is open.
+  9:
+    2: Rough stone steps lead up the dome.
+  10:
+    2: There is a large sparkling nugget of gold here!
+  11:
+    0: A huge green fierce snake bars the way!
+  12:
+    1: A crystal bridge now spans the fissure.
+  13:
+    2: There are diamonds here!
+  14:
+    2: There are bars of silver here!
+  15:
+    2: There is precious jewelry here!
+  16:
+    2: There are many coins here!
+  19:
+    0: There is food here.
+  20:
+    0: There is a bottle of water here.
+    1: There is an empty bottle here.
+  21:
+    2: There is a little axe here.
+:events:
+  1:
+    :eid:
+    :enum: 1
+    :text: |-
+      Somewhere nearby is colossal cave, where others have found
+      fortunes in treasure and gold, though it is rumored
+      that some who enter are never seen again.  Magic is said
+      to work in the cave.  I will be your eyes and hands.  Direct
+      me with commands of 1 or 2 words.
+      (Errors, suggestions, complaints to Crowther)
+      (If stuck, type 'help' for some hints)
+  2:
+    :eid:
+    :enum: 2
+    :text: A little dwarf with a big knife blocks your way.
+  3:
+    :eid:
+    :enum: 3
+    :text: |-
+      A little dwarf just walked around a corner,saw you, threw
+      a little axe at you which missed, cursed, and ran away.
+  4:
+    :eid:
+    :enum: 4
+    :text: There is a threatening little dwarf in the room with you!
+  5:
+    :eid:
+    :enum: 5
+    :text: One sharp nasty knife is thrown at you!
+  7:
+    :eid:
+    :enum: 7
+    :text: None of them hit you!
+  8:
+    :eid:
+    :enum: 8
+    :text: A hollow voice says 'plugh'.
+  9:
+    :eid:
+    :enum: 9
+    :text: There is no way to go that direction.
+  10:
+    :eid:
+    :enum: 10
+    :text: |-
+      I am unsure how you are facing.  Use compass points or
+      nearby objects.
+  11:
+    :eid:
+    :enum: 11
+    :text: |-
+      I don't know in from out here.  Use compass points or name
+      something in the general direction you want to go.
+  12:
+    :eid:
+    :enum: 12
+    :text: I don't know how to apply that word here.
+  13:
+    :eid:
+    :enum: 13
+    :text: I don't understand that!
+  14:
+    :eid:
+    :enum: 14
+    :text: |-
+      I always understand compass directions, or you can name
+      a nearby thing to head that way.
+  15:
+    :eid:
+    :enum: 15
+    :text: |-
+      Sorry, but I am not allowed to give more detail.  I will
+      repeat the long description of your location.
+  16:
+    :eid:
+    :enum: 16
+    :text: |-
+      It is now pitch black.  If you proceed you will likely
+      fall into a pit.
+  17:
+    :eid:
+    :enum: 17
+    :text: If you prefer, simply type W rather than West.
+  18:
+    :eid:
+    :enum: 18
+    :text: Are you trying to catch the bird?
+  19:
+    :eid:
+    :enum: 19
+    :text: |-
+      The bird is frightened right now and you cannot catch it
+      no matter what you try.  Perhaps you might try later.
+  20:
+    :eid:
+    :enum: 20
+    :text: Are you trying to attack or avoid the snake?
+  21:
+    :eid:
+    :enum: 21
+    :text: |-
+      You can't kill the snake, or drive it away, or avoid it,
+      or anything like that.  There is a way to get by, but you
+      don't have the necessary resources right now.
+  22:
+    :eid:
+    :enum: 22
+    :text: My word for hitting something with the rod is 'strike'.
+  23:
+    :eid:
+    :enum: 23
+    :text: You fell into a pit and broke every bone in your body!
+  24:
+    :eid:
+    :enum: 24
+    :text: You are already carrying it!
+  25:
+    :eid:
+    :enum: 25
+    :text: You can't be serious!
+  26:
+    :eid:
+    :enum: 26
+    :text: |-
+      The bird was unafraid when you entered, but as you approach
+      it becomes disturbed and you cannot catch it.
+  27:
+    :eid:
+    :enum: 27
+    :text: You can catch the bird, but you cannot carry it.
+  28:
+    :eid:
+    :enum: 28
+    :text: There is nothing here with a lock!
+  29:
+    :eid:
+    :enum: 29
+    :text: You aren't carrying it!
+  30:
+    :eid:
+    :enum: 30
+    :text: |-
+      The little bird attacks the green snake, and in an
+      astounding flurry drives the snake away.
+  31:
+    :eid:
+    :enum: 31
+    :text: You have no keys!
+  32:
+    :eid:
+    :enum: 32
+    :text: It has no lock.
+  33:
+    :eid:
+    :enum: 33
+    :text: I don't know how to lock or unlock such a thing.
+  34:
+    :eid:
+    :enum: 34
+    :text: The grate was already locked.
+  35:
+    :eid:
+    :enum: 35
+    :text: The grate is now locked.
+  36:
+    :eid:
+    :enum: 36
+    :text: The grate was already unlocked.
+  37:
+    :eid:
+    :enum: 37
+    :text: The grate is now unlocked.
+  38:
+    :eid:
+    :enum: 38
+    :text: You have no source of light.
+  39:
+    :eid:
+    :enum: 39
+    :text: Your lamp is now on.
+  40:
+    :eid:
+    :enum: 40
+    :text: Your lamp is now off.
+  41:
+    :eid:
+    :enum: 41
+    :text: Strike what?
+  42:
+    :eid:
+    :enum: 42
+    :text: Nothing happens.
+  43:
+    :eid:
+    :enum: 43
+    :text: Where?
+  44:
+    :eid:
+    :enum: 44
+    :text: There is nothing here to attack.
+  45:
+    :eid:
+    :enum: 45
+    :text: The little bird is now dead.  Its body disappears.
+  46:
+    :eid:
+    :enum: 46
+    :text: Attacking the snake both doesn't work and is very dangerous.
+  47:
+    :eid:
+    :enum: 47
+    :text: You killed a little dwarf.
+  48:
+    :eid:
+    :enum: 48
+    :text: You attack a little dwarf, but he dodges out of the way.
+  49:
+    :eid:
+    :enum: 49
+    :text: |-
+      I have trouble with the word 'throw' because you can throw
+      a thing or throw at a thing.  Please use drop or attack instead.
+  50:
+    :eid:
+    :enum: 50
+    :text: Good try, but that is an old worn-out magic word.
+  51:
+    :eid:
+    :enum: 51
+    :text: |-
+      I know of places, actions, and things.  Most of my vocabulary
+      describes places and is used to move you there.  To move try
+      words like forest, building, downstream, enter, East, West,
+      North, South, up, or down.  I know about a few special objects,
+      like a black rod hidden in the cave.  These objects can be
+      manipulated using one of the action words that I know.  Usually
+      you will need to give both the object and action words
+      (in either order), but sometimes I can infer the object from
+      the verb alone.  The objects have side effects - for
+      instance, the rod scares the bird.
+      Usually people having trouble moving just need to try a few
+      more words.  Usually people trying to manipulate an
+      object are attempting something beyond their (or my!)
+      capabilities and should try a completely different tack.
+      To speed the game you can sometimes move long distances
+      with a single word.  For example, 'building' usually gets
+      you to the building from anywhere above ground except when
+      lost in the forest.  Also, note that cave passages turn a
+      lot, and that leaving a room to the North does not guarantee
+      entering the next from the South.  Good luck!
+  52:
+    :eid:
+    :enum: 52
+    :text: It misses!
+  53:
+    :eid:
+    :enum: 53
+    :text: It gets you!
+  54:
+    :eid:
+    :enum: 54
+    :text: OK
+  55:
+    :eid:
+    :enum: 55
+    :text: You can't unlock the keys.
+  56:
+    :eid:
+    :enum: 56
+    :text: |-
+      You have crawled around in some little holes and wound up
+      back in the main passage.
+  57:
+    :eid:
+    :enum: 57
+    :text: |-
+      I don't know where the cave is, but hereabouts no stream
+      can run on the surface for long.  I would try the stream.
+  58:
+    :eid:
+    :enum: 58
+    :text: I need more detailed instructions to do that.
+  59:
+    :eid:
+    :enum: 59
+    :text: |-
+      I can only tell you what you see as you move about
+      and manipulate things.  I cannot tell you where remote things
+      are.
+  60:
+    :eid:
+    :enum: 60
+    :text: I don't know that word.
+  61:
+    :eid:
+    :enum: 61
+    :text: What?
+  62:
+    :eid:
+    :enum: 62
+    :text: Are you trying to get into the cave?
+  63:
+    :eid:
+    :enum: 63
+    :text: |-
+      The grate is very solid and has a hardened steel lock.  You
+      cannot enter without a key, and there are no keys nearby.
+      I would recommend looking elsewhere for the keys.
+  64:
+    :eid:
+    :enum: 64
+    :text: |-
+      The trees of the forest are large hardwood oak and maple,
+      with an occasional grove of pine or spruce.  There is quite
+      a bit of undergrowth, largely birch and ash saplings plus
+      nondescritpt bushes of various sorts.  This time of year
+      visibility is quite restricted by all the leaves, but travel
+      is quite easy if you detour around the spruce and berry bushes.
+  65:
+    :eid:
+    :enum: 65
+    :text: Welcome to Adventure!!  Would you like instructions?
+  66:
+    :eid:
+    :enum: 66
+    :text: |-
+      Digging without a shovel is quite impractical: even with a
+      shovel progress is unlikely.
+  67:
+    :eid:
+    :enum: 67
+    :text: Blasting requires dynamite.
+  68:
+    :eid:
+    :enum: 68
+    :text: I'm as confused as you are.
+  69:
+    :eid:
+    :enum: 69
+    :text: |-
+      Mist is a white vapor, usually water, seen from time to time
+      in caverns.  It can be found anywhere but is frequently a sign
+      of a deep pit leading down to water.
+  70:
+    :eid:
+    :enum: 70
+    :text: Your feet are now wet.
+  71:
+    :eid:
+    :enum: 71
+    :text: There is nothing here to eat.
+  72:
+    :eid:
+    :enum: 72
+    :text: Eaten!
+  73:
+    :eid:
+    :enum: 73
+    :text: There is no drinkable water here.
+  74:
+    :eid:
+    :enum: 74
+    :text: The bottle of water is now empty.
+  75:
+    :eid:
+    :enum: 75
+    :text: |-
+      Rubbing the electric lamp is not particularly rewarding.
+      Anyway, nothing exciting happens.
+  76:
+    :eid:
+    :enum: 76
+    :text: Peculiar.  Nothing unexpected happens.
+  77:
+    :eid:
+    :enum: 77
+    :text: Your bottle is empty and the ground is wet.
+  78:
+    :eid:
+    :enum: 78
+    :text: You can't pour that.
+  79:
+    :eid:
+    :enum: 79
+    :text: Watch it!
+  80:
+    :eid:
+    :enum: 80
+    :text: Which way?
+# Local Variables:
+# mode: yaml
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:
