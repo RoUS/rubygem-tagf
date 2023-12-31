@@ -75,24 +75,24 @@ module TAGF
     extend(self)
 
     #
-    include(TAGF::Mixin::Base)
+    include(TAGF::Mixin::UniversalMethods)
 
     #
     include(Contracts::Core)
 
     #
-    extend(TAGF::Mixin::Base)
+    extend(TAGF::Mixin::UniversalMethods)
 
     #
     # Modules for automatic inclusion for `include`:
     #
     INCLUSION_MODULES	= [
-      TAGF::Mixin::Base,
+      TAGF::Mixin::UniversalMethods,
     ]
 
     EXTENSION_MODULES	= [
       TAGF::ClassMethods,
-      TAGF::Mixin::Base,
+      TAGF::Mixin::UniversalMethods,
     ]
 
     # Name of the element key as used in definition (YAML) files.
@@ -106,25 +106,29 @@ module TAGF
                                  __method__.to_s,
                                  klass.name,
                                  self.name)
-      warn(whoami)
-      warn(format('  %s.include(%s) processed',
-                  klass.name,
-                  self.name))
-      #
-      # Include any missing required modules into the invoking class.
-      #
-      warn(format('  %s.included_modules=%s',
-                  klass.name,
-                  klass.included_modules.to_s))
-      warn(format('  %s.ancestors=%s',
-                  klass.name,
-                  klass.ancestors.to_s))
+      if (TAGF.debugging?(:include))
+        warn(whoami)
+        warn(format('  %s.include(%s) processed',
+                    klass.name,
+                    self.name))
+        #
+        # Include any missing required modules into the invoking class.
+        #
+        warn(format('  %s.included_modules=%s',
+                    klass.name,
+                    klass.included_modules.to_s))
+        warn(format('  %s.ancestors=%s',
+                    klass.name,
+                    klass.ancestors.to_s))
+      end
       INCLUSION_MODULES.each do |minc|
         unless (klass.included_modules.include?(minc) \
                 || klass.ancestors.include?(minc))
-          warn(format('  also including %s into %s',
-                      minc.name,
-                      self.name))
+          if (TAGF.debugging?(:include))
+            warn(format('  also including %s into %s',
+                        minc.name,
+                        self.name))
+          end
           klass.include(minc)
         end
       end
@@ -132,13 +136,14 @@ module TAGF
       EXTENSION_MODULES.each do |minc|
         unless (klass.singleton_class.included_modules.include?(minc) \
                 || klass.singleton_class.ancestors.include?(minc))
-          warn(format('  also extending %s with %s',
-                      klass.name,
-                      minc.name))
+          if (TAGF.debugging?(:extend))
+            warn(format('  also extending %s with %s',
+                        klass.name,
+                        minc.name))
+          end
           klass.extend(minc)
         end
       end
-
 
       super
       return nil
@@ -151,7 +156,9 @@ module TAGF
                                  __method__.to_s,
                                  klass.name,
                                  self.name)
-      warn(whoami)
+      if (TAGF.debugging?(:extend))
+        warn(whoami)
+      end
       super
       return nil
     end                         # def extended(klass)

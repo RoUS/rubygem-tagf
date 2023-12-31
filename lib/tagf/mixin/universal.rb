@@ -17,7 +17,10 @@
 
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+if ((! Kernel.const_defined?('TAGF')) \
+    || (! TAGF.ancestors.include?(Contracts::Core)))
+  require('tagf')
+end
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -28,7 +31,7 @@ module TAGF
     #
     # Defines basic methods and extends class methods for all portions
     # of the {TAGF} module.
-    module Base
+    module UniversalMethods
 
       #
       include(Contracts::Core)
@@ -242,7 +245,7 @@ module TAGF
       module_function(:decompose_attrib)
 
       nil
-    end				# module TAGF::Mixin::Base
+    end				# module TAGF::Mixin::UniversalMethods
 
     nil
   end				# module TAGF::Mixin
@@ -252,7 +255,7 @@ end				# module TAGF
 
 require('tagf/classmethods')
 
-TAGF::Mixin::Base.extend(TAGF::ClassMethods)
+TAGF::Mixin::UniversalMethods.extend(TAGF::ClassMethods)
 
 # Local Variables:
 # mode: ruby

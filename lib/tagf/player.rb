@@ -17,7 +17,10 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+if ((! Kernel.const_defined?('TAGF')) \
+    || (! TAGF.ancestors.include?(Contracts::Core)))
+  require('tagf')
+end
 require('set')
 require('byebug')
 

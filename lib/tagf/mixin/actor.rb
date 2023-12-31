@@ -17,7 +17,7 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+#require('tagf')
 require('byebug')
 
 # @!macro doc.TAGF.module

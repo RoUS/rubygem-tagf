@@ -36,7 +36,7 @@ module TAGF
     module Events
 
       #
-      include(::TAGF::Mixin::Base)
+      include(::TAGF::Mixin::UniversalMethods)
 
       EventList			= {
         EventTurnBegin:		:turn_begin,

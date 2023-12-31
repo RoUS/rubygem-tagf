@@ -43,7 +43,11 @@ end                             # module TAGF
 #
 # Start requiring the different files comprising the package.
 #
-require('tagf/mixin/base')
+require('tagf/debugging')
+
+warn(__FILE__) if (TAGF.debugging?(:file))
+
+require('tagf/mixin/universal')
 require('tagf/classmethods')
 require('tagf/exceptions')
 
@@ -54,10 +58,6 @@ module TAGF
 
   nil
 end                             # module TAGF
-
-require('tagf/debugging')
-
-warn(__FILE__) if (TAGF.debugging?(:file))
 
 require('tagf/version')
 require('tagf/exceptions')
@@ -76,7 +76,7 @@ require('tagf/mixin/events')
 module TAGF
 
   #
-  include(Mixin::Base)
+  include(Mixin::UniversalMethods)
 
   #
   extend(ClassMethods)

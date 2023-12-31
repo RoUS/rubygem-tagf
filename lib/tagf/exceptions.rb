@@ -32,7 +32,7 @@ module TAGF
   module Exceptions
 
     #
-    include(TAGF::Mixin::Base)
+    include(TAGF::Mixin::UniversalMethods)
 
     #
     class ErrorBase < StandardError
@@ -41,7 +41,7 @@ module TAGF
       extend(TAGF::ClassMethods)
 
       #
-      include(TAGF::Mixin::Base)
+      include(TAGF::Mixin::UniversalMethods)
 
       #
       def _set_message(text)
@@ -74,7 +74,7 @@ module TAGF
       extend(TAGF::ClassMethods)
 
       #
-      include(TAGF::Mixin::Base)
+      include(TAGF::Mixin::UniversalMethods)
 
       #
       class LimitItems < ::TAGF::Exceptions::ErrorBase

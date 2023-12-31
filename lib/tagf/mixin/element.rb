@@ -66,7 +66,7 @@ module TAGF
       using(TAGF::Refinement::Description)
 
       #
-      include(TAGF::Mixin::Base)
+      include(TAGF::Mixin::UniversalMethods)
 
       #
       if (TAGF.debugging?(:extend))

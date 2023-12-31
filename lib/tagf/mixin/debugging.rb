@@ -160,8 +160,12 @@ module TAGF
   nil
 end                             # module TAGF
 
-require('tagf/debugging')
-require('tagf')
+if ((! Kernel.const_defined?('TAGF')) \
+    || (! TAGF.ancestors.include?(Contracts::Core)))
+  require('tagf/debugging')
+end
+#require('tagf/debugging')
+#require('tagf')
 TAGF.include(TAGF::Mixin::Debugging)
 require('tagf/classmethods')
 TAGF::Mixin::Debugging.extend(TAGF::ClassMethods)

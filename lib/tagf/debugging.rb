@@ -15,7 +15,10 @@
 #++
 # frozen_string_literal: true
 
-require('tagf')
+if ((! Kernel.const_defined?('TAGF')) \
+    || (! TAGF.ancestors.include?(Contracts::Core)))
+  require('tagf')
+end
 
 # @!macro doc.TAGF.module
 module TAGF
