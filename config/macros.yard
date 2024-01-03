@@ -22,6 +22,9 @@
 # @!macro [new] doc.TAGF.module
 #   Top-level module namespacing all of the pieces of the `tagf` gem.
 
+# @!macro [new] doc.TAGF.UI.module
+#   User interface module, for command processing &c.
+
 # @!macro [new] doc.TAGF.Mixin.module
 #   Module namespacing all the modules specifically designed to be
 #   mixed into classes and other modules.
@@ -30,6 +33,16 @@
 #   @param [Hash] kwargs
 #     hash with symbolic keys providing additional information to
 #     the method.
+
+# @!macro [new] doc.TAGF.module.classmethod.extended
+#   Method invoked whenever this module is included as a mixin.  It
+#   is passed the class (or module) object that is including it.  We
+#   extend the caller's eigenclass with the {ClassMethods} module,
+#   which adds various class methods (like {TAGF::ClassMethods#flag}).
+#
+#   @param [Class,Module] klass
+#     Object whose eigenclass is being extended by this module.
+#   @return [void]
 
 # @!macro [new] doc.TAGF.module.classmethod.included
 #   Method invoked whenever this module is included as a mixin.  It
