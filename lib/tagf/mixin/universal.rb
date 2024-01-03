@@ -28,9 +28,7 @@ module TAGF
   # @!macro doc.TAGF.Mixin.module
   module Mixin
 
-    #
-    # Defines basic methods and extends class methods for all portions
-    # of the {TAGF} module.
+    # @!macro doc.TAGF.Mixin.UniversalMethods.module
     module UniversalMethods
 
       #
@@ -58,6 +56,9 @@ module TAGF
 			     ],
       }
 
+      #
+      # Symbols describing possible attitudes available to an actor.
+      #
       C_Attitudes	= %i[
 			     friendly
 			     neutral
@@ -173,6 +174,10 @@ module TAGF
         return result
       end                       # def pluralise
 
+      #
+      # List of (case-insensitive) strings that evaluate to a Boolean
+      # `true` value.
+      #
       Truthy_Strings	= %w[ y yes t true on ]
 
       #

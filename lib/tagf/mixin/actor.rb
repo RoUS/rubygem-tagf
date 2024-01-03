@@ -26,11 +26,7 @@ module TAGF
   # @!macro doc.TAGF.Mixin.module
   module Mixin
 
-    #
-    # Mixin module for active objects, like the PC and NPCs.  They get
-    # moved around by the player and/or game logic with specific
-    # semantics.
-    #
+    # @!macro doc.TAGF.Mixin.Actor.module
     module Actor
 
       #

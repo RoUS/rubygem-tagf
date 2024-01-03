@@ -22,12 +22,86 @@
 # @!macro [new] doc.TAGF.module
 #   Top-level module namespacing all of the pieces of the `tagf` gem.
 
-# @!macro [new] doc.TAGF.UI.module
-#   User interface module, for command processing &c.
+# @!macro [new] doc.TAGF.ClassMethods.module
+#   Define class methods and constants that will be added to all
+#   modules and classes in the TAF namespace.  These definitions live
+#   in the modules' and class' eigenclasses (<em>a.k.a.</em>
+#   'singleton classes').  Things like the `extended` and `included`
+#   metamethods live in the eigenclass, and class-level methods like
+#   `attr_accessor` are defined in the eigenclass as well.
+#
+
+# @!macro [new] doc.TAGF.Exceptions.module
+#   Defines exception classes specific to the {TAGF} module.  All are
+#   namespaced under `TAGF::Exceptions`.
+#
+#   Some exceptions are used internally for signalling conditions,
+#   such as attempts to put more into a container than it can hold.
+
+# @!macro [new] doc.TAGF.Exceptions.InventoryLimitExceeded.module
+#   Define excpetions that are used to signal problems with trying
+#   to put more into an object's inventory than it can hold.  These
+#   are `rescue`d in the normal flow of things.
 
 # @!macro [new] doc.TAGF.Mixin.module
 #   Module namespacing all the modules specifically designed to be
 #   mixed into classes and other modules.
+
+# @!macro [new] doc.TAGF.Mixin.module.eigenclass
+#   Eigenclass for the $0 module; essentially just defines
+#   the `included` method for the mixin.
+#
+
+# @!macro [new] doc.TAGF.Mixin.Actor.module
+#   Mixin module for active objects, like the PC and NPCs.  They get
+#   moved around by the player and/or game logic with specific
+#   semantics.
+
+# @!macro [new] doc.TAGF.Mixin.Container.module
+#   Mixin module defining methods specific to objects that have
+#   inventories, such as locations, player and NPC objects, and some
+#   items.
+
+# @!macro [new] doc.TAGF.Mixin.Debugging.module
+#   Mixin module defining methods specific to objects that have
+#   inventories, such as locations, player and NPC objects, and some
+#   items.
+
+# @!macro [new] doc.TAGF.Mixin.Element.module
+#   Define class methods and constants that will be added to all
+#   object classes and eigenclasses in the TAF namespace.  Having this
+#   in the eigenclass ancestry authenticates an object as being a
+#   valid game element.
+
+# @!macro [new] doc.TAGF.Mixin.Events.module
+# Defines exception classes specific to the {TAGF} module.  All
+# are namespaced under `TAGF::Exceptions`.
+#
+# Some exceptions are used internally for signalling conditions,
+# such as attempts to put more into a container than it can hold.
+
+# @!macro [new] doc.TAGF.Mixin.Location.module
+#   Mixin module defining methods specific to objects that are
+#   locations in a game (rooms, <em>etc.</em>).
+
+# @!macro [new] doc.TAGF.Mixin.UniversalMethods.module
+#   Defines basic methods and extends class methods for all portions
+#   of the {TAGF} module.
+
+# @!macro [new] doc.TAGF.PackageMethods.module
+#   'Class' methods specifically for the `TAGF` module, which serve as
+#   a central static point for things shared across the package.
+
+# @!macro [new] doc.TAGF.Refinement.module
+#   Module containing refinements for redefinitions to be referenced
+#   with `using`.
+
+# @!macro [new] doc.TAGF.Refinement.Description.module
+#   Refine the `String` class to add methods for variable width and
+#   formatted display.
+
+# @!macro [new] doc.TAGF.UI.module
+#   User interface module, for command processing &c.
 
 # @!macro [new] doc.TAGF.formal.kwargs
 #   @param [Hash] kwargs
@@ -53,12 +127,6 @@
 #   @param [Class,Module] klass
 #     Object that is including this module as a mixin.
 #   @return [void]
-
-# @!macro [new] doc.TAGF.Mixin.module.eigenclass
-#
-# Eigenclass for the $0 module; essentially just defines
-# the `included` method for the mixin.
-#
 
 # @!macro [new] doc.TAGF.classmethod.flag.declare
 #   @!method [rw] $0(*args, **kwargs)
@@ -164,7 +232,8 @@
 #   @overload $1=(value)
 #     @param [Integer] value
 #     @raise [TypeError]
-#       `attribute '$1' can only have integer values or something coercible`
+#       `attribute '$1' can only have integer values or something
+#       coercible`
 #     @return [Integer]
 #       the value of `value` that was passed in.
 #

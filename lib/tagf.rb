@@ -51,6 +51,7 @@ require('tagf/mixin/universal')
 require('tagf/classmethods')
 require('tagf/exceptions')
 
+# @!macro doc.TAGF.module
 module TAGF
 
   #

@@ -23,13 +23,7 @@ require_relative('mixin/universal')
 # @!macro doc.TAGF.module
 module TAGF
 
-  #
-  # Defines exception classes specific to the {TAGF} module.  All are
-  # namespaced under `TAGF::Exceptions`.
-  #
-  # Some exceptions are used internally for signalling conditions,
-  # such as attempts to put more into a container than it can hold.
-  #
+  # @!macro doc.TAGF.Exceptions.module
   module Exceptions
 
     #
@@ -64,11 +58,7 @@ module TAGF
       nil
     end                         # class ErrorBase
 
-    #
-    # Define excpetions that are used to signal problems with trying
-    # to put more into an object's inventory than it can hold.  These
-    # are `rescue`d in the normal flow of things.
-    #
+    # @!macro doc.TAGF.Exceptions.InventoryLimitExceeded.module
     module InventoryLimitExceeded
 
       #
@@ -114,6 +104,10 @@ module TAGF
       nil
     end                         # module InventoryLimitExceeded
 
+    #
+    # Bring a more deeply nested definition up to this level.
+    # @see TAGF::Exceptions::InventoryLimitExceeded::LimitItems
+    #
     LimitItems		= InventoryLimitExceeded::LimitItems
 
     #

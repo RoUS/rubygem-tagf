@@ -24,11 +24,7 @@ module TAGF
   # @!macro doc.TAGF.Mixin.module
   module Mixin
 
-    #
-    # Mixin module defining methods specific to objects that have
-    # inventories, such as locations, player and NPC objects, and some
-    # items.
-    #
+    # @!macro doc.TAGF.Mixin.Debugging.module
     module Debugging
 
       #

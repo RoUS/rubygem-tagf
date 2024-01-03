@@ -26,6 +26,9 @@ module TAGF
   # @!macro doc.TAGF.UI.module
   module UI
 
+    #
+    # Regular expression describing the header of a 'here-doc'.
+    #
     HEREDOC_RE		= %r!^
 			     <<(-)?
 			     (['"])?

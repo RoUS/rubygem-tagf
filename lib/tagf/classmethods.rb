@@ -21,10 +21,7 @@
 # @!macro doc.TAGF.module
 module TAGF
 
-  #
-  # 'Class' methods specifically for the `TAGF` module, which serve as
-  # a central static point for things shared across the package.
-  #
+  # @!macro doc.TAGF.PackageMethods.module
   module PackageClassMethods
     
     #
@@ -57,18 +54,12 @@ module TAGF
     nil
   end                           # module TAGF::PackageClassMethods
 
-  # @!macro [new] doc.TAGF.module.eigenclass
+  # @!macro doc.TAGF.module.eigenclass
   #   Eigenclass for a TAGF module.  It provides class methods (like
   #   additional attribute declaration methods) for anything that
   #   extends the TAGF module into its singleton class.
-  #
-  # Define class methods and constants that will be added to all
-  # modules and classes in the TAF namespace.  These definitions live
-  # in the modules' and class' eigenclasses (<em>a.k.a.</em>
-  # 'singleton classes').  Things like the `extended` and `included`
-  # metamethods live in the eigenclass, and class-level methods like
-  # `attr_accessor` are defined in the eigenclass as well.
-  #
+
+  # @!macro doc.TAGF.ClassMethods.module
   module ClassMethods
 
     #
@@ -90,6 +81,9 @@ module TAGF
 #      TAGF::Mixin::UniversalMethods,
     ]
 
+    #
+    # Modules for automatic extension with `extend`:
+    #
     EXTENSION_MODULES	= [
       TAGF::ClassMethods,
 #      TAGF::Mixin::UniversalMethods,

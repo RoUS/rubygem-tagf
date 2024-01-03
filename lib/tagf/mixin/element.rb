@@ -23,9 +23,10 @@ require('byebug')
 # @!macro doc.TAGF.module
 module TAGF
 
-  #
+  # @!macro doc.TAGF.Refinement.module
   module Refinement
 
+    # @!macro doc.TAGF.Refinement.Description.module
     module Description
 
       refine(::String) do
@@ -54,12 +55,7 @@ module TAGF
   # @!macro doc.TAGF.Mixin.module
   module Mixin
 
-    #
-    # Define class methods and constants that will be added to all
-    # object classes and eigenclasses in the TAF namespace.  Having
-    # this in the eigenclass ancestry authenticates an object as being
-    # a valid game element.
-    #
+    # @!macro doc.TAGF.Mixin.Element.module
     module Element
 
       #

@@ -25,10 +25,7 @@ module TAGF
   # @!macro doc.TAGF.Mixin.module
   module Mixin
 
-    #
-    # Mixin module defining methods specific to objects that are
-    # locations in a game (rooms, <em>etc.</em>).
-    #
+    # @!macro doc.TAGF.Mixin.Location.module
     module Location
 
       # @!macro doc.TAGF.Mixin.module.eigenclass Location

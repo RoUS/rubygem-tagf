@@ -25,14 +25,7 @@ module TAGF
   # @!macro doc.TAGF.Mixin.module
   module Mixin
 
-    #
-    #
-    # Defines exception classes specific to the {TAGF} module.  All
-    # are namespaced under `TAGF::Exceptions`.
-    #
-    # Some exceptions are used internally for signalling conditions,
-    # such as attempts to put more into a container than it can hold.
-    #
+    # @!macro doc.TAGF.Mixin.Events.module
     module Events
 
       #

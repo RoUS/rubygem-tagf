@@ -25,6 +25,9 @@ module TAGF
   # because that's when `**kwargs` were introduced.
   #
   RUBY_VERSION_MIN		= '2.7.0'
+  #
+  # The minimum Ruby version as a Gem comparison string.
+  #
   RUBY_VERSION_MIN_GEMSPEC	= ">= #{RUBY_VERSION_MIN}"
 
   @version			= Versionomy.parse('0.1.0')
