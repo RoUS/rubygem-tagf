@@ -51,7 +51,7 @@ module TAGF
       #
       # @todo
       #   Allow multiple options (like `[:include, :extend]`).
-      # @param [Symbol] item
+      # @param [Array<Symbol>] items
       # @return [Boolean]
       def debugging?(*items)
         isyms		= Set.new(items.map(&:to_sym))
@@ -77,7 +77,9 @@ module TAGF
       #    method is being invoked, and
       # #. is the name of the method itself.
       #
-      # @param [Symbol,nil] altmethod(nil)
+      # @param [Symbol,nil] altmethod (nil)
+      # @param [String,nil] altmessage (nil)
+      # @param [Integer] frame (1)
       # @return [void]
       def invocation(altmethod=nil, altmessage=nil, frame=1)
         scope		= binding.of_caller(frame)

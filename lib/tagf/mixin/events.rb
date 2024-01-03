@@ -27,8 +27,8 @@ module TAGF
 
     #
     #
-    # Defines exception classes specific to the {TAF} module.  All are
-    # namespaced under `TAGF::Exceptions`.
+    # Defines exception classes specific to the {TAGF} module.  All
+    # are namespaced under `TAGF::Exceptions`.
     #
     # Some exceptions are used internally for signalling conditions,
     # such as attempts to put more into a container than it can hold.

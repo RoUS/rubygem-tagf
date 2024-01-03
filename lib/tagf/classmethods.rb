@@ -22,8 +22,8 @@
 module TAGF
 
   #
-  # 'Class' methods for the `TAGF` module, which serve as a central
-  # static point for things shared across the package.
+  # 'Class' methods specifically for the `TAGF` module, which serve as
+  # a central static point for things shared across the package.
   #
   module PackageClassMethods
     
@@ -75,24 +75,24 @@ module TAGF
     extend(self)
 
     #
-    include(TAGF::Mixin::UniversalMethods)
+#    include(TAGF::Mixin::UniversalMethods)
 
     #
     include(Contracts::Core)
 
     #
-    extend(TAGF::Mixin::UniversalMethods)
+#    extend(TAGF::Mixin::UniversalMethods)
 
     #
     # Modules for automatic inclusion for `include`:
     #
     INCLUSION_MODULES	= [
-      TAGF::Mixin::UniversalMethods,
+#      TAGF::Mixin::UniversalMethods,
     ]
 
     EXTENSION_MODULES	= [
       TAGF::ClassMethods,
-      TAGF::Mixin::UniversalMethods,
+#      TAGF::Mixin::UniversalMethods,
     ]
 
     # Name of the element key as used in definition (YAML) files.

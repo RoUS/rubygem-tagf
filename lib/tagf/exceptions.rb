@@ -18,12 +18,13 @@
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf')
+require_relative('mixin/universal')
 
 # @!macro doc.TAGF.module
 module TAGF
 
   #
-  # Defines exception classes specific to the {TAF} module.  All are
+  # Defines exception classes specific to the {TAGF} module.  All are
   # namespaced under `TAGF::Exceptions`.
   #
   # Some exceptions are used internally for signalling conditions,
