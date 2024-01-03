@@ -1,5 +1,7 @@
 # TODO items (unordered) for TAGF Ruby gem
 
+* Rationalise `ClassMethods`, `PackageClassMethods`, and
+  `UniversalMethods` — particularly with regard to the game options.
 * Finish designing YAML definition structure and language.
 * Figure out & fix the (`Class`,`Universal`)`Methods`
   inclusion/extension stuff.

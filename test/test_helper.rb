@@ -24,4 +24,5 @@ require('test-unit')
 # mode: ruby
 # indent-tabs-mode: nil
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
 # End:

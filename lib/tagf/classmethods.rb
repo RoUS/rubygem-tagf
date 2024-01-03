@@ -24,10 +24,34 @@ module TAGF
   # @!macro doc.TAGF.PackageMethods.module
   module PackageClassMethods
     
+    # TAGF game options are simply flags, considered active if they
+    # appear in the game_options Set instance.
     #
+    # @param [Array<Symbol>]		args		([])
+    # @param [Hash<Symbol,Object>]	kwargs		({})
+    # @return [Array<Symbol>]
+    #   an array of the currently-active options
+    #
+    # @see Mixin::UniversalMethods::GAME_OPTIONS
+    # @see Mixin::UniversalMethods::GAME_OPTION_CLUMPS
     def game_options(*args, **kwargs)
+      #
+      # Make sure we actually have an options Set before doing
+      # anything.
+      #
       @game_options	||= Set.new
+      #
+      # If we weren't passed any arguments at all, just return the
+      # current settings — we're done.
+      #
       return @game_options.to_a if (args.empty? && kwargs.empty?)
+      #
+      # Get a list of the options being requested, separate out the
+      # invalid ones (such as `:not_a_real_option`), complain about
+      # them to `stderr`, and strip them from the list.  This is a
+      # non-fatal issue; once the bogus options are reported and
+      # removed, we proceed with the (valid) remainder.
+      #
       requested		= _inivaluate_attrib(true, *args, **kwargs)
       unknown		= requested.keys - GAME_OPTIONS
       unknown.each do |opt|
@@ -54,14 +78,12 @@ module TAGF
     nil
   end                           # module TAGF::PackageClassMethods
 
-  # @!macro doc.TAGF.module.eigenclass
-  #   Eigenclass for a TAGF module.  It provides class methods (like
-  #   additional attribute declaration methods) for anything that
-  #   extends the TAGF module into its singleton class.
-
   # @!macro doc.TAGF.ClassMethods.module
   module ClassMethods
 
+    #
+    # Ensure that the definitions in this module also appear in its
+    # eigenclass as 'class' methods.
     #
     extend(self)
 
@@ -363,4 +385,5 @@ require('tagf/exceptions')
 # mode: ruby
 # indent-tabs-mode: nil
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
 # End:

@@ -33,8 +33,10 @@ require('set')
 # @!macro doc.TAGF.module
 module TAGF
 
+=begin
   #
   include(Contracts::Core)
+=end
 
   nil
 end                             # module TAGF
@@ -55,11 +57,20 @@ require('tagf/exceptions')
 module TAGF
 
   #
+  # Extend the top-level module's eigenclass with methods universal to
+  # the entire package (such as access to game options, *&c.*
+  #
   extend(PackageClassMethods)
 
   nil
 end                             # module TAGF
 
+#
+# We're about to test that we're running on a sufficiently advanced
+# version of Ruby, so pull in the versioning information — and our
+# exception module, since any problems will be reported using our
+# specific exceptions.
+#
 require('tagf/version')
 require('tagf/exceptions')
 
@@ -71,7 +82,11 @@ unless ((RUBY_ENGINE == 'ruby') \
   exit(1)
 end                             # Ruby version check
 
-require('tagf/mixin/events')
+#require('tagf/mixin/events')
+
+#
+# Now let's actually flesh out the top-level namespace.
+#
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -92,8 +107,6 @@ module TAGF
 end                             # module TAGF
 
 require('binding_of_caller')
-debugger
-
 require('tagf/exceptions')
 require('tagf/mixin/element')
 require('tagf/inventory')
@@ -116,4 +129,5 @@ Linguistics.use(:en)
 # mode: ruby
 # indent-tabs-mode: nil
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
 # End:

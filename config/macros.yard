@@ -22,6 +22,11 @@
 # @!macro [new] doc.TAGF.module
 #   Top-level module namespacing all of the pieces of the `tagf` gem.
 
+# @!macro [new] doc.TAGF.module.eigenclass
+#   Eigenclass for a TAGF module.  It provides class methods (like
+#   additional attribute declaration methods) for anything that
+#   extends the TAGF module into its singleton class.
+
 # @!macro [new] doc.TAGF.ClassMethods.module
 #   Define class methods and constants that will be added to all
 #   modules and classes in the TAF namespace.  These definitions live
@@ -242,4 +247,5 @@
 # mode: ruby
 # indent-tabs-mode: nil
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
 # End:

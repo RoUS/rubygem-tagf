@@ -17,6 +17,7 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
+require('readline')
 require('tagf')
 require('thor')
 require('byebug')
@@ -54,4 +55,5 @@ end                             # module TAGF
 # mode: ruby
 # indent-tabs-mode: nil
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
 # End:
