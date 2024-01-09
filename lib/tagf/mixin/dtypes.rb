@@ -26,7 +26,7 @@ module TAGF
 
   module Mixin
 
-    # @!macro doc.TAGF.DTypes.module
+    # @!macro doc.TAGF.Mixin.DTypes.module
     module DTypes
 
       include(Mixin::UniversalMethods)

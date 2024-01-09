@@ -46,16 +46,25 @@ module TAGF
 			     (['"])?
 			     $!x
 
+    #
+    # Bits of this are unashamedly cadged from the IRB source — with
+    # ignorance aforethought.
+    # @!macro doc.TAGF.UI.InputMethod.module
     module InputMethod
 
       extend(Mixin::DTypes)
 
       file_accessor(:stdin)
-      flag(echo:	true)
-      flag(allow_heredoc: true)
-      flag(in_heredoc:	false)
 
-      def initialize(*args, **kwargs)
+      def initialize(context, *args, **kwargs)
+        @context	= context
+        unless (context.kind_of?(Context))
+          raise(TypeError,
+                format('%s.new requires a UI::Context object as ' \
+                       + 'its first argument',
+                       self.class.name))
+        end
+        @context	= context
         self.stdin	= kwargs[:stdin] || $stdin
       end                       # def initialize(*args, **kwargs)
 
@@ -66,21 +75,61 @@ module TAGF
     class Context
 
       extend(Mixin::DTypes)
-      include(InputMethod)
+#      include(InputMethod)
 
+      # Instance of the class that will be used to read from the input
+      # stream.
       attr_accessor(:inputmethod)
 
+      # @!macro doc.TAGF.classmethod.file_accessor.invoke
       file_accessor(:stdin	=> $stdin)
 
+      # @!macro doc.TAGF.classmethod.file_accessor.invoke
       file_accessor(:stdout	=> $stdout)
 
+      # @!macro doc.TAGF.classmethod.file_accessor.invoke
       file_accessor(:stderr	=> $stderr)
 
+      # Boolean flag indicating whether lines read from the input
+      # stream should be echoed to the output stream.  If the input
+      # method is ViaReadline, this is handled directly by the
+      # {Readline#readline} library.  If the input stream is a file
+      # (<em>i.e.</em>, the input method is ViaFile), such echoing
+      # must be done manually.
+      #
+      # @!macro doc.TAGF.classmethod.flag.invoke
+      flag(echo:	true)
+
+      # Boolean flag indicating whether input lines should be checked
+      # for here-doc header signatures.
+      # @see Here_Documents
+      # @note
+      #   If a here-doc is in progress, this flag is disabled;
+      #   here-docs cannot be nested.
+      # @!macro doc.TAGF.classmethod.flag.invoke
+      flag(allow_heredoc: true)
+
+      # Boolean flag indicating whether we're currently reading lines
+      # of a here-doc.  When true, input lines are checked for the
+      # here-doc terminator, and new here-docs are not allowed (or,
+      # rather, are treated as just normal text).
+      # @!macro doc.TAGF.classmethod.flag.invoke
+      flag(in_heredoc:	false)
+
+      # Array of prompts used when requesting input.  New ones are
+      # pushed when read context changes (such as reading lines of a
+      # here-doc), and popped when that reverts.
       attr_reader(:prompts)
 
+      # Array of input lines stored as history.  New lines are pushed
+      # on the end.
       attr_reader(:history)
 
+      # Valid keywords in the constructor's `kwargs` hash argument.
       KWSYMS		= %i[
+                             echo
+                             allow_heredoc
+                             in_heredoc
                              prompts
                              history
                              stdin

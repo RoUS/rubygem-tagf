@@ -35,9 +35,9 @@ module TAGF
 
   # Dummy method for debugging before any real methods are defined.
   #
-  # @param [Array]		args		([])
+  # @param [Array] args ([])
   #   Dummy argument.
-  # @param [Hash]		kwargs		({})
+  # @param [Hash] kwargs ({})
   #   Dummy hash of keyword arguments.
   # @return [Boolean]		false
   def debugging?(*args, **kwargs)
@@ -77,13 +77,14 @@ end                             # Ruby version check
 #
 require('binding_of_caller')
 
-
 #
 # Pull in all the mixin module definitions first.
 #
 require_relative('tagf/mixin/actor')
+require_relative('tagf/mixin/classmethods')
 require_relative('tagf/mixin/container')
 #require_relative('tagf/mixin/debugging')
+require_relative('tagf/mixin/dtypes')
 require_relative('tagf/mixin/element')
 require_relative('tagf/mixin/events')
 require_relative('tagf/mixin/location')
@@ -92,7 +93,6 @@ require_relative('tagf/mixin/universal')
 #
 # Now the 'top-level' modules.
 #
-require_relative('tagf/classmethods')
 require_relative('tagf/cli')
 require_relative('tagf/container')
 #require_relative('tagf/debugging')
@@ -119,12 +119,12 @@ module TAGF
   include(Contracts::Core)
   include(Mixin::UniversalMethods)
   extend(Mixin::UniversalMethods)
-  extend(ClassMethods)
+  extend(Mixin::DTypes)
   #
   # ..and the mostly-universal ancillary modules.
   #
-  ClassMethods.include(Mixin::UniversalMethods)
-  UniversalMethods.extend(ClassMethods)
+#  Mixin::ClassMethods.include(Mixin::UniversalMethods)
+#  Mixin::UniversalMethods.extend(Mixin::ClassMethods)
 
   #
   # Extend the top-level module's eigenclass with methods universal to

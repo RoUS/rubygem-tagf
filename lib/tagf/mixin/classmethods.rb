@@ -84,7 +84,7 @@ module TAGF
       nil
     end                         # module TAGF::Mixin::PackageClassMethods
 
-    # @!macro doc.TAGF.ClassMethods.module
+    # @!macro doc.TAGF.Mixin.ClassMethods.module
     module ClassMethods
 
       include(Mixin::UniversalMethods)

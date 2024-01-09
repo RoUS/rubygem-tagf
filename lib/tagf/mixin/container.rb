@@ -95,8 +95,8 @@ module TAGF
       #
       # If the container is openable, is it actually open?  We
       # overrides some of the standard attribute accessors added by
-      # the ClassMethods#flag method to provide correct results if the
-      # element can't even be opened.
+      # the Mixin::ClassMethods#flag method to provide correct results
+      # if the element can't even be opened.
       #
       # @!macro doc.TAGF.classmethod.flag.invoke
       # @overload is_open

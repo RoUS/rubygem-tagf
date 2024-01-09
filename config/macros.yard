@@ -115,6 +115,14 @@
 # @!macro [new] doc.TAGF.UI.module
 #   User interface module, for command processing &c.
 
+# @!macro [new] doc.TAGF.UI.InputMethod.module
+#   Module defining a namespace and common methods for the various
+#   ways input is specifically obtained from the user.  File input is
+#   treated differently from console/terminal input.
+#
+#   Unfortunately, the Ruby readline library isn't a universal input
+#   method, hence this extra shite.
+
 # @!macro [new] doc.TAGF.formal.kwargs
 #   @param [Hash] kwargs
 #     hash with symbolic keys providing additional information to
@@ -123,19 +131,22 @@
 # @!macro [new] doc.TAGF.module.classmethod.extended
 #   Method invoked whenever this module is included as a mixin.  It is
 #   passed the class (or module) object that is including it.  We
-#   extend the caller's eigenclass with the {Mixin::ClassMethods}
-#   module, which adds various class methods (like
-#   {TAGF::Mixin::DType#flag}).
+#   extend the caller's eigenclass with the
+#   {TAGF::Mixin::ClassMethods} module, which adds various class
+#   methods (like {TAGF::Mixin::DType#flag}).
 #
 #   @param [Class,Module] klass
 #     Object whose eigenclass is being extended by this module.
 #   @return [void]
 
 # @!macro [new] doc.TAGF.module.classmethod.included
-#   Method invoked whenever this module is included as a mixin.  It
-#   is passed the class (or module) object that is including it.  We
-#   extend the caller's eigenclass with the {ClassMethods} module,
-#   which adds various class methods (like {TAGF::ClassMethods#flag}).
+#   Method invoked whenever this module is included as a mixin.  It is
+#   passed the class (or module) object that is including it.  We
+#   extend the caller's eigenclass with the
+#   {TAGF::Mixin::ClassMethods} module, which adds various class
+#   methods (like {TAGF::Mixin::DTypes#flag}).
+#   @todo
+#     <b>Fix this description; it is no longer accurate.</b>
 #
 #   @param [Class,Module] klass
 #     Object that is including this module as a mixin.
@@ -169,7 +180,7 @@
 #
 #   @param [Array<Symbol>] args
 #     Identifiers for the flag attributes to be declared.
-#   @param [Hash{Symbol=>Object}] kwargs
+#   @param [Hash<Symbol=>Object>] kwargs
 #     Hash of keyword arguments; see below.
 #     <strong>This is actually WRONG!</strong>
 #   @todo
