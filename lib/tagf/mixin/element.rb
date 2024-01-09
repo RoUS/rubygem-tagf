@@ -63,14 +63,15 @@ module TAGF
 
       #
       include(TAGF::Mixin::UniversalMethods)
+      extend(TAGF::Mixin::UniversalMethods)
 
       #
       if (TAGF.debugging?(:extend))
         warn(format('%s extending itself with %s',
                     self.name,
-                    ClassMethods.name))
+                    Mixin::DTypes.name))
       end
-      extend(ClassMethods)
+      extend(Mixin::DTypes)
 
       #
       # The <em>`eid`</em> is the unique game-wide identifier for each

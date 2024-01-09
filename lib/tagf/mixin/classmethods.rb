@@ -24,105 +24,108 @@ require('byebug')
 # @!macro doc.TAGF.module
 module TAGF
 
-  # @!macro doc.TAGF.PackageMethods.module
-  module PackageClassMethods
-    
-    # TAGF game options are simply flags, considered active if they
-    # appear in the game_options Set instance.
-    #
-    # @param [Array<Symbol>]		args		([])
-    # @param [Hash<Symbol,Object>]	kwargs		({})
-    # @return [Array<Symbol>]
-    #   an array of the currently-active options
-    #
-    # @see Mixin::UniversalMethods::GAME_OPTIONS
-    # @see Mixin::UniversalMethods::GAME_OPTION_CLUMPS
-    def game_options(*args, **kwargs)
+  #
+  module Mixin
+
+    # @!macro doc.TAGF.PackageMethods.module
+    module PackageClassMethods
+
+      # TAGF game options are simply flags, considered active if they
+      # appear in the game_options Set instance.
       #
-      # Make sure we actually have an options Set before doing
-      # anything.
+      # @param [Array<Symbol>]		args		([])
+      # @param [Hash<Symbol,Object>]	kwargs		({})
+      # @return [Array<Symbol>]
+      #   an array of the currently-active options
       #
-      @game_options	||= Set.new
-      #
-      # If we weren't passed any arguments at all, just return the
-      # current settings — we're done.
-      #
-      return @game_options.to_a if (args.empty? && kwargs.empty?)
-      #
-      # Get a list of the options being requested, separate out the
-      # invalid ones (such as `:not_a_real_option`), complain about
-      # them to `stderr`, and strip them from the list.  This is a
-      # non-fatal issue; once the bogus options are reported and
-      # removed, we proceed with the (valid) remainder.
-      #
-      requested		= _inivaluate_attrib(true, *args, **kwargs)
-      unknown		= requested.keys - GAME_OPTIONS
-      unknown.each do |opt|
-        warn(format('%s.%s: unknown game option: %s',
-                    'TAGF',
-                    __method__.to_s,
-                    opt.to_s))
-        requested.delete(opt)
-      end
-      GAME_OPTION_CLUMPS.each do |brolly,clumped|
-        if (requested.keys.include?(brolly))
-          newval	= requested[brolly]
-          clumped.each do |opt|
-            requested[opt] = newval unless (requested.keys.include?(opt))
-          end
-        requested[brolly] = false
+      # @see Mixin::UniversalMethods::GAME_OPTIONS
+      # @see Mixin::UniversalMethods::GAME_OPTION_CLUMPS
+      def game_options(*args, **kwargs)
+        #
+        # Make sure we actually have an options Set before doing
+        # anything.
+        #
+        @game_options	||= Set.new
+        #
+        # If we weren't passed any arguments at all, just return the
+        # current settings — we're done.
+        #
+        return @game_options.to_a if (args.empty? && kwargs.empty?)
+        #
+        # Get a list of the options being requested, separate out the
+        # invalid ones (such as `:not_a_real_option`), complain about
+        # them to `stderr`, and strip them from the list.  This is a
+        # non-fatal issue; once the bogus options are reported and
+        # removed, we proceed with the (valid) remainder.
+        #
+        requested	= _inivaluate_attrib(true, *args, **kwargs)
+        unknown		= requested.keys - GAME_OPTIONS
+        unknown.each do |opt|
+          warn(format('%s.%s: unknown game option: %s',
+                      'TAGF',
+                      __method__.to_s,
+                      opt.to_s))
+          requested.delete(opt)
         end
-      end                       # GAME_OPTION_CLUMPS.each
-      newopts		= requested.keys.select { |k| requested[k] }
-      @game_options.replace(Set.new(newopts))
-      return @game_options.to_a
-    end                         # def game_options(*args, **kwargs)
+        GAME_OPTION_CLUMPS.each do |brolly,clumped|
+          if (requested.keys.include?(brolly))
+            newval	= requested[brolly]
+            clumped.each do |opt|
+              requested[opt] = newval unless (requested.keys.include?(opt))
+            end
+            requested[brolly] = false
+          end
+        end                     # GAME_OPTION_CLUMPS.each
+        newopts		= requested.keys.select { |k| requested[k] }
+        @game_options.replace(Set.new(newopts))
+        return @game_options.to_a
+      end                       # def game_options(*args, **kwargs)
 
-    nil
-  end                           # module TAGF::PackageClassMethods
+      nil
+    end                         # module TAGF::Mixin::PackageClassMethods
 
-  # @!macro doc.TAGF.ClassMethods.module
-  module ClassMethods
+    # @!macro doc.TAGF.ClassMethods.module
+    module ClassMethods
 
-    include(Mixin::UniversalMethods)
-    #
-    # Ensure that the definitions in this module also appear in its
-    # eigenclass as 'class' methods.
-    #
-    extend(self)
+      include(Mixin::UniversalMethods)
+      #
+      # Ensure that the definitions in this module also appear in its
+      # eigenclass as 'class' methods.
+      #
+      extend(self)
 
-    #
-#    include(TAGF::Mixin::UniversalMethods)
+      #
+#      include(TAGF::Mixin::UniversalMethods)
 
-    #
-    include(Contracts::Core)
+      #
+      include(Contracts::Core)
 
-    #
-#    extend(TAGF::Mixin::UniversalMethods)
+      #
+#      extend(TAGF::Mixin::UniversalMethods)
 
-    #
-    # Modules for automatic inclusion for `include`:
-    #
-    INCLUSION_MODULES	= [
-#      TAGF::Mixin::UniversalMethods,
-    ]
+      #
+      # Modules for automatic inclusion for `include`:
+      #
+      INCLUSION_MODULES	= [
+#        TAGF::Mixin::UniversalMethods,
+      ]
 
-    #
-    # Modules for automatic extension with `extend`:
-    #
-    EXTENSION_MODULES	= [
-      TAGF::ClassMethods,
-#      TAGF::Mixin::UniversalMethods,
-    ]
+      #
+      # Modules for automatic extension with `extend`:
+      #
+      EXTENSION_MODULES	= [
+        TAGF::Mixin::ClassMethods,
+#        TAGF::Mixin::UniversalMethods,
+      ]
 
-    # Name of the element key as used in definition (YAML) files.
-    #
-    attr_accessor(:elkey)
+      # Name of the element key as used in definition (YAML) files.
+      #
+      attr_accessor(:elkey)
 
-    # @!macro doc.TAGF.module.classmethod.included
-    def included(klass)
-#      debugger
-      whoami		= format('%s.%s; %s.include(%s)',
+      # @!macro doc.TAGF.module.classmethod.included
+      def included(klass)
+#       debugger
+        whoami		= format('%s.%s; %s.include(%s)',
                                  self.name,
                                  __method__.to_s,
                                  klass.name,
@@ -144,9 +147,9 @@ module TAGF
                     klass.ancestors.to_s))
       end
 =end
-      INCLUSION_MODULES.each do |minc|
-        unless (klass.included_modules.include?(minc) \
-                || klass.ancestors.include?(minc))
+        INCLUSION_MODULES.each do |minc|
+          unless (klass.included_modules.include?(minc) \
+                  || klass.ancestors.include?(minc))
 =begin
           if (TAGF.debugging?(:include))
             warn(format('  also including %s into %s',
@@ -154,13 +157,13 @@ module TAGF
                         self.name))
           end
 =end
-          klass.include(minc)
+            klass.include(minc)
+          end
         end
-      end
 
-      EXTENSION_MODULES.each do |minc|
-        unless (klass.singleton_class.included_modules.include?(minc) \
-                || klass.singleton_class.ancestors.include?(minc))
+        EXTENSION_MODULES.each do |minc|
+          unless (klass.singleton_class.included_modules.include?(minc) \
+                  || klass.singleton_class.ancestors.include?(minc))
 =begin
           if (TAGF.debugging?(:extend))
             warn(format('  also extending %s with %s',
@@ -169,18 +172,18 @@ module TAGF
           end
 =end
 #          debugger
-          klass.extend(minc)
-        end
-      end                       # EXTENSION_MODULES.each do
+            klass.extend(minc)
+          end
+        end                     # EXTENSION_MODULES.each do
 
-      super
-      return nil
-    end                         # def included(klass)
+        super
+        return nil
+      end                       # def included(klass)
 
-    # @!macro doc.TAGF.module.classmethod.extended
-    def extended(klass)
-#      debugger
-      whoami		= format('%s#%s; %s.extend(%s)',
+      # @!macro doc.TAGF.module.classmethod.extended
+      def extended(klass)
+#       debugger
+        whoami		= format('%s#%s; %s.extend(%s)',
                                  self.name,
                                  __method__.to_s,
                                  klass.name,
@@ -190,15 +193,17 @@ module TAGF
         warn(whoami)
       end
 =end
-      super
-      return nil
-    end                         # def extended(klass)
+        super
+        return nil
+      end                       # def extended(klass)
+
+      nil
+    end                         # module TAGF::Mixin::ClassMethods
 
     nil
-  end                           # module TAGF::ClassMethods
-
+  end                           # module TAGF::Mixin
   #
-  extend(ClassMethods)
+  extend(Mixin::ClassMethods)
 
   nil
 end                             # module TAGF

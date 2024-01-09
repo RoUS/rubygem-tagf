@@ -17,9 +17,14 @@
 
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
+
+#
+# Require the master file unless some of its key definitions have been
+# declared.
+#
 if ((! Kernel.const_defined?('TAGF')) \
     || (! TAGF.ancestors.include?(Contracts::Core)))
-  require('tagf')
+#  require('tagf')
 end
 
 # @!macro doc.TAGF.module
@@ -27,6 +32,12 @@ module TAGF
 
   # @!macro doc.TAGF.Mixin.module
   module Mixin
+
+    #
+    # Now, just define these things, don't actually try to *impose*
+    # them on any other part of the package.  Each module/class should
+    # be responsible for its own configuration.
+    #
 
     # @!macro doc.TAGF.Mixin.UniversalMethods.module
     module UniversalMethods
@@ -51,7 +62,7 @@ module TAGF
       GAME_OPTION_CLUMPS= {
 	EnforceCapacities: %i[
 			      EnforceMass
-			      EnforceVolume	   
+			      EnforceVolume
 			      EnforceItemCounts
 			     ],
       }
@@ -64,6 +75,59 @@ module TAGF
 			     neutral
 			     hostile
 			    ]
+
+      # @private
+      #
+      # @param [Any] default (nil)
+      #   Whatever default value should be supplied for attributes
+      #   listed in the `args` array.
+      # @param [Array<Symbol>] args
+      #   (Possibly empty) array of attribute identifiers.
+      # @param [Hash{Symbol=>Any}] kwargs
+      #   (Possibly empty) hash of <em>keysym:inival</em> tuples.
+      # @yield [inival]
+      #   allows an attribute declarator to perform validity checks or
+      #   transformations on the initial values (such as ensuring they
+      #   are all of a particular class (<em>e.g.</em>, `TrueClass` or
+      #   `FalseClass` for a Boolean attribute).
+      # @yieldparam inival [Object]
+      #   each <em>inival</em> in turn.
+      # @yieldreturn [Object]
+      #   whatever tranformation, if any, the block performs on the
+      #   <em>inival</em>.
+      # @return [Hash{Symbol=>Any}]
+      #   a hash of <em>keysym:inival</em> tuples built from merging
+      #   the <em>kwargs</em> hash onto the one constructed from the
+      #   <em>args</em> array and the <em>default</em> value.
+      def _inivaluate_args(default=nil, *args, **kwargs, &block)
+        unless ((argc = args.count).zero?)
+          #
+          # Turn any bare attributes into hashes with the appropriate
+          # default setting.
+          #
+          defaults	= [default] * argc
+          nmargs	= args.map { |o| o.to_sym }
+          nmargs	= nmargs.zip(defaults).map { |ary| Hash[*ary] }
+          nmargs	= nmargs.reduce(&:merge)
+          #
+          # Do it in the `nmargs.merge(kwargs)` order so any
+          # attributes that <em>were</em> given initial values override
+          # bare ones of the same name picking up the default.
+          #
+          kwargs	= nmargs.merge(kwargs)
+        end
+        #
+        # Allow refinement of the initial values by a block supplied
+        # by our caller.
+        #
+        if (block_given?)
+          kwargs.keys.each do |k|
+            kwargs[k]	= yield(kwargs[k])
+          end
+        end
+        return kwargs
+      end                       # def _inivaluate_args
+      private(:_inivaluate_args)
 
       #
       # Check to see whether one or more game options are currently
@@ -143,7 +207,11 @@ module TAGF
       end			# def raise_exception
       private(:raise_exception)
 
-      # @param [Object] target
+      # Return `true` if the given object is a game element — that is,
+      # its eigenclass has included (or been extended by) the
+      # TAGF::Mixin::Element module.
+      #
+      # @param [Object]		target
       # @return [Boolean]
       def is_game_element?(target)
 	result	= target.singleton_class.ancestors.include?(Mixin::Element)
@@ -159,8 +227,8 @@ module TAGF
       # @note
       #	  At the moment, only English (`en`) words are supported.
       #
-      # @param [String] word
-      # @param [Integer] number
+      # @param [String]		word
+      # @param [Integer]	number
       # @return [String]
       #	  either the original word, or the deduced plural if the
       #	  `number` argument was an integer 1.  (Floats <em>always</em>
@@ -180,13 +248,12 @@ module TAGF
       #
       Truthy_Strings	= %w[ y yes t true on ]
 
+      # Convert a value (string, numeric, any kind of object) into a
+      # Boolean.  This varies slightly from normal Ruby semantics in
+      # that an integer 0 is considered `false` whereas normal Ruby
+      # interpretation would consider it `true`.
       #
-      # Convert a value into a Boolean.  This varies slightly from
-      # normal Ruby semantics in that an integer 0 is considered
-      # `false` whereas normal Ruby interpretation would consider it
-      # `true`.
-      #
-      # @param [Object] testvalue
+      # @param [Object]		testvalue
       #   value to evaluate for truthiness.
       # @return [Boolean]
       #   the result of the evaluation.
@@ -228,10 +295,31 @@ module TAGF
       end                       # def truthify(testvalue)
 
       # @private
+      # Given a symbolic attribute name and potentially a default
+      # value, return a structure containing fields for the various
+      # things needed to define methods dealing with it
+      # (String name, instance-variable symbol, attribute with
+      # suffices like `!`, `?`, `=`).  Any non-alphanumeric,
+      # non-underscore characters are silently stripped before the
+      # name is processed.
       #
-      # @param [String,Symbol] attrib_p
+      # See the return value for details of the returned structure.
+      #
+      # @param [String,Symbol]		attrib_p
       # @param [Any] default
-      # @return [OpenStruct]
+      # @return [OpenStruct] Fields in the structure are:
+      #```
+      #     default:    The default value from this method invocation;
+      #                 default `nil`
+      #     str:        The base attribute name as a String
+      #     attrib:     The base attribute name as a Symbol
+      #     getter:     (Same as :attrib field)
+      #     setter:     The symbolic attribute name with a `=` suffix
+      #     query:      The symbolic attribute name with a `?` suffix
+      #     bang:       The symbolic attribute name with a `!` suffix
+      #     ivar:       The symbolic name for the corresponding
+      #                 instance variable (_e.g._, `:@<attrib_p>`)
+      #```
       def decompose_attrib(attrib_p, default=nil)
         strval		= attrib_p.to_s.sub(%r![^_[:alnum:]]*$!, '')
         pieces		= OpenStruct.new(
@@ -258,9 +346,9 @@ module TAGF
   nil
 end				# module TAGF
 
-require('tagf/classmethods')
+#require('tagf/mixin/classmethods')
 
-TAGF::Mixin::UniversalMethods.extend(TAGF::ClassMethods)
+#TAGF::Mixin::UniversalMethods.extend(TAGF::Mixin::ClassMethods)
 
 # Local Variables:
 # mode: ruby

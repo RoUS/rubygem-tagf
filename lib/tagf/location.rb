@@ -27,6 +27,9 @@ module TAGF
   class Location
 
     #
+    include(Mixin::UniversalMethods)
+    extend(Mixin::UniversalMethods)
+    extend(Mixin::DTypes)
     include(Mixin::Location)
 
     #
@@ -49,6 +52,9 @@ module TAGF
   class Connexion
 
     #
+    include(Mixin::UniversalMethods)
+    extend(Mixin::UniversalMethods)
+    extend(Mixin::DTypes)
     include(Mixin::Element)
 
     #

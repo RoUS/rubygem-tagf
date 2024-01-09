@@ -29,6 +29,9 @@ module TAGF
     # @!macro doc.TAGF.Mixin.Container.module
     module Container
 
+      include(Mixin::UniversalMethods)
+      extend(Mixin::UniversalMethods)
+      extend(Mixin::DTypes)
       #
       # All Containers are Elements.
       #

@@ -165,8 +165,8 @@ end
 #require('tagf/debugging')
 #require('tagf')
 TAGF.include(TAGF::Mixin::Debugging)
-require('tagf/classmethods')
-TAGF::Mixin::Debugging.extend(TAGF::ClassMethods)
+require('tagf/mixin/classmethods')
+TAGF::Mixin::Debugging.extend(TAGF::Mixin::ClassMethods)
 
 # Local Variables:
 # mode: ruby

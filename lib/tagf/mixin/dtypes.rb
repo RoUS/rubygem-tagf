@@ -144,10 +144,7 @@ module TAGF
       alias_method(:float_reader, :float_accessor)
       alias_method(:float_writer, :float_accessor)
 
-      # @param [Array]			args		([])
-      # @param [Hash<Symbol=>Object>]	kwargs		({})
-      # @option kwargs [Boolean]	:opened		(true)
-      # @return [void]
+      # @!macro doc.TAGF.classmethod.file_accessor.declare
       def file_accessor(*args, **kwargs)
         attrmethod	= __method__.to_s
         kwargs		= _inivaluate_args(nil, *args, **kwargs)

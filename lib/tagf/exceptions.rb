@@ -17,7 +17,8 @@
 
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+#require('tagf')
+require_relative('mixin/dtypes')
 require_relative('mixin/universal')
 
 # @!macro doc.TAGF.module
@@ -33,7 +34,7 @@ module TAGF
     class ErrorBase < StandardError
 
       #
-      extend(TAGF::ClassMethods)
+      extend(TAGF::Mixin::DTypes)
 
       #
       include(TAGF::Mixin::UniversalMethods)
@@ -62,7 +63,7 @@ module TAGF
     module InventoryLimitExceeded
 
       #
-      extend(TAGF::ClassMethods)
+      extend(TAGF::Mixin::DTypes)
 
       #
       include(TAGF::Mixin::UniversalMethods)

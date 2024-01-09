@@ -33,34 +33,17 @@ require('set')
 # @!macro doc.TAGF.module
 module TAGF
 
-=begin
+  # Dummy method for debugging before any real methods are defined.
   #
-  include(Contracts::Core)
-=end
-
-  nil
-end                             # module TAGF
-
-
-#
-# Start requiring the different files comprising the package.
-#
-require('tagf/debugging')
-
-warn(__FILE__) if (TAGF.debugging?(:file))
-
-require('tagf/mixin/universal')
-require('tagf/classmethods')
-require('tagf/exceptions')
-
-# @!macro doc.TAGF.module
-module TAGF
-
-  #
-  # Extend the top-level module's eigenclass with methods universal to
-  # the entire package (such as access to game options, *&c.*
-  #
-  extend(PackageClassMethods)
+  # @param [Array]		args		([])
+  #   Dummy argument.
+  # @param [Hash]		kwargs		({})
+  #   Dummy hash of keyword arguments.
+  # @return [Boolean]		false
+  def debugging?(*args, **kwargs)
+    return false
+  end                           # def debugging?(*args, **kwargs)
+  module_function(:debugging?)
 
   nil
 end                             # module TAGF
@@ -71,8 +54,7 @@ end                             # module TAGF
 # exception module, since any problems will be reported using our
 # specific exceptions.
 #
-require('tagf/version')
-require('tagf/exceptions')
+require_relative('tagf/version')
 
 unless ((RUBY_ENGINE == 'ruby') \
         && (RUBY_VERSION >= ::TAGF::RUBY_VERSION_MIN))
@@ -82,46 +64,76 @@ unless ((RUBY_ENGINE == 'ruby') \
   exit(1)
 end                             # Ruby version check
 
-#require('tagf/mixin/events')
 
 #
-# Now let's actually flesh out the top-level namespace.
+# Start requiring the different files comprising the package.
 #
+#require('tagf/debugging')
+
+#warn(__FILE__) if (TAGF.debugging?(:file))
+
+#
+# Something we use for debugging.
+#
+require('binding_of_caller')
+
+
+#
+# Pull in all the mixin module definitions first.
+#
+require_relative('tagf/mixin/actor')
+require_relative('tagf/mixin/container')
+#require_relative('tagf/mixin/debugging')
+require_relative('tagf/mixin/element')
+require_relative('tagf/mixin/events')
+require_relative('tagf/mixin/location')
+require_relative('tagf/mixin/universal')
+
+#
+# Now the 'top-level' modules.
+#
+require_relative('tagf/classmethods')
+require_relative('tagf/cli')
+require_relative('tagf/container')
+#require_relative('tagf/debugging')
+require_relative('tagf/exceptions')
+require_relative('tagf/faction')
+require_relative('tagf/feature')
+require_relative('tagf/game')
+require_relative('tagf/inventory')
+require_relative('tagf/item')
+require_relative('tagf/location')
+require_relative('tagf/npc')
+require_relative('tagf/player')
+require_relative('tagf/reality')
+require_relative('tagf/ui')
+require_relative('tagf/version')
 
 # @!macro doc.TAGF.module
 module TAGF
 
   #
-  include(Mixin::UniversalMethods)
-
-  #
-  extend(ClassMethods)
-
+  # And now to complete the configuration of the top-level namespace
+  # module..
   #
   include(Contracts::Core)
+  include(Mixin::UniversalMethods)
+  extend(Mixin::UniversalMethods)
+  extend(ClassMethods)
+  #
+  # ..and the mostly-universal ancillary modules.
+  #
+  ClassMethods.include(Mixin::UniversalMethods)
+  UniversalMethods.extend(ClassMethods)
 
   #
-  include(Mixin::Events)
+  # Extend the top-level module's eigenclass with methods universal to
+  # the entire package (such as access to game options, *&c.*
+  #
+  extend(PackageClassMethods)
 
   nil
 end                             # module TAGF
-
-require('binding_of_caller')
-require('tagf/exceptions')
-require('tagf/mixin/element')
-require('tagf/inventory')
-require('tagf/mixin/container')
-require('tagf/container')
-require('tagf/item')
-require('tagf/ui')
-require('tagf/mixin/location')
-require('tagf/location')
-require('tagf/feature')
-require('tagf/game')
-require('tagf/mixin/actor')
-require('tagf/faction')
-require('tagf/player')
-require('tagf/npc')
 
 Linguistics.use(:en)
 

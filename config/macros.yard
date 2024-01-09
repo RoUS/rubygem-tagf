@@ -27,13 +27,20 @@
 #   additional attribute declaration methods) for anything that
 #   extends the TAGF module into its singleton class.
 
-# @!macro [new] doc.TAGF.ClassMethods.module
+# @!macro [new] doc.TAGF.Mixin.ClassMethods.module
 #   Define class methods and constants that will be added to all
 #   modules and classes in the TAF namespace.  These definitions live
 #   in the modules' and class' eigenclasses (<em>a.k.a.</em>
 #   'singleton classes').  Things like the `extended` and `included`
 #   metamethods live in the eigenclass, and class-level methods like
 #   `attr_accessor` are defined in the eigenclass as well.
+#
+
+# @!macro [new] doc.TAGF.Mixin.DTypes.module
+#   Define attribute-accessor class methods that perform things like
+#   datatype validation on set.  These definitions live
+#   in the modules' and class' eigenclasses (<em>a.k.a.</em>
+#   'singleton classes').
 #
 
 # @!macro [new] doc.TAGF.Exceptions.module
@@ -114,10 +121,11 @@
 #     the method.
 
 # @!macro [new] doc.TAGF.module.classmethod.extended
-#   Method invoked whenever this module is included as a mixin.  It
-#   is passed the class (or module) object that is including it.  We
-#   extend the caller's eigenclass with the {ClassMethods} module,
-#   which adds various class methods (like {TAGF::ClassMethods#flag}).
+#   Method invoked whenever this module is included as a mixin.  It is
+#   passed the class (or module) object that is including it.  We
+#   extend the caller's eigenclass with the {Mixin::ClassMethods}
+#   module, which adds various class methods (like
+#   {TAGF::Mixin::DType#flag}).
 #
 #   @param [Class,Module] klass
 #     Object whose eigenclass is being extended by this module.
@@ -132,6 +140,72 @@
 #   @param [Class,Module] klass
 #     Object that is including this module as a mixin.
 #   @return [void]
+
+# @!macro [new] doc.TAGF.classmethod.file_accessor.declare
+#   @!method [rw] $0(*args, **kwargs)
+#   Declares the specified symbols as accessors for file I/O streams.
+#   By default, two (2) methods are defined, for each symbol:
+#
+#    * <em>`symbol`</em> --
+#      returns the current attribute value.
+#    * <em>`symbol=`(value)</em> --
+#      sets the attribute to the 'truthy' interpretation of the
+#      argument <em>value</em>.
+#
+#   @note
+#     Similar to `attr_accessor`, there are alias names for
+#     `file_accessor`:
+#     * `file_reader` — Only the <b>`getter`</b> method is defined.
+#     * `file_writer` — Only the <b>`setter`</b> method is defined.
+#
+#   @todo
+#     Document correctly; consider
+#```
+# @param [Array]			args		([])
+# @param [Hash<Symbol=>Object>]	kwargs		({})
+# @option kwargs [Boolean]	:opened		(true)
+# @return [void]
+#```
+#
+#   @param [Array<Symbol>] args
+#     Identifiers for the flag attributes to be declared.
+#   @param [Hash{Symbol=>Object}] kwargs
+#     Hash of keyword arguments; see below.
+#     <strong>This is actually WRONG!</strong>
+#   @todo
+#     Make the use of the kwargs parameter more clear in the code
+#     and fix the docco here.
+#   @option kwargs [Symbol] :default
+#     Meh.
+#   @return [void]
+#
+
+# @!macro [new] doc.TAGF.classmethod.file_accessor.invoke
+#   @!attribute [rw] $1 (nil)
+#   @overload $1 (nil)
+#     Access the current value of the `$1` attribute, which is
+#     always either `nil` or an IO object.  It will have no
+#     other types of values.  If it has never been read before,
+#     the first access will pre-set it to the initial value (if
+#     any) specified when the attribute was declared with `$0`.
+#     If the declaration didn't specify an initial value, `false`
+#     is used by default.
+#     Return the current value of the `$1` attribute, which is
+#     always either `true` or `false`.  It will have no other
+#     values.
+#
+#     @return [IO,nil]
+#       the current valu of the attribute, either `nil` or an IO
+#       object.
+#
+#   @overload $1=(value)
+#     Sets the `$1` attribute to either `nil` or an IO object
+#     instance.
+#     @param [Object] value
+#     @raise [TypeError]
+#       if the value is anything other than `nil` or an IO object.
+#     @return [Object]
+#       the value of `value` that was passed.
 
 # @!macro [new] doc.TAGF.classmethod.flag.declare
 #   @!method [rw] $0(*args, **kwargs)

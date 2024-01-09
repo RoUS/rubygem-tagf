@@ -28,11 +28,12 @@ module TAGF
     # @!macro doc.TAGF.Mixin.Location.module
     module Location
 
+      include(Mixin::UniversalMethods)
+      extend(Mixin::UniversalMethods)
+      extend(Mixin::DTypes)
+
       # @!macro doc.TAGF.Mixin.module.eigenclass Location
       class << self
-
-        #
-        include(ClassMethods)
 
         # @!macro doc.TAGF.module.classmethod.included
         def included(klass)

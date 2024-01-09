@@ -15,6 +15,7 @@
 #++
 # frozen_string_literal: true
 
+require('contracts')
 if ((! Kernel.const_defined?('TAGF')) \
     || (! TAGF.ancestors.include?(Contracts::Core)))
   require('tagf')
@@ -28,7 +29,7 @@ module TAGF
 =begin
     UNIVERSAL_MODULES	= [
       Contracts::Core,
-      TAGF::ClassMethods,
+      TAGF::Mixin::ClassMethods,
       TAGF::Exceptions,
     ]
 =end

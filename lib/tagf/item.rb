@@ -27,6 +27,8 @@ module TAGF
   class Item
     
     #
+    include(Mixin::UniversalMethods)
+    extend(Mixin::UniversalMethods)
     include(Mixin::Element)
 
     #
