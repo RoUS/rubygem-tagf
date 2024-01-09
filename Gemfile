@@ -49,7 +49,7 @@ group(:default, :development, :test) do
   gem('linguistics')
   gem('ostruct',	'>= 0.5.5')
   gem('psych')
-  gem('rb-readline')
+  gem('readline')
   gem('tagf',
       path:		'.')
   gem('thor')
