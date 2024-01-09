@@ -1,6 +1,5 @@
 %YAML 1.1
 ---
----
 :locations:
   2:
     :eid:
@@ -962,6 +961,7 @@
     - road
     :flags:
     - :motion
+    - :location
   3:
     :keywords:
     - enter
@@ -974,11 +974,13 @@
     - downstream
     :flags:
     - :motion
+    - :location
   6:
     :keywords:
     - forest
     :flags:
     - :motion
+    - :location
   7:
     :keywords:
     - forward
@@ -998,11 +1000,13 @@
     - valley
     :flags:
     - :motion
+    - :location
   10:
     :keywords:
     - stair
     :flags:
     - :motion
+    - :location
   11:
     :keywords:
     - out
@@ -1018,36 +1022,43 @@
     - house
     :flags:
     - :motion
+    - :location
   13:
     :keywords:
     - gully
     :flags:
     - :motion
+    - :location
   14:
     :keywords:
     - stream
     :flags:
     - :motion
+    - :location
   15:
     :keywords:
     - rock
     :flags:
     - :motion
+    - :location
   16:
     :keywords:
     - bed
     :flags:
     - :motion
+    - :location
   17:
     :keywords:
     - crawlway
     :flags:
     - :motion
+    - :location
   18:
     :keywords:
     - cobble
     :flags:
     - :motion
+    - :location
   19:
     :keywords:
     - inward
@@ -1060,6 +1071,7 @@
     - surface
     :flags:
     - :motion
+    - :location
   21:
     :keywords:
     - 'null'
@@ -1071,26 +1083,31 @@
     - dark
     :flags:
     - :motion
+    - :location
   23:
     :keywords:
     - passage
     :flags:
     - :motion
+    - :location
   24:
     :keywords:
     - low
     :flags:
     - :motion
+    - :location
   25:
     :keywords:
     - canyon
     :flags:
     - :motion
+    - :location
   26:
     :keywords:
     - awkward
     :flags:
     - :motion
+    - :location
   29:
     :keywords:
     - upward
@@ -1099,6 +1116,7 @@
     - above
     :flags:
     - :motion
+    - :direction
   30:
     :keywords:
     - d
@@ -1106,6 +1124,7 @@
     - down
     :flags:
     - :motion
+    - :direction
   31:
     :keywords:
     - pit
@@ -1136,11 +1155,13 @@
     - left
     :flags:
     - :motion
+    - :direction
   37:
     :keywords:
     - right
     :flags:
     - :motion
+    - :direction
   38:
     :keywords:
     - hall
@@ -1172,6 +1193,7 @@
     - e
     :flags:
     - :motion
+    - :direction
   44:
     :keywords:
     - West
@@ -1184,12 +1206,14 @@
     - n
     :flags:
     - :motion
+    - :direction
   46:
     :keywords:
     - South
     - s
     :flags:
     - :motion
+    - :direction
   47:
     :keywords:
     - slit
@@ -1264,6 +1288,7 @@
     - ne
     :flags:
     - :motion
+    - :direction
   61:
     :keywords:
     - slab
@@ -1276,18 +1301,21 @@
     - se
     :flags:
     - :motion
+    - :direction
   63:
     :keywords:
     - SouthWest
     - sw
     :flags:
     - :motion
+    - :direction
   64:
     :keywords:
     - NorthWest
     - nw
     :flags:
     - :motion
+    - :direction
   65:
     :keywords:
     - plugh
@@ -1370,7 +1398,7 @@
     :keywords:
     - fissure
     :flags:
-    - :item
+    - :location
   1013:
     :keywords:
     - diamond
@@ -1450,7 +1478,8 @@
     - find
     - where
     - get
-    :flags: []
+    :flags:
+    - :action
   2002:
     :keywords:
     - release
@@ -1458,7 +1487,8 @@
     - discard
     - drop
     - dump
-    :flags: []
+    :flags:
+    - :action
   2003:
     :keywords:
     - dummy
@@ -1468,7 +1498,8 @@
     - unlock
     - open
     - lift
-    :flags: []
+    :flags:
+    - :action
   2005:
     :keywords:
     - nothing
@@ -1478,21 +1509,25 @@
     :keywords:
     - lock
     - close
-    :flags: []
+    :flags:
+    - :action
   2007:
     :keywords:
     - light
     - 'on'
-    :flags: []
+    :flags:
+    - :action
   2008:
     :keywords:
     - extinguish
     - 'off'
-    :flags: []
+    :flags:
+    - :action
   2009:
     :keywords:
     - strike
-    :flags: []
+    :flags:
+    - :action
   2010:
     :keywords:
     - calm
@@ -1500,7 +1535,8 @@
     - shake
     - sing
     - cleave
-    :flags: []
+    :flags:
+    - :action
   2011:
     :keywords:
     - walk
@@ -1512,7 +1548,8 @@
     - explore
     - goto
     - follow
-    :flags: []
+    :flags:
+    - :motion
   2012:
     :keywords:
     - attack
@@ -1520,19 +1557,23 @@
     - stab
     - fight
     - hit
-    :flags: []
+    :flags:
+    - :action
   2013:
     :keywords:
     - pour
-    :flags: []
+    :flags:
+    - :action
   2014:
     :keywords:
     - eat
-    :flags: []
+    :flags:
+    - :action
   2015:
     :keywords:
     - drink
-    :flags: []
+    :flags:
+    - :action
   2016:
     :keywords:
     - rub
@@ -1624,7 +1665,7 @@
     :eid:
     :enum: 1
     :text: |-
-      Somewhere nearby is colossal cave, where others have found
+      Somewhere nearby is Colossal Cave, where others have found
       fortunes in treasure and gold, though it is rumored
       that some who enter are never seen again.  Magic is said
       to work in the cave.  I will be your eyes and hands.  Direct
