@@ -1,0 +1,121 @@
+%YAML 1.1
+---
+_defs:
+  directions:
+    up:
+      alii:
+        - above
+    in: {}
+    out: {}
+  locations:
+    road: {}
+    upstream: {}
+    downstream: {}
+    forest: {}
+    valley: {}
+    stair: {}
+    forward:
+      alii:
+        - continue
+verbs:
+  back:
+    alii:
+      - retreat
+      - return
+  continue:
+    alii:
+      - again
+      - onward
+    rewrite: repeat
+  enter:
+    rewrite: "go in"
+#
+# Motion:
+#
+#  1.	[go [to]] <location>
+#  2.	[go] <direction>
+#  3.	[go] back
+  go:
+nouns: {}
+prepositions: {}
+  game_commands: &game_commands
+    exit:
+      type: imperative
+      action: game.quit
+      alii:
+      - quit
+      - q
+  direction_verbs: &direction_verbs
+    random:
+      type: move
+      alii:
+      - random_walk
+      - random-walk
+    north:
+      type: move
+      alii:
+      - n
+    northeast:
+      type: move
+      alii:
+      - ne
+    east:
+      type: move
+      alii:
+      - e
+    southeast:
+      type: move
+      alii:
+      - se
+    south:
+      type: move
+      alii:
+      - s
+    southwest:
+      type: move
+      alii:
+      - sw
+    west:
+      type: move
+      alii:
+      - w
+    northwest:
+      type: move
+      alii:
+      - nw
+    up:
+      type: move
+      alii: []
+    down:
+      type: move
+      alii: []
+
+verbs:
+  <<: *game_commands
+  <<: *direction_verbs
+  get:
+    type: inventory
+    alii:
+    - g
+    - take
+  drop:
+    type: inventory
+    alii: []
+  inventory:
+    type: report
+    action: self.inventory
+    alii:
+    - i
+  l:
+    type: report
+    action: player.glance_around
+  look:
+    type: report
+    action: player.look_around
+    alii: []
+
+
+# Local Variables:
+# mode: yaml
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:
