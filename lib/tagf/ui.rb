@@ -22,9 +22,10 @@ require('contracts')
 #require_relative('classmethods')
 require_relative('mixin/dtypes')
 require_relative('mixin/universal')
+require('forwardable')
 require('ostruct')
-require('readline')
 require('shellwords')
+require('singleton')
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -32,8 +33,7 @@ module TAGF
   # @!macro doc.TAGF.UI.module
   module UI
 
-#    include(Mixin::UniversalMethods)
-#    extend(Mixin::UniversalMethods)
+    include(Mixin::UniversalMethods)
     extend(Mixin::DTypes)
 
     #
@@ -50,38 +50,85 @@ module TAGF
     # Bits of this are unashamedly cadged from the IRB source — with
     # ignorance aforethought.
     # @!macro doc.TAGF.UI.InputMethod.module
-    module InputMethod
+    class InputMethod
 
       extend(Mixin::DTypes)
+      extend(Forwardable)
 
-      file_accessor(:stdin)
+      attr_reader(:pathname)
+      attr_reader(:context)
+      def_delegator(:@context, :stdin)
+      def_delegator(:@context, :stdout)
 
-      def initialize(context, *args, **kwargs)
-        @context	= context
+      # Reads the next line from this input method.
+      #
+      # See IO#gets for more information.
+      def gets
+        fail(NotImplementedError, 'abstract gets method')
+      end                       # def gets
+      public(:gets)
+
+      def winsize
+        outstream	= self.context.stdout
+        if (outstream.respond_to?(:tty?) && outstream.tty?)
+          result	= outstream.winsize
+        else
+          result	= [24, 80]
+        end
+        return result
+      end                       # def winsize
+
+      # Whether this input method is still readable when there is no
+      # more data to read.
+      #
+      # See IO#eof for more information.
+      def readable_after_eof?
+        false
+      end                       # def readable_after_eof?
+
+      # For debugging message; describe this particular class.
+      def inspect
+        return 'Abstract InputMethod'
+      end                       # def inspect
+
+
+      # Constructor for input method objects.
+      #
+      # @param	       [Array]	   	args		([])
+      # @param	       [Array]		kwargs		({})
+      # @option kwargs [Context]	:context
+      #   <b>REQUIRED.</b>
+      #   Interface context to use.  Contains relevant details such as
+      #   the current prompt, whether to echo input, <em>&c.</em>
+      # @option kwargs [String,IO]	:stdin		($stdin)
+      # @option kwargs [String,nil]	:pathname	(nil)
+      #   String to use when rendering the stream's path for human
+      #   consumption.
+      def initialize(*args, **kwargs)
+        context		= kwargs[:context]
         unless (context.kind_of?(Context))
           raise(TypeError,
                 format('%s.new requires a UI::Context object as ' \
-                       + 'its first argument',
+                       + 'for the :context keyword',
                        self.class.name))
         end
         @context	= context
-        self.stdin	= kwargs[:stdin] || $stdin
+        @pathname	= kwargs[:pathname]
       end                       # def initialize(*args, **kwargs)
 
       nil
-    end                         # module InputMethod
+    end                         # class InputMethod
 
     #
     class Context
 
       extend(Mixin::DTypes)
-#      include(InputMethod)
 
       # Instance of the class that will be used to read from the input
       # stream.
       attr_accessor(:inputmethod)
 
-      # @!macro doc.TAGF.classmethod.file_accessor.invoke
+      # @!macro [attach] doc.TAGF.classmethod.file_accessor.invoke
       file_accessor(:stdin	=> $stdin)
 
       # @!macro doc.TAGF.classmethod.file_accessor.invoke
@@ -97,7 +144,7 @@ module TAGF
       # (<em>i.e.</em>, the input method is ViaFile), such echoing
       # must be done manually.
       #
-      # @!macro doc.TAGF.classmethod.flag.invoke
+      # @!macro [attach] doc.TAGF.classmethod.flag.invoke
       flag(echo:	true)
 
       # Boolean flag indicating whether input lines should be checked
@@ -116,52 +163,64 @@ module TAGF
       # @!macro doc.TAGF.classmethod.flag.invoke
       flag(in_heredoc:	false)
 
-      # Array of prompts used when requesting input.  New ones are
-      # pushed when read context changes (such as reading lines of a
-      # here-doc), and popped when that reverts.
-      attr_reader(:prompts)
+      # Prompts used when requesting input in this context.  New ones
+      # are pushed when read context changes (such as reading lines of
+      # a here-doc), and popped when that reverts.
+      attr_reader(:prompt)
 
       # Array of input lines stored as history.  New lines are pushed
       # on the end.
       attr_reader(:history)
 
-      # Valid keywords in the constructor's `kwargs` hash argument.
-      KWSYMS		= %i[
-                             echo
-                             allow_heredoc
-                             in_heredoc
-                             prompts
-                             history
-                             stdin
-                             stdout
-                             stderr
-                            ]
+      # Standard set of word-break characters for completion.
+      DEFAULT_WORD_BREAK_CHARS = " \t\n`><=;|&{("
 
-      def _loadvars(*args, **kwargs)
-        @prompts	= [ *(kwargs[:prompts] || '> ') ]
-        @history	= kwargs[:history] || []
-        self.stdin	= kwargs[:stdin]   || $stdin
-        self.stdout	= kwargs[:stdout]  || $stdout
-        self.stderr	= kwargs[:stderr]  || $stderr
-        if (self.stdin.tty?)
-          self.inputmethod = ViaReadline.new(stdin: @stdin)
-        else
-          self.inputmethod = ViaFile.new(stdin: @stdin)
-        end
-        return nil
-      end                       # def _loadvars(*args, **kwargs)
-      protected(:_loadvars)
+      # Valid keywords in the constructor's `kwargs` hash argument.
+      KWSYMS		= {
+        echo:			true,
+        allow_heredoc:		true,
+        in_heredoc:		false,
+        prompt:			'> ',
+        history:		[],
+        file:			nil,
+        pathname:		nil,
+        stdin:			$stdin,
+        stdout:			$stdout,
+        stderr:			$stderr,
+      }
 
       #
       def initialize(*args, **kwargs)
-        self._loadvars(*args, **kwargs)
+        settings	= KWSYMS.merge(kwargs)
+        settings.each do |kw,val|
+          kivar		= format('@%s', kw.to_s).to_sym
+          ksetter	= format('%s=', kw.to_s).to_sym
+          if (self.respond_to?(ksetter))
+            self.send(ksetter, val)
+          else
+            self.instance_variable_set(kivar, val)
+          end
+        end
+        settings[:context] = self
+        if (settings[:file])
+          self.inputmethod = ViaFile.new(**settings)
+        elsif (self.stdin.tty?)
+          self.inputmethod = ViaReadline.new(**settings)
+        else
+          raise(RuntimeError, "can't determine input type")
+        end
       end                       # def initialize(*args, **kwargs)
+
+      #
+      def gets
+        return self.inputmethod.gets
+      end                       # def gets
 
       def clone(*args, **kwargs)
         #
         # Hash up the settings of the current context.
         #
-        ckwargs		= KWSYMS.inject({}) { |memo,kwsym|
+        ckwargs		= KWSYMS.keys.inject({}) { |memo,kwsym|
           kwivar	= format('@%s', kwsym.to_s).to_sym
           memo[kwsym]	= self.instance_variable_get(kwivar)
           memo
@@ -175,101 +234,243 @@ module TAGF
     end                         # class Context
 
     # Class defining the input method to read input from a file.
-    class ViaFile
+    class ViaFile < InputMethod
 
-      extend(Mixin::DTypes)
-      include(InputMethod)
+      class << self
+        def open(file, &block)
+          begin
+            io		= new(file)
+            block.call(io)
+          ensure
+            io&.close
+          end
+        end                     # def open(file, &block)
+
+        nil
+      end                       # class ViaFile eigenclass
+
+      # The file name of this input method, usually given during
+      # initialization.
+      attr_reader(:file_name)
+
+      # Creates a new ViaFile input method object, for reading input
+      # from a non-terminal file-like source.
+      def initialize(*args, **kwargs)
+        debugger
+        super
+        file		= kwargs[:file]
+        unless (file.kind_of?(String) || file.kind_of?(IO))
+          raise(RuntimeError,
+                format('%s constructor requires a file: keyword ' \
+                       'specifying a filename or IO stream',
+                       self.class.name))
+        end
+        @pathname	||= kwargs[:pathname] || file
+        @io		= (file.is_a?(IO) \
+                           ? file \
+                           : File.open(file, 'r'))
+        @external_encoding = @io.external_encoding
+      end                       # def initialize(file, *args, **kwargs)
+
+      # Whether the end of this input method has been reached, returns
+      # `true` if there is no more data to read.
+      #
+      # See IO#eof? for more information.
+      def eof?
+        return @io.closed? || @io.eof?
+      end                       # def eof?
+
+      # Reads the next line from this input method.
+      #
+      # See IO#gets for more information.
+      def gets
+        self.stdout.print(self.context.prompt)
+        return @io.gets
+      end                       # def gets
+      public(:gets)
+
+      # The external encoding for standard input.
+      def encoding
+        return @external_encoding
+      end                       # def encoding
+
+      # For debug message
+      def inspect
+        return format('%s file=%s',
+                      __method__.to_s,
+                      self.file_name)
+      end                       # def inspect
+
+      def close
+        return @io.close
+      end                       # def close
 
       nil
     end                         # class ViaFile
 
+
     # Class defining the input method to read from a terminal using
     # the Readline gem.
-    class ViaReadline
-      
-      extend(Mixin::DTypes)
-      include(InputMethod)
+    class ViaReadline < InputMethod
+
+      # Require and initialise the Readline package, but keep it
+      # local to this input method.
+      # @return [void]
+      def self.initialize_readline
+        begin
+          require('readline')
+        rescue LoadError
+        else
+          include(::Readline)
+        end
+        return nil
+      end                       # def self.initialize_readline
+
+      # Creates a new input method object using Readline
+      def initialize(*args, **kwargs)
+        self.class.initialize_readline
+=begin
+          if (Readline.respond_to?(:encoding_system_needs))
+            IRB.__send__(:set_encoding,
+                         Readline.encoding_system_needs.name,
+                         override: false)
+          end
+=end
+        super
+        debugger
+        @line_no	= 0
+        @line		= []
+        @eof		= false
+
+=begin
+          @stdin	= IO.open(STDIN.to_i,
+                                  :external_encoding => IRB.conf[:LC_MESSAGES].encoding,
+                                  :internal_encoding => '-')
+          @stdout	= IO.open(STDOUT.to_i,
+                                  'w',
+                                  :external_encoding => IRB.conf[:LC_MESSAGES].encoding,
+                                  :internal_encoding => '-')
+=end
+        if (Readline.respond_to?(:basic_word_break_characters=))
+          Readline.basic_word_break_characters = Context::DEFAULT_WORD_BREAK_CHARS
+        end
+        Readline.completion_append_character = nil
+=begin
+          Readline.completion_proc =
+          IRB::InputCompletor::CompletionProc
+=end
+      end                       # def initialize(*args, **kwargs)
+
+      # Reads the next line from this input method.
+      #
+      # See IO#gets for more information.
+      def gets
+        Readline.input	= self.stdin
+        Readline.output	= self.stdout
+        if (l = readline(self..prompt, false))
+          HISTORY.push(l) unless (l.empty?)
+          @line[@line_no += 1] = l + "\n"
+        else
+          @eof		= true
+          l
+        end
+      end                       # def gets
+      public(:gets)
+
+      # Whether the end of this input method has been reached, returns
+      # `true` if there is no more data to read.
+      #
+      # See IO#eof? for more information.
+      def eof?
+        return @@eof
+      end                       # def eof?
+
+      # Whether this input method is still readable when there is no
+      # more data to read.
+      #
+      # See IO#eof for more information.
+      def readable_after_eof?
+        return true
+      end                       # def readable_after_eof?
+
+      # Returns the current line number for #io.
+      #
+      # #line counts the number of times #gets is called.
+      #
+      # See IO#lineno for more information.
+      def line(line_no)
+        return @line[line_no]
+      end                       # def line(line_no)
+
+      # The external encoding for standard input.
+      def encoding
+        return @context.stdin.external_encoding
+      end                       # def encoding
+
+      # For debug message
+      def inspect
+        readline_impl	= (defined?(Reline) && Readline == Reline) \
+                          ? 'Reline' \
+                          : 'ext/readline'
+        str		= format('%s with %s %s',
+                                 self.class.name.sub(%r!^.*::!, ''),
+                                 readline_impl,
+                                 Readline::VERSION)
+        inputrc_path	= File.expand_path(ENV['INPUTRC'] \
+                                           || '~/.inputrc')
+        if (File.exist?(inputrc_path))
+          str		+= format(' and %s', inputrc_path)
+        end
+        return str
+      end                       # def inspect
 
       nil
-    end                         # class ViaReadline
+    end                         # class ViaReadline < InputMethod
 
     # Class defining the environment for interfacing with the user.
     # Each time there is some sort of transition, such as to a
     # different command syntax tree, a new instantiation should be
     # created and pushed.  When the transition completes, the
     # environment should be popped back.
-    class Plex
+    class Interface
 
       extend(Mixin::DTypes)
       include(Mixin::UniversalMethods)
-      extend(Mixin::UniversalMethods)
 
-      class << self
+      attr_reader(:contexts)
 
-        attr_accessor(:plexim)
-        protected(:plexim, :plexim=)
-        attr_accessor(:instream)
-        protected(:instream=)
-        attr_accessor(:outstream)
-        protected(:outstream=)
-        attr_accessor(:errstream)
-        protected(:errstream=)
+      # Return the 'current' context object; that is, the most recent
+      # one pushed on the stack.
+      # @return [Context]
+      def context
+        return self.contexts.last
+      end                       # def context
 
-        #
-        def push(*args, **kwargs)
-          @plexs	||= []
-        end                     # def push(*args, **kwargs)
+      #
+      def push_context(*args, **kwargs)
+        if (@contexts.empty?)
+          new_ctx	= Context.new(*args, **kwargs)
+        else
+          new_ctx	= @contexts.last.clone(*args, **kwargs)
+        end
+        return @contexts.push(new_ctx).last
+      end                       # def push_context(*args, **kwargs)
 
-        #
-        def pop(*args, **kwargs)
-          @plexs	||= []
-          if (@plexs.empty?)
-            raise_exception(Exceptions::IfaceStackEmpty)
-          end
-          return @plexs.pop
-        end                     # def pop(*args, **kwargs)
-
-      end                       # class Plex eigenclass
+      #
+      def pop_context
+        @contexts.pop
+        if (@contacts.empty?)
+          raise_exception(Exceptions::IfaceStackEmpty)
+        end
+        return self.context
+      end                       # def pop_context
 
       attr_accessor(:prompts)
       protected(:prompts=)
 
-      #
-      attr_reader(:instream)
-      def instream=(val)
-        debugger
-        unless (val.kind_of?(IO) && (! val.closed?))
-          raise(RuntimeError,
-                format('input stream %s invalid or not open',
-                       val.inspect))
-        end
-        @instream	= val
-      end                       # def instream=(val)
-      
-      #
-      attr_reader(:outstream)
-      def outstream=(val)
-        unless (val.kind_of?(IO) && (! val.closed?))
-          raise(RuntimeError,
-                format('output stream %s invalid or not open',
-                       val.inspect))
-        end
-        @outstream	= val
-      end                       # def outstream=(val)
-      
-      #
-      attr_reader(:errstream)
-      def errstream=(val)
-        unless (val.kind_of?(IO) && (! val.closed?))
-          raise(RuntimeError,
-                format('error stream %s invalid or not open',
-                       val.inspect))
-        end
-        @errstream	= val
-      end                       # def errstream=(val)
-      
-      # Constructor for the Plex class, which is a main part of the
-      # 'user interface' for TAGF.  Its primary purpose is getting
+
+      # Constructor for the Interface class, which is a main part of
+      # the 'user interface' for TAGF.  Its primary purpose is getting
       # input from the user (player), but becoming the main conduit
       # between the code and the Outer World — including displaying
       # output (usually stdout) and reporting errors (stderr) is
@@ -293,23 +494,9 @@ module TAGF
       # @option kwargs [Object]		:cmdtree	(nil)
       # @raise [RuntimeError]
       def initialize(*args, **kwargs)
-        self.prompts	||= []
-        self.prompts.push(kwargs[:prompt] || '> ')
-        self.instream	= kwargs[:instream]  || $stdin
-        self.outstream	= kwargs[:outstream] || $stdout
-        self.errstream	= kwargs[:errstream] || $stderr
-        %i[ echo history allow_heredoc ].each do |kw|
-          next unless (kwargs.has_key?(kw))
-          kwset		= (kw.to_s + '=').to_sym
-          self.send(kwset, kwargs[kw])
-        end
+        debugger
+        @contexts	= []
       end                       # def initialize
-
-      # @param [Array]			args
-      # @param [Hash<Symbol=>Object>]	kwargs
-      def push(*args, **kwargs)
-
-      end                       # def push(*args, **kwargs)
 
       # Method used to check whether a line of input starts a
       # `here-document`.  Primarily intended for use by the
@@ -482,7 +669,7 @@ module TAGF
 
       nil
 
-    end                         # class Plex
+    end                         # class Interface
 
     nil
   end                           # module UI
