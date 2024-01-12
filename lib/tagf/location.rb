@@ -17,7 +17,9 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+require('tagf/mixin/dtypes')
+require('tagf/mixin/location')
+require('tagf/mixin/universal')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -28,7 +30,6 @@ module TAGF
 
     #
     include(Mixin::UniversalMethods)
-    extend(Mixin::UniversalMethods)
     extend(Mixin::DTypes)
     include(Mixin::Location)
 
@@ -53,7 +54,6 @@ module TAGF
 
     #
     include(Mixin::UniversalMethods)
-    extend(Mixin::UniversalMethods)
     extend(Mixin::DTypes)
     include(Mixin::Element)
 

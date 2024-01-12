@@ -5,28 +5,29 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   include TAGF::Exceptions
 
-  DefaultSeverity	= {
-#    LimitItems:			SEVERITY.warning,
+  ExceptionClasses	= {
+    InvalidSeverity:		SEVERITY.warning,
+    LimitItems:			SEVERITY.warning,
     NoLoadFile:			SEVERITY.error,
     BadLoadFile:		SEVERITY.severe,
     NotExceptionClass:		SEVERITY.error,
-#    NotGameElement:		SEVERITY.severe,
-#    NoObjectOwner:		SEVERITY.severe,
-#    KeyObjectMismatch:		SEVERITY.severe,
-#    NoGameContext:		SEVERITY.severe,
-#    SettingLocked:		SEVERITY.warning,
-#    ImmovableObject:		SEVERITY.error,
-#    NotAContainer:		SEVERITY.error,
-#    AliasRedefinition:		SEVERITY.warning,
-#    UnscrewingInscrutable:	SEVERITY.error,
-#    MasterInventory:		SEVERITY.error,
-#    HasNoInventory:		SEVERITY.error,
-#    AlreadyHasInventory:	SEVERITY.warning,
-#    AlreadyInInventory:		SEVERITY.warning,
-#    ImmovableElementDestinationError: SEVERITY.error,
-#    DuplicateObject:		SEVERITY.error,
-#    DuplicateItem:		SEVERITY.error,
-#    DuplicateLocation:		SEVERITY.error,
+    NotGameElement:		SEVERITY.severe,
+    NoObjectOwner:		SEVERITY.severe,
+    KeyObjectMismatch:		SEVERITY.severe,
+    NoGameContext:		SEVERITY.severe,
+    SettingLocked:		SEVERITY.warning,
+    ImmovableObject:		SEVERITY.error,
+    NotAContainer:		SEVERITY.error,
+    AliasRedefinition:		SEVERITY.warning,
+    UnscrewingInscrutable:	SEVERITY.error,
+    MasterInventory:		SEVERITY.error,
+    HasNoInventory:		SEVERITY.error,
+    AlreadyHasInventory:	SEVERITY.warning,
+    AlreadyInInventory:		SEVERITY.warning,
+    ImmovableElementDestinationError: SEVERITY.error,
+    DuplicateObject:		SEVERITY.error,
+    DuplicateItem:		SEVERITY.error,
+    DuplicateLocation:		SEVERITY.error,
   }
 
   def setup
@@ -40,8 +41,22 @@ class Test_Exception_Severities < Test::Unit::TestCase
   # * Test that default class runtime severities match the hardcoded
   #   values 
   def test_class_default_severity
-    DefaultSeverity.each do |exsym,kdefsev|
-      klass_i		= eval(format('%s.new', exsym.to_s))
+    ExceptionClasses.each do |exsym,kdefsev|
+      klass_o		= eval(exsym.to_s)
+      klass_i		= nil
+      msg		= format('Instantiating %s', exsym.to_s)
+      if (%i(LimitItems).include?(exsym))
+        msg		= format('%s; requires %s module',
+                                 msg,
+                                 'Mixin::Element')
+        assert_raises(NoMethodError, msg) do
+          klass_i		= klass_o.new
+        end
+      else
+        assert_nothing_raised(msg) do
+          klass_i		= klass_o.new
+        end
+      end
       assert_equal(klass_i.severity,
                    kdefsev,
                    format('Verifying unmodified default severity ' \
@@ -53,8 +68,21 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   # * Test that changes to the default class severity persist
   def test_class_change_default_severity
-    DefaultSeverity.each do |exsym,kdefsev|
-      klass_i		= eval(format('%s.new', exsym.to_s))
+    ExceptionClasses.each do |exsym,kdefsev|
+      klass_o		= eval(exsym.to_s)
+      klass_i		= nil
+      if (%i(LimitItems).include?(exsym))
+        msg		= format('%s; requires %s module',
+                                 msg,
+                                 'Mixin::Element')
+        assert_raises(NoMethodError, msg) do
+          klass_i		= klass_o.new
+        end
+      else
+        assert_nothing_raised(msg) do
+          klass_i		= klass_o.new
+        end
+      end
       #
       # Pick a different severity level than the default, then set it
       # as the new class default.
@@ -74,6 +102,30 @@ class Test_Exception_Severities < Test::Unit::TestCase
   end                           # def test_class_change_default_severity
 
   # * Test that new instances inherit the class severity
+  def test_instance_inherits_class_default_severity
+    ExceptionClasses.each do |exsym,kdefsev|
+      klass_o		= eval(exsym.to_s)
+      klass_i		= nil
+      if (%i(LimitItems).include?(exsym))
+        msg		= format('%s; requires %s module',
+                                 msg,
+                                 'Mixin::Element')
+        assert_raises(NoMethodError, msg) do
+          klass_i		= klass_o.new
+        end
+      else
+        assert_nothing_raised(msg) do
+          klass_i		= klass_o.new
+        end
+      end
+      assert_equal(klass_i.severity,
+                   klass_o.severity,
+                   format('Verifying %s instances inherit class ' \
+                          'severity',
+                          exsym.to_s))
+    end
+  end                           # def test_instance_inherits_class_default_severity
+
   # * Test that new instances inherit the changed class severity
   # * Test that new instances can have their severity changed w/o
   #   affecting class severity

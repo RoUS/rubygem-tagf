@@ -193,7 +193,9 @@
 
 # @!macro [new] doc.TAGF.classmethod.file_accessor.invoke
 #   @!attribute [rw] $1 (nil)
+#     0="$0" 1="$1" 2="$2" 3="$3" 4="$4" &="$&"
 #   @overload $1 (nil)
+#     0="$0" 1="$1" 2="$2" 3="$3" 4="$4" &="$&"
 #     Access the current value of the `$1` attribute, which is
 #     always either `nil` or an IO object.  It will have no
 #     other types of values.  If it has never been read before,
@@ -220,6 +222,7 @@
 
 # @!macro [new] doc.TAGF.classmethod.flag.declare
 #   @!method [rw] $0(*args, **kwargs)
+#   0="$0" 1="$1" 2="$2" 3="$3" 4="$4" &="$&"
 #   Declares the specified symbols as accessors for Boolean
 #   values.  For each symbol, four (4) methods are defined:
 #
@@ -249,8 +252,10 @@
 #
 
 # @!macro [new] doc.TAGF.classmethod.flag.invoke
-#   @!attribute [rw] $1 (false)
-#   @overload $1 (false)
+#   @!attribute [rw] $1
+#   false 0="$0" 1="$1" 2="$2" 3="$3" 4="$4" &="$&"
+#   @overload $1 (false 0="$0" 1="$1" 2="$2" 3="$3" 4="$4" &="$&")
+#     false 0="$0" 1="$1" 2="$2" 3="$3" 4="$4" &="$&"
 #     Access the current value of the `$1` attribute, which is
 #     always a Boolean, either `true` or `false`.  It will have no
 #     other types of values.  If it has never been read before,
@@ -282,6 +287,12 @@
 
 # @!macro [new] doc.TAGF.classmethod.float_accessor.declare
 #   TBS
+#   @note
+#     Similar to `attr_accessor`, there are alias names for
+#     `float_accessor`:
+#     * `float_reader` — Only the <b>`getter`</b> method is defined.
+#     * `float_writer` — Only the <b>`setter`</b> method is defined.
+#
 
 # @!macro [new] doc.TAGF.classmethod.float_accessor.invoke
 #   @!attribute [rw] $1
@@ -312,6 +323,12 @@
 #       the value to which the attribute was set.
 
 # @!macro [new] doc.TAGF.classmethod.int_accessor.declare
+#   @note
+#     Similar to `attr_accessor`, there are alias names for
+#     `int_accessor`:
+#     * `int_reader` — Only the <b>`getter`</b> method is defined.
+#     * `int_writer` — Only the <b>`setter`</b> method is defined.
+#
 #   TBS
 
 # @!macro [new] doc.TAGF.classmethod.int_accessor.invoke

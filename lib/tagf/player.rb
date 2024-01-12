@@ -19,8 +19,10 @@ require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 if ((! Kernel.const_defined?('TAGF')) \
     || (! TAGF.ancestors.include?(Contracts::Core)))
-  require('tagf')
+#  require('tagf')
 end
+require('tagf/mixin/actor')
+require('tagf/mixin/dtypes')
 require('set')
 require('byebug')
 
@@ -31,6 +33,7 @@ module TAGF
   class Player
 
     #
+    extend(Mixin::DTypes)
     include(Mixin::Actor)
 
     #

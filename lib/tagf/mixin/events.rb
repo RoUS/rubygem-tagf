@@ -17,7 +17,8 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+require('tagf/mixin/dtypes')
+require('tagf/mixin/universal')
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -29,7 +30,8 @@ module TAGF
     module Events
 
       #
-      include(::TAGF::Mixin::UniversalMethods)
+      extend(Mixin::DTypes)
+      include(Mixin::UniversalMethods)
 
       EventList			= {
         EventTurnBegin:		:turn_begin,

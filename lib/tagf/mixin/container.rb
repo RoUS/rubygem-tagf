@@ -17,7 +17,9 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+require('tagf/mixin/dtypes')
+require('tagf/mixin/element')
+require('tagf/mixin/universal')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -30,7 +32,6 @@ module TAGF
     module Container
 
       include(Mixin::UniversalMethods)
-      extend(Mixin::UniversalMethods)
       extend(Mixin::DTypes)
       #
       # All Containers are Elements.

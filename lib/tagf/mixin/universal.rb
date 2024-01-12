@@ -18,6 +18,8 @@
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 
+require('contracts')
+
 #
 # Require the master file unless some of its key definitions have been
 # declared.
@@ -26,6 +28,7 @@ if ((! Kernel.const_defined?('TAGF')) \
     || (! TAGF.ancestors.include?(Contracts::Core)))
 #  require('tagf')
 end
+
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -42,6 +45,34 @@ module TAGF
     # @!macro doc.TAGF.Mixin.UniversalMethods.module
     module UniversalMethods
 
+      class << self
+
+        # Module eigenclass method invoked whenever the module is
+        # `include`d into another class or module.
+        #
+        # As long as the including object is a module or a named Class
+        # object, we'll also extend its eigenclass.  This make sure
+        # anyplace the module is included, so is its eigenclass.
+        # Since this is the UniversalMethods module, this ensures that
+        # its definitions really <em>are</em> universal.
+        #
+        # @param [Class] klass
+        #   The class into which the module is being `include`d.
+        def included(klass)
+          #
+          # If the including object is a module or a named class,
+          # also extend it with our UniversalMethods module.
+          #
+          if (klass.kind_of?(Module) \
+              || (! klass.name.to_s.empty?))
+            klass.extend(UniversalMethods)
+          end
+          return nil
+        end                     # def included(klass)
+
+        nil
+      end                       # class UniversalMethods eigenclass
+      
       #
       include(Contracts::Core)
 

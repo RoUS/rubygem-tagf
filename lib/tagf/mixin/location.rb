@@ -15,8 +15,10 @@
 #++
 # frozen_string_literal: true
 
-require('tagf/debugging')
-warn(__FILE__) if (TAGF.debugging?(:file))
+#require('tagf/debugging')
+#warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf/mixin/dtypes')
+require('tagf/mixin/universal')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -29,7 +31,6 @@ module TAGF
     module Location
 
       include(Mixin::UniversalMethods)
-      extend(Mixin::UniversalMethods)
       extend(Mixin::DTypes)
 
       # @!macro doc.TAGF.Mixin.module.eigenclass Location

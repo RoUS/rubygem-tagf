@@ -18,6 +18,8 @@
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 #require('tagf')
+require('tagf/mixin/actor')
+require('tagf/mixin/dtypes')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -27,6 +29,7 @@ module TAGF
   class NPC
 
     #
+    extend(Mixin::DTypes)
     include(Mixin::Actor)
 
     #

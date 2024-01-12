@@ -118,7 +118,6 @@ module TAGF
   #
   include(Contracts::Core)
   include(Mixin::UniversalMethods)
-  extend(Mixin::UniversalMethods)
   extend(Mixin::DTypes)
   #
   # ..and the mostly-universal ancillary modules.
@@ -130,7 +129,7 @@ module TAGF
   # Extend the top-level module's eigenclass with methods universal to
   # the entire package (such as access to game options, *&c.*
   #
-  extend(PackageClassMethods)
+  extend(Mixin::PackageClassMethods)
 
   nil
 end                             # module TAGF

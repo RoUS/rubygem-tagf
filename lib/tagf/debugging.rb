@@ -15,10 +15,12 @@
 #++
 # frozen_string_literal: true
 
+require('tagf/mixin/debugging')
 require('contracts')
+
 if ((! Kernel.const_defined?('TAGF')) \
     || (! TAGF.ancestors.include?(Contracts::Core)))
-  require('tagf')
+#  require('tagf')
 end
 
 # @!macro doc.TAGF.module
@@ -80,8 +82,6 @@ module TAGF
 
   nil
 end
-
-require('tagf/mixin/debugging')
 
 # @!macro doc.TAGF.module
 module TAGF

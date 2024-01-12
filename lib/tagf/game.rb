@@ -17,7 +17,10 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+require_relative('exceptions')
+require_relative('mixin/container')
+require_relative('mixin/debugging')
+require_relative('mixin/dtypes')
 require('psych')
 require('yaml')
 require('byebug')
@@ -28,6 +31,8 @@ module TAGF
   #
   class Game
 
+    #
+    extend(Mixin::DTypes)
     #
     include(Mixin::Container)
 

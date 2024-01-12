@@ -160,7 +160,7 @@ end                             # module TAGF
 
 if ((! Kernel.const_defined?('TAGF')) \
     || (! TAGF.ancestors.include?(Contracts::Core)))
-  require('tagf/debugging')
+#  require('tagf/debugging')
 end
 #require('tagf/debugging')
 #require('tagf')

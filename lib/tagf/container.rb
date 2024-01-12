@@ -17,7 +17,8 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+require_relative('mixin/dtypes')
+require_relative('mixin/container')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -27,6 +28,7 @@ module TAGF
   class Container
 
     #
+    extend(Mixin::DTypes)
     include(Mixin::Container)
 
     #

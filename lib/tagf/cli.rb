@@ -17,8 +17,9 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf/mixin/dtypes')
+require('tagf/mixin/element')
 require('readline')
-require('tagf')
 require('thor')
 require('byebug')
 

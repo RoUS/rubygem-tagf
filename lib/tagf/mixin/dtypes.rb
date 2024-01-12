@@ -43,7 +43,7 @@ module TAGF
       include(Contracts::Core)
 
 
-      # @ ! macro doc.TAGF.classmethod.flag.declare
+      # @!macro doc.TAGF.classmethod.flag.declare
       def flag(*args, **kwargs)
         kwargs		= _inivaluate_args(false,
                                            *args,

@@ -17,7 +17,7 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf')
+#require('tagf')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -59,11 +59,10 @@ module TAGF
     module Element
 
       #
-      using(TAGF::Refinement::Description)
+      using(Refinement::Description)
 
       #
-      include(TAGF::Mixin::UniversalMethods)
-      extend(TAGF::Mixin::UniversalMethods)
+      include(Mixin::UniversalMethods)
 
       #
       if (TAGF.debugging?(:extend))

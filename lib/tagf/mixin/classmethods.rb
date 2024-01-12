@@ -18,7 +18,8 @@
 #require_relative('debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 
-require_relative('mixin/universal')
+require('tagf/mixin/dtypes')
+require('tagf/mixin/universal')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -29,6 +30,8 @@ module TAGF
 
     # @!macro doc.TAGF.PackageMethods.module
     module PackageClassMethods
+
+      include(Mixin::DTypes)
 
       # TAGF game options are simply flags, considered active if they
       # appear in the game_options Set instance.
@@ -87,6 +90,7 @@ module TAGF
     # @!macro doc.TAGF.Mixin.ClassMethods.module
     module ClassMethods
 
+      include(Mixin::DTypes)
       include(Mixin::UniversalMethods)
       #
       # Ensure that the definitions in this module also appear in its
@@ -101,9 +105,6 @@ module TAGF
       include(Contracts::Core)
 
       #
-#      extend(TAGF::Mixin::UniversalMethods)
-
-      #
       # Modules for automatic inclusion for `include`:
       #
       INCLUSION_MODULES	= [
@@ -115,7 +116,6 @@ module TAGF
       #
       EXTENSION_MODULES	= [
         TAGF::Mixin::ClassMethods,
-#        TAGF::Mixin::UniversalMethods,
       ]
 
       # Name of the element key as used in definition (YAML) files.
@@ -203,11 +203,9 @@ module TAGF
     nil
   end                           # module TAGF::Mixin
   #
-  extend(Mixin::ClassMethods)
 
   nil
 end                             # module TAGF
-require('tagf/exceptions')
 
 # Local Variables:
 # mode: ruby
