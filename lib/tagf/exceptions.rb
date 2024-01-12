@@ -298,6 +298,42 @@ module TAGF
     #
     LimitItems		= InventoryLimitExceeded::LimitItems
 
+    # Exception raised when an attempt is made to set the severity of
+    # a TAGF exception class (or instance) to an invalid value.  Use
+    # is internal to the TAGF::Exceptions module.
+    #
+    # @see SEVERITY
+    class InvalidSeverity < ErrorBase
+
+      self.severity	= :warning
+
+      # Constructor for InvalidSeverity exception.
+      # @param [Array]			args		([])
+      #   If the first element of `args` is an Integer or a Symbol, it
+      #   is used to calculate the exception object's message text.
+      #   If it's a String, it is used <em>verbatim</em> as the
+      #   exception text.
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [InvalidSeverity]
+      #   exception object
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__method__)
+        super
+        arg		= args[0]
+        if ((args.count == 1) && arg.kind_of?(String))
+          msg		= arg
+        else
+          msg		= format('invalid severity level: %s:%s',
+                                 arg.class.name,
+                                 arg.inspect)
+        end
+        self._set_message(msg)
+      end                       # def initialize
+
+      nil
+    end                         # class InvalidSeverity
+
     #
     class NoLoadFile < ErrorBase
 
