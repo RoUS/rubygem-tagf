@@ -20,6 +20,8 @@
 #require('tagf')
 require_relative('mixin/dtypes')
 require_relative('mixin/universal')
+require('contracts')
+require('ostruct')
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -30,14 +32,177 @@ module TAGF
     #
     include(TAGF::Mixin::UniversalMethods)
 
+    # Mapping of severity names to severity levels.  Loosely modeled
+    # after the OpenVMS status code structure.  The higher the number,
+    # the more severe the condition.  LBS (odd number) severities are
+    # actually reports rathe than problems; success or informational
+    # messages.
+    #
+    # @see ErrorBase#severity
+    SEVERITY		= OpenStruct.new(
+      #
+      # Not an error; used to report something that has functioned
+      # exactly as designed.
+      #
+      success:		1,
+      #
+      # Not necessarily a problem; things didn't go <em>exactly</em>
+      # as intended, but result/behaviour should be correct.
+      #
+      info:		3,
+      warning:		4,
+      error:		6,
+      #
+      # Catastropic failure of some sort; generally results in
+      # application termination.
+      #
+      severe:		8
+    )
+    #
+    # Alternate spellings for some of the severities.
+    #
+    SEVERITY.warn	= SEVERITY.warning
+    SEVERITY.informational = SEVERITY.info
+    SEVERITY.fatal	= SEVERITY.severe
+    SEVERITY.freeze
+    #
+    # List of all severity values, used for validation.
+    #
+    SEVERITY_LEVELS	= SEVERITY.to_h.values.sort.freeze
+    SEVERITY_NAMES	= SEVERITY.to_h.keys
+                            .map { |l| l.to_s }
+                            .sort
+                            .map { |s| s.to_sym }
+                            .freeze
+    SEVERITY_CHAR	= [
+      '0',                      # 0 = undefined
+      'S',                      # 1 = success
+      '2',                      # 2 = undefined
+      'I',                      # 3 = informational
+      'W',                      # 4 = warning
+      '5',                      # 5 = undefined
+      'E',                      # 6 = error
+      '7',                      # 7 = undefined
+      'F',                      # 8 = fatal/severe
+    ]
+
     #
     class ErrorBase < StandardError
 
       #
       extend(TAGF::Mixin::DTypes)
 
+      class << self
+
+        #
+        # Array of all acceptable severity values, integers and
+        # symbols.
+        #
+        VALID_SEVERITIES = (SEVERITY_NAMES + SEVERITY_LEVELS)
+
+        # Given a method name symbol (<em>e.g.</em>, `:severity`),
+        # return the symbol for an instance variable with the same
+        # name (<em>e.g.</em>, `:@severity`.
+        # @param [Symbol] msym
+        # @return [Symbol]
+        def _method2syms(msym)
+          basevar	= msym.to_s.gsub(%r!=$!, '')
+          symstruct	= OpenStruct.new(
+            ivar:	format('@%s', basevar).to_sym,
+            getter:	basevar.to_sym,
+            setter:	format('%s=', basevar).to_sym
+          )
+          return symstruct
+        end                     # def _method2syms(msym)
+
+        # @!attribute [rw] severity
+        # Accessors for the class-wide severity setting.
+        # @overload severity
+        #   @return [Integer]
+        def severity
+          msyms		= _method2syms(__method__)
+          unless (self.instance_variable_defined?(msyms.ivar) \
+                  && self.instance_variable_get(msyms.ivar))
+            warn(format('%s.%s not set, setting to :severe',
+                        self.class.name,
+                        msyms.getter.to_s))
+            self.send(msyms.setter, SEVERITY.severe)
+          end
+          return @severity
+        end                     # def severity
+
+        # @overload severity=(sevlevel)
+        #   @param [Symbol,Integer] sevlevel
+        #   @return [Integer]
+        #   @raise [TypeError]
+        #   @raise [InvalidSeverity]
+        def severity=(sevlevel)
+          msyms		= _method2syms(__method__)
+          sevlevel	= self.validate_severity(sevlevel)
+          self.instance_variable_set(msyms.ivar, sevlevel)
+        end                     # def severity=
+
+        # Verify that the given argument is a valid severity
+        # indicator; namely, either a key into the {SEVERITY}
+        # structure or one of the integer values to which the keys
+        # map.  If the argument <em>is</em> valid, we return the
+        # numeric value.
+        # @param [Symbol,Integer] sevlevel
+        # @return [Integer]
+        # @raise [TypeError]
+        # @raise [InvalidSeverity]
+        def validate_severity(sevlevel)
+          unless (sevlevel.kind_of?(Integer) \
+                  || sevlevel.kind_of?(Symbol))
+            raise_exception(TypeError,
+                            format('severity level must be a ' \
+                                   'symbol or integer; ' \
+                                   '%s:%s is invalid',
+                                   sevlevel.class.name,
+                                   sevlevel.inspect),
+                            levels: 2)
+          end
+          unless (VALID_SEVERITIES.include?(sevlevel))
+            raise_exception(Exceptions::InvalidSeverity,
+                            sevlevel,
+                            levels: 2)
+          end
+          if (sevlevel.kind_of?(Symbol))
+            sevlevel	= SEVERITY.send(sevlevel)
+          end
+          return sevlevel
+        end                     # def validate_severity(sevlevel)
+
+        nil
+      end                       # ErrorBase eigenclass
+
+      #
       #
       include(TAGF::Mixin::UniversalMethods)
+
+      # @!attribute [rw] severity
+      #   Per-exception severity level.  Separating this out allows
+      #   any particular exception's severity to be altered
+      #   appropriately at the time it's raised rather than be
+      #   immutably defined here.
+      # @overload severity
+      #   @return [Integer]
+      def severity
+        msyms		= self.class._method2syms(__method__)
+        unless (self.instance_variable_defined?(msyms.ivar) \
+                && self.instance_variable_get(msyms.ivar))
+          self.send(msyms.setter, self.class.send(msyms.getter))
+        end
+        return self.instance_variable_get(msyms.ivar)
+      end                       # def severity
+      # @overload severity=(level)
+      #   @param [Symbol,Integer]
+      #   @return [Integer]
+      def severity=(sevlevel)
+        msyms		= self.class._method2syms(__method__)
+        sevlevel	= self.singleton_class.validate_severity(sevlevel)
+        self.instance_variable_set(msyms.ivar, sevlevel)
+      end                       # def severity=(level)
 
       #
       def _set_message(text)
@@ -52,9 +217,27 @@ module TAGF
 
       #
       def _dbg_exception_start(msym)
-        TAGF::Mixin::Debugging.invocation
+#        TAGF::Mixin::Debugging.invocation
         return nil
       end                       # def _dbg_exception_start
+
+      #
+      def render
+        debugger
+        result		= format('%s-%s, %s',
+                                 SEVERITY_CHAR[self.severity] || '?',
+                                 self.class.name.sub(%r!^.*::!, ''),
+                                 self.message)
+        return result
+      end                       # def render
+
+      # @!macro [new] severitydoc
+      # @param [Array]			args		([])
+      # @param [Hash<Symbol=>Object>]	kwargs		({})
+      # @option kwargs [Symbol,Integer]	:severity	(nil)
+      def initialize(*args, **kwargs)
+        self.severity	||= kwargs[:severity] || SEVERITY.severe
+      end                       # def initialize(*args, **kwargs)
 
       nil
     end                         # class ErrorBase
@@ -63,20 +246,24 @@ module TAGF
     module InventoryLimitExceeded
 
       #
-      extend(TAGF::Mixin::DTypes)
+      extend(Mixin::DTypes)
 
       #
-      include(TAGF::Mixin::UniversalMethods)
+      include(Mixin::UniversalMethods)
 
       #
       class LimitItems < ::TAGF::Exceptions::ErrorBase
 
+        self.severity	= :warning
+
         #
         # @!macro doc.TAGF.formal.kwargs
+        # @!macro severitydoc
         # @return [InventoryLimitExceeded::LimitItems] self
         #
         def initialize(*args, **kwargs)
           _dbg_exception_start(__method__)
+          super
           inv		= args[0]
           newitem	= args[1]
           if (inv.kind_of?(String))
@@ -114,12 +301,15 @@ module TAGF
     #
     class NoLoadFile < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [NoLoadFile] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
@@ -136,12 +326,15 @@ module TAGF
     #
     class BadLoadFile < ErrorBase
 
+      self.severity	= :severe
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [BadLoadFile] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
@@ -168,12 +361,15 @@ module TAGF
     #
     class NotExceptionClass < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [NotExceptionClass] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
@@ -192,12 +388,15 @@ module TAGF
     #
     class NotGameElement < ErrorBase
 
+      self.severity	= :severe
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [NotGameElement] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
@@ -216,12 +415,15 @@ module TAGF
     #
     class NoObjectOwner < ErrorBase
 
+      self.severity	= :severe
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [NoObjectOwner] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg		= arg
@@ -241,12 +443,15 @@ module TAGF
     #
     class KeyObjectMismatch < ErrorBase
 
+      self.severity	= :severe
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [KeyObjectMismatch] self
       #
       def initialize(oeid=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
         _dbg_exception_start(__method__)
+        super
         oeid		= args[0] || kwargs[:eid]
         obj		= args[1] || kwargs[:object]
         ckobj		= args[2] || kwargs[:ckobject]
@@ -268,12 +473,15 @@ module TAGF
     #
     class NoGameContext < ErrorBase
 
+      self.severity	= :severe
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [NoGameContext] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         if ((args.count == 1) && args[0].kind_of?(String))
           msg	= args[0]
         else
@@ -288,12 +496,15 @@ module TAGF
     #
     class SettingLocked < ErrorBase
 
+      self.severity	= :warning
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [SettingLocked] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg	= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg	= arg
@@ -313,12 +524,15 @@ module TAGF
     #
     class ImmovableObject < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [ImmovableObject] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg	= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg	= arg
@@ -346,12 +560,15 @@ module TAGF
     #
     class NotAContainer < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [NotAContainer] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         name		= nil
         if ((args.count == 1) && arg.kind_of?(String))
@@ -376,12 +593,15 @@ module TAGF
     #
     class AliasRedefinition < ErrorBase
 
+      self.severity	= :warning
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [AliasRedefinition] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         name		= nil
         if ((args.count == 1) && arg.kind_of?(String))
@@ -402,8 +622,10 @@ module TAGF
     #
     class UnscrewingInscrutable < ErrorBase
 
+      self.severity	= :error
+
       extend(Contracts::Core)
-      
+
       Contract([Class,
                 Class,
                 Symbol,
@@ -419,6 +641,7 @@ module TAGF
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg		= args[0]
         name		= nil
         if ((args.count == 1) && arg.kind_of?(String))
@@ -446,12 +669,15 @@ module TAGF
     #
     class MasterInventory < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [MasterInventory] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         arg	= args[0]
         if ((args.count == 1) && arg.kind_of?(String))
           msg	= arg
@@ -479,12 +705,15 @@ module TAGF
     #
     class HasNoInventory < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [HasNoInventory] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         if ((args.count == 1) && args[0].kind_of?(String))
           msg		= args[0]
         elsif (args[0].kind_of?(Mixin::Element))
@@ -511,16 +740,19 @@ module TAGF
     #
     class AlreadyHasInventory < ErrorBase
 
+      self.severity	= :warning
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [AlreadyHasInventory] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
         else
-          target	= arg[0]
+          target	= args[0]
           unless (target.has_inventory?)
             raise_exception(RuntimeError,
                             format('%s called against ' \
@@ -546,12 +778,15 @@ module TAGF
     #
     class AlreadyInInventory < ErrorBase
 
+      self.severity	= :warning
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [AlreadyInInventory] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
@@ -586,12 +821,15 @@ module TAGF
     #
     class ImmovableElementDestinationError < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [ImmovableElementDestinationError] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         if ((args.count >= 1) && args[0].kind_of?(String))
           msg		= args[0]
         else
@@ -618,12 +856,15 @@ module TAGF
     #
     class DuplicateObject < ErrorBase
 
+      self.severity	= :error
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [DuplicateObject] self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
+        super
         type	= self.class.name.sub(%r!^.*Duplicate!, '')
         if ((args.count == 1) && args[0].kind_of?(String))
           msg	= args[0]
