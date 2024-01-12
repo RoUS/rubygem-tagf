@@ -120,6 +120,17 @@ module TAGF
     end                         # class InputMethod
 
     #
+    class HereDoc
+
+      attr_accessor(:prefix)
+      attr_accessor(:terminator)
+      attr_accessor(:terminator_re)
+      attr_accessor(:raw)
+      attr_accessor(:lines)
+
+    end                         # class HereDoc
+
+    #
     class Context
 
       extend(Mixin::DTypes)
@@ -189,7 +200,9 @@ module TAGF
         stderr:			$stderr,
       }
 
-      #
+      # Constructor for Context class instances.
+      # @param [Array]			args		([])
+      # @param [Hash<Symbol=>Object>]	kwargs		({})
       def initialize(*args, **kwargs)
         settings	= KWSYMS.merge(kwargs)
         settings.each do |kw,val|
@@ -210,6 +223,11 @@ module TAGF
           raise(RuntimeError, "can't determine input type")
         end
       end                       # def initialize(*args, **kwargs)
+
+      # 'Smart' method for reading from the input stream.
+      def read(*args, **kwargs)
+        self.gets
+      end                       # def read(*args, **kwargs)
 
       #
       def gets
