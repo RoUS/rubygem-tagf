@@ -20,6 +20,21 @@ require('tagf')
 
 require('test-unit')
 
+#
+# Types of assertions:
+#
+# assert(truthy-expr[, explanation])
+# assert_nil(expr[, explanation])
+# assert_equal(expr1, expr2[, explanation])
+# assert_not_equal(expr1, expr2[, explanation])
+# assert_match(regexp, string-expr[, explanation])
+# assert_kind_of(expr, klass[, explanation])
+# assert_raise(exception[, explanation]) { block }
+# assert_raises(exception[, explanation]) { block }
+# assert_respond_to(expr, symbol[, explanation])
+# assert_instance_of(klass, instance[, explanation])
+#
+
 # Local Variables:
 # mode: ruby
 # indent-tabs-mode: nil

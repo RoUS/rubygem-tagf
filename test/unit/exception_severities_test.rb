@@ -37,26 +37,48 @@ class Test_Exception_Severities < Test::Unit::TestCase
     nil
   end                           # def teardown
 
-  #
+  # * Test that default class runtime severities match the hardcoded
+  #   values 
   def test_class_default_severity
-    DefaultSeverity.each do |exsym,xclass|
+    DefaultSeverity.each do |exsym,kdefsev|
       klass_i		= eval(format('%s.new', exsym.to_s))
-      assert_equal(klass_i.severity, xclass)
+      assert_equal(klass_i.severity,
+                   kdefsev,
+                   format('Verifying unmodified default severity ' \
+                          'for %s is %d',
+                          exsym.to_s,
+                          kdefsev))
     end
   end                           # def test_class_default_severity
 
-  #
+  # * Test that changes to the default class severity persist
   def test_class_change_default_severity
-    DefaultSeverity.each do |exsym,xclass|
+    DefaultSeverity.each do |exsym,kdefsev|
       klass_i		= eval(format('%s.new', exsym.to_s))
-      while ((newsev = SEVERITY_LEVELS.sample) != xclass)
+      #
+      # Pick a different severity level than the default, then set it
+      # as the new class default.
+      #
+      while ((newsev = SEVERITY_LEVELS.sample) != kdefsev)
         nil
       end
-      testsev		= klass_i.severity = newsev
-      assert_equal(testsev, newsev)
+      klass_i.severity	= newsev
+      assert_equal(klass_i.severity,
+                   newsev,
+                   format('Verifying %s default severity changed ' \
+                          'from %d to %d',
+                          exsym.to_s,
+                          kdefsev,
+                          newsev))
     end
   end                           # def test_class_change_default_severity
 
+  # * Test that new instances inherit the class severity
+  # * Test that new instances inherit the changed class severity
+  # * Test that new instances can have their severity changed w/o
+  #   affecting class severity
+
+  nil
 end                             # class Test_Exception_Severities
 
 # Local Variables:
