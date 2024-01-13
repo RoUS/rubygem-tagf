@@ -113,7 +113,9 @@ module TAGF
                        self.class.name))
         end
         @context	= context
-        @pathname	= kwargs[:pathname]
+        @pathname	= kwargs[:pathname] \
+                          || kwargs[:file] \
+                          || kwargs[:input].inspect
       end                       # def initialize(*args, **kwargs)
 
       nil
@@ -167,13 +169,32 @@ module TAGF
 
     end                         # class HereDoc
 
-    #
+    # Main supervisory class for getting and processing input from the
+    # user.  Each time we change something about how we read, such as
+    # the input source or even the prompt, a new context should be
+    # created, pushed on a stack, and used.  When the changed
+    # conditions terminate, we should revert to the previous context.
     class Context
 
+      # Import our app's own datatype accessor class methods.
       extend(Mixin::DTypes)
 
+      # In the interest of readability at higher levels, we blur the
+      # details of how interfaces, contexts, and input methods
+      # actually interact.  Input methods 'inherit' some methods and
+      # attributes from their calling contexts, and contexts do
+      # likewise with aspects of the active input method.  This is
+      # handled by delegating the methods in question to the
+      # appropriate instance variable using the Forwardable module's
+      # features.  The programmer should only have to worry about the
+      # Interface and Context classes, and not any of the more
+      # nitty-gritty lower-level details.
+      extend(Forwardable)
+
       # Instance of the class that will be used to read from the input
-      # stream.
+      # stream in this context.  Supported values are any object that
+      # subclasses TAGF::UI::InputMethod.
+      # @return [InputMethod]
       attr_accessor(:inputmethod)
 
       # @!macro [attach] doc.TAGF.classmethod.file_accessor.invoke
@@ -357,6 +378,7 @@ module TAGF
         prompt:                 '> ',
         completion_proc:        nil,
         history:                [],
+        inputmethod:		nil,
         file:                   nil,
         pathname:               nil,
         input:                  $stdin,
@@ -364,14 +386,31 @@ module TAGF
         error:                  $stderr,
       }
 
+      def_delegator(:@inputmethod, :eof?)
+
       # Constructor for Context class instances.
       # @param [Array]			args		([])
       # @param [Hash<Symbol=>Object>]	kwargs		({})
+      # @option kwargs [String]		:inputmethod
+      #   Name of the input method class that should be instantiated
+      #   to handle actually reading from the input source.
       def initialize(*args, **kwargs)
         settings	= KWSYMS.merge(kwargs)
         settings.each do |kw,val|
           kivar		= format('@%s', kw.to_s).to_sym
           ksetter	= format('%s=', kw.to_s).to_sym
+          #
+          # The inputmethod attribute is specit
+          if (kw == :inputmethod)
+            begin
+              settings[kw] = UI.const_get(val)
+            rescue NameError
+              raise_exception(ArgumentError,
+                              format('unknown input method %s',
+                                     val))
+            end
+            next
+          end
           if (self.respond_to?(ksetter))
             self.send(ksetter, val)
           else
@@ -379,7 +418,9 @@ module TAGF
           end
         end
         settings[:context] = self
-        if (settings[:file])
+        if (imclass = settings[:inputmethod])
+          self.inputmethod = imclass.new(**settings)
+        elsif (settings[:file])
           self.inputmethod = ViaFile.new(**settings)
         elsif (self.input.tty?)
           self.inputmethod = ViaReadline.new(**settings)
@@ -452,7 +493,6 @@ module TAGF
       # @option kwargs [String]		:output
       # @option kwargs [String]		:completion_proc
       def initialize(*args, **kwargs)
-        debugger
         super
         file		= kwargs[:file]
         unless (file.kind_of?(String) || file.kind_of?(IO))
@@ -508,8 +548,8 @@ module TAGF
       # For debugging messages
       def inspect
         return format('%s file=%s',
-                      __method__.to_s,
-                      self.file_name)
+                      self.class.name.sub(%r!^.*::!, ''),
+                      self.pathname.inspect)
       end                       # def inspect
 
       def close
@@ -546,7 +586,6 @@ module TAGF
                               Readline.encoding_system_needs.name,
                               override: false)
         end
-        debugger
         @line_no	= 0
         @line		= []
         @eof		= false
@@ -700,7 +739,6 @@ module TAGF
       # @option kwargs [Object]		:cmdtree	(nil)
       # @raise [RuntimeError]
       def initialize(*args, **kwargs)
-        debugger
         @contexts	= []
       end                       # def initialize
 
