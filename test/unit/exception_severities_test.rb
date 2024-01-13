@@ -25,9 +25,9 @@ class Test_Exception_Severities < Test::Unit::TestCase
     AlreadyHasInventory:	SEVERITY.warning,
     AlreadyInInventory:		SEVERITY.warning,
     ImmovableElementDestinationError: SEVERITY.error,
-    DuplicateObject:		SEVERITY.error,
-    DuplicateItem:		SEVERITY.error,
-    DuplicateLocation:		SEVERITY.error,
+    DuplicateObject:		SEVERITY.warning,
+    DuplicateItem:		SEVERITY.warning,
+    DuplicateLocation:		SEVERITY.warning,
   }
 
   def setup
@@ -44,18 +44,11 @@ class Test_Exception_Severities < Test::Unit::TestCase
     ExceptionClasses.each do |exsym,kdefsev|
       klass_o		= eval(exsym.to_s)
       klass_i		= nil
-      msg		= format('Instantiating %s', exsym.to_s)
-      if (%i(LimitItems).include?(exsym))
-        msg		= format('%s; requires %s module',
-                                 msg,
-                                 'Mixin::Element')
-        assert_raises(NoMethodError, msg) do
-          klass_i		= klass_o.new
-        end
-      else
-        assert_nothing_raised(msg) do
-          klass_i		= klass_o.new
-        end
+      msg		= format('Instantiating ' \
+                                 + '%s.new("testing message")',
+                                 exsym.to_s)
+      assert_nothing_raised(msg) do
+        klass_i		= klass_o.new('testing message')
       end
       assert_equal(klass_i.severity,
                    kdefsev,
@@ -71,17 +64,11 @@ class Test_Exception_Severities < Test::Unit::TestCase
     ExceptionClasses.each do |exsym,kdefsev|
       klass_o		= eval(exsym.to_s)
       klass_i		= nil
-      if (%i(LimitItems).include?(exsym))
-        msg		= format('%s; requires %s module',
-                                 msg,
-                                 'Mixin::Element')
-        assert_raises(NoMethodError, msg) do
-          klass_i		= klass_o.new
-        end
-      else
-        assert_nothing_raised(msg) do
-          klass_i		= klass_o.new
-        end
+      msg		= format('Instantiating ' \
+                                 + '%s.new("testing message")',
+                                 exsym.to_s)
+      assert_nothing_raised(msg) do
+        klass_i		= klass_o.new('testing message')
       end
       #
       # Pick a different severity level than the default, then set it
@@ -106,17 +93,11 @@ class Test_Exception_Severities < Test::Unit::TestCase
     ExceptionClasses.each do |exsym,kdefsev|
       klass_o		= eval(exsym.to_s)
       klass_i		= nil
-      if (%i(LimitItems).include?(exsym))
-        msg		= format('%s; requires %s module',
-                                 msg,
-                                 'Mixin::Element')
-        assert_raises(NoMethodError, msg) do
-          klass_i		= klass_o.new
-        end
-      else
-        assert_nothing_raised(msg) do
-          klass_i		= klass_o.new
-        end
+      msg		= format('Instantiating ' \
+                                 + '%s.new("testing message")',
+                                 exsym.to_s)
+      assert_nothing_raised(msg) do
+        klass_i		= klass_o.new('testing message')
       end
       assert_equal(klass_i.severity,
                    klass_o.severity,
@@ -129,6 +110,9 @@ class Test_Exception_Severities < Test::Unit::TestCase
   # * Test that new instances inherit the changed class severity
   # * Test that new instances can have their severity changed w/o
   #   affecting class severity
+  #
+  # * Test that passing a string makes that the message
+  # * Test that properly-formatted actuals produce the correct message
 
   nil
 end                             # class Test_Exception_Severities

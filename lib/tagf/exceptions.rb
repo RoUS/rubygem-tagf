@@ -269,6 +269,17 @@ module TAGF
           if (inv.kind_of?(String))
             msg		= inv
           else
+            #
+            # Work around the object not having an #owned_by method.
+            #
+            unless (inv.respond_to?(:owned_by))
+              raise_exception(UnsupportedObject,
+                              format('%s:%s is inappropriate ' \
+                                     'for a %s exception',
+                                     inv.class.name,
+                                     inv.inspect,
+                                     self.class.name))
+            end
             owner	= inv.owned_by
             owner_klass	= owner.class.name
             owner_name	= owner.name
@@ -485,21 +496,25 @@ module TAGF
       # @!macro doc.TAGF.formal.kwargs
       # @return [KeyObjectMismatch] self
       #
-      def initialize(oeid=nil, obj=nil, ckobj=nil, iname=nil, **kwargs)
+      def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        oeid		= args[0] || kwargs[:eid]
-        obj		= args[1] || kwargs[:object]
-        ckobj		= args[2] || kwargs[:ckobject]
-        iname		= args[3] || kwargs[:inventory_name]
+        if (args[0].kind_of?(String))
+          msg		= args[0]
+        else
+          oeid		= args[0] || kwargs[:eid]
+          obj		= args[1] || kwargs[:object]
+          ckobj		= args[2] || kwargs[:ckobject]
+          iname		= args[3] || kwargs[:inventory_name]
 
-        msg		= format("value for key '%s' in %s " \
+          msg		= format("value for key '%s' in %s " \
                                  + "fails to match: %s:'%s' " \
                                  + "instead of %s:'%s'",
                                  oeid.to_s,
                                  iname,
                                  (ckobj.name || ckobj.eid).to_s,
                                  (obj.name || obj.eid).to_s)
+        end
         self._set_message(msg)
       end                       # def initialize
 
@@ -662,14 +677,14 @@ module TAGF
 
       extend(Contracts::Core)
 
-      Contract([Class,
-                Class,
-                Symbol,
-                Object,
-                Class,
-                Class,
-                Symbol,
-                Object] => Contracts::Builtin::Any)
+#      Contract([Class,
+#                Class,
+#                Symbol,
+#                Object,
+#                Class,
+#                Class,
+#                Symbol,
+#                Object] => Contracts::Builtin::Any)
 
       #
       # @!macro doc.TAGF.formal.kwargs
@@ -892,7 +907,7 @@ module TAGF
     #
     class DuplicateObject < ErrorBase
 
-      self.severity	= :error
+      self.severity	= :warning
 
       #
       # @!macro doc.TAGF.formal.kwargs
@@ -921,10 +936,18 @@ module TAGF
     end                         # class DuplicateObject
 
     #
-    class DuplicateItem < DuplicateObject ; end
+    class DuplicateItem < DuplicateObject
+
+      self.severity	= :warning
+
+    end                         # class DuplicateItem
 
     #
-    class DuplicateLocation < DuplicateObject ; end
+    class DuplicateLocation < DuplicateObject
+
+      self.severity	= :warning
+
+    end                         # class DuplicateLocation
 
     nil
   end                           # module TAGF::Exceptions
