@@ -57,8 +57,8 @@ module TAGF
 
       attr_reader(:pathname)
       attr_reader(:context)
-      def_delegator(:@context, :stdin)
-      def_delegator(:@context, :stdout)
+      def_delegator(:@context, :input)
+      def_delegator(:@context, :output)
 
       # Reads the next line from this input method.
       #
@@ -69,7 +69,7 @@ module TAGF
       public(:gets)
 
       def winsize
-        outstream	= self.context.stdout
+        outstream	= self.context.output
         if (outstream.respond_to?(:tty?) && outstream.tty?)
           result	= outstream.winsize
         else
@@ -100,7 +100,7 @@ module TAGF
       #   <b>REQUIRED.</b>
       #   Interface context to use.  Contains relevant details such as
       #   the current prompt, whether to echo input, <em>&c.</em>
-      # @option kwargs [String,IO]	:stdin		($stdin)
+      # @option kwargs [String,IO]	:input		($stdin)
       # @option kwargs [String,nil]	:pathname	(nil)
       #   String to use when rendering the stream's path for human
       #   consumption.
@@ -119,12 +119,49 @@ module TAGF
       nil
     end                         # class InputMethod
 
+    # Record the paticulars of a here-doc.  Here-docs are input lines
+    # designed to be processed as a group.  They have a basic format
+    # as follows (characters and words in brackets (<b>`[]`</b>) are
+    # optional):
     #
+    #    [<em>prefix</em>]<<[-]<em>delimiter</em>
+    #    [<em>text-line</em>...]
+    #    <em>delimiter</em>
+    #
+    # As an example:
+    #
+    #    two_liner = <<-EOF
+    #      You're at the end of a road.
+    #      There is a small shed here.
+    #      EOF
+    #
+    # * <em>prefix</em> —
+    #   Everything, including whitespace, preceding the `<<`
+    #   introducer.  In the example, this would be
+    #
+    #    "`two_liner = `"
+    #
+    #   Notice the inclusion of the spaces.
+    # * Optional hyphen —
+    #   The presence of the hyphen (dash) immediately preceding the
+    #   delimiter signals that when the delimiter is encountered, it
+    #   <em>may</em> be preceded by irrelevant whitespace, which is to
+    #   be stripped and ignored.  This is intended to improve
+    #   readability by humans (not software).
+    # * <em>delimiter</em> —
+    #   A 'word' which, when read on a line by itself, signals the end
+    #   of the here-doc content.  The delimiter is at least one
+    #   character long, is case-sensitive, and may be composed of
+    #   alphanumerics and the underscore (`_`) character.  Trailing
+    #   whitespace is ignored.
+    # * <em>text-line</em> —
+    #   Lines of text comprising the actual value of the 
     class HereDoc
 
+      #
       attr_accessor(:prefix)
-      attr_accessor(:terminator)
-      attr_accessor(:terminator_re)
+      attr_accessor(:delimiter)
+      attr_accessor(:delimiter_re)
       attr_accessor(:raw)
       attr_accessor(:lines)
 
@@ -140,13 +177,28 @@ module TAGF
       attr_accessor(:inputmethod)
 
       # @!macro [attach] doc.TAGF.classmethod.file_accessor.invoke
-      file_accessor(:stdin	=> $stdin)
+      file_accessor(input:	$stdin)
 
       # @!macro doc.TAGF.classmethod.file_accessor.invoke
-      file_accessor(:stdout	=> $stdout)
+      file_accessor(output:	$stdout)
 
       # @!macro doc.TAGF.classmethod.file_accessor.invoke
-      file_accessor(:stderr	=> $stderr)
+      file_accessor(error:	$stderr)
+
+      # Boolean flag indicating whether lines read from the input
+      # stream should be echoed to the output stream <em>after having
+      # been read.</em> This is a no-op when the input is being
+      # handled by ViaReadline, in which case it is handled directly
+      # by the {Readline#readline} library.  If the input stream is a
+      # file (<em>i.e.</em>, the input method is ViaFile), such
+      # echoing must be done manually.  This controls that
+      # functionality.
+      # @see echo
+      # @return [Boolean]
+      #   `true` if text read from the input stream should be echoed
+      #   <em>verbatim</em> to the output stream after having been read.
+      # @ ! macro [attach] doc.TAGF.classmethod.flag.invoke
+      flag(transcribe:	false)
 
       # Boolean flag indicating whether lines read from the input
       # stream should be echoed to the output stream.  If the input
@@ -154,9 +206,99 @@ module TAGF
       # {Readline#readline} library.  If the input stream is a file
       # (<em>i.e.</em>, the input method is ViaFile), such echoing
       # must be done manually.
-      #
-      # @!macro [attach] doc.TAGF.classmethod.flag.invoke
+      # @see transcribe
+      # @return [Boolean]
+      #   `true` if text read from the input stream should be echoed
+      #   <em>verbatim</em> to the output stream as it's typed.
+      # @ ! macro [attach] doc.TAGF.classmethod.flag.invoke
       flag(echo:	true)
+
+      # @!attribute [rw] strip_leading
+      # Boolean flag indicating whether input lines should have
+      # leading whitespace removed after reading and before processing
+      # or storage.
+      # @see #strip_trailing
+      # @see #strip
+      # @return [Boolean]
+      # @ ! macro doc.TAGF.classmethod.flag.invoke
+      flag(strip_leading: false)
+
+      # @!attribute [rw] strip_trailing
+      # Boolean flag indicating whether input lines should have
+      # <em>trailing</em> whitespace removed after reading and before
+      # processing or storage.
+      # @see #strip_leading
+      # @see #strip
+      # @return [Boolean]
+      # @ ! macro doc.TAGF.classmethod.flag.invoke
+      flag(strip_trailing: false)
+
+      # @!attribute [rw] strip
+      # Boolean flag indicating whether input lines should have
+      # leading and trailing whitespace removed.  Sets or clears both
+      # the #strip_leading and #strip_trailing attributes together.
+      # @see strip_leading
+      # @see strip_trailing
+      # @overload strip
+      #   @return [Boolean]
+      #     whether both leading and trailing whitespace should be
+      #     removed. 
+      # @overload strip?
+      #   @return [Boolean]
+      #     whether both leading and trailing whitespace should be
+      #     removed. 
+      # @overload strip=(val)
+      #   @return [Boolean] the argument value.
+      # @overload strip!
+      #   @return [Boolean] `true`, as both of the #strip_leading and
+      #   the #strip_trailing attributes are unconditionally set.
+      def strip
+        result		= self.strip_leading? & self.strip_trailing?
+        return result
+      end                       # def strip
+      alias_method(:strip?, :strip)
+      def strip=(val)
+        val		= truthify(val)
+        self.strip_leading = val
+        self.strip_trailing = val
+        return val
+      end                       # def strip=(val)
+      def strip!
+        self.strip_leading = true
+        self.strip_trailing = true
+        return true
+      end                       # def strip!
+
+      # @!attribute [rw] completion_proc
+      # Proc or method object that should be used to handle completion
+      # checking and processing when reading input interactively.
+      # @return [Proc,Method,Lambda,nil]
+      #   either the object that should be used by the Readline
+      #   library to process completions, or `nil` if completion
+      #   isn't enabled.
+      def completion_proc
+        unless (self.instance_variable_defined?(:@completion_proc))
+          @completion_proc = nil
+        end
+        return @completion_proc
+      end                       # def completion_proc
+      # @overload completion_proc=(handler)
+      #   @param [Proc] handler
+      #     A Proc, Lambda, or bound Method object that should be
+      #     invoked by the Readline library to help the user enter a
+      #     command.
+      def completion_proc=(handler)
+        valid_handler	= [Proc,Method].any? { |ht|
+          (handler.nil? || handler.kind_of?(ht))
+        }
+        unless (valid_handler)
+          raise_exception(TypeError,
+                          format('%s must either be nil or ' \
+                                 'a block-type object',
+                                 __method__.to_s))
+        end
+        @completion_proc = handler
+      end                       # def completion_proc=(handler)
 
       # Boolean flag indicating whether input lines should be checked
       # for here-doc header signatures.
@@ -164,19 +306,34 @@ module TAGF
       # @note
       #   If a here-doc is in progress, this flag is disabled;
       #   here-docs cannot be nested.
-      # @!macro doc.TAGF.classmethod.flag.invoke
+      # @return [Boolean]
+      #   `true` if input lines are to check for here-doc syntax and
+      #   processed appropriately.
+      # @ ! macro doc.TAGF.classmethod.flag.invoke
       flag(allow_heredoc: true)
 
       # Boolean flag indicating whether we're currently reading lines
       # of a here-doc.  When true, input lines are checked for the
       # here-doc terminator, and new here-docs are not allowed (or,
       # rather, are treated as just normal text).
-      # @!macro doc.TAGF.classmethod.flag.invoke
+      # @return [Boolean]
+      #   `true` if the input processor is in the middle of readine a
+      #   here-doc.
+      # @ ! macro doc.TAGF.classmethod.flag.invoke
       flag(in_heredoc:	false)
+
+      # Particulars of the most recent (or current) here-doc
+      # processed.  Here-docs are more complicated than simple one-off
+      # input lines, so we use a more complex storage tool for them.
+      # @return [HereDoc,nil]
+      #   the HereDoc object currently being processed.
+      attr_accessor(:heredoc)
 
       # Prompts used when requesting input in this context.  New ones
       # are pushed when read context changes (such as reading lines of
       # a here-doc), and popped when that reverts.
+      # @return [String]
+      #   the current prompt string
       attr_reader(:prompt)
 
       # Array of input lines stored as history.  New lines are pushed
@@ -186,18 +343,25 @@ module TAGF
       # Standard set of word-break characters for completion.
       DEFAULT_WORD_BREAK_CHARS = " \t\n`><=;|&{("
 
-      # Valid keywords in the constructor's `kwargs` hash argument.
+      # Names of fields in the Context instance.  Used to process
+      # constructor keyword arguments, but also for cloning when
+      # creating a subordinate context.
       KWSYMS		= {
-        echo:			true,
-        allow_heredoc:		true,
-        in_heredoc:		false,
-        prompt:			'> ',
-        history:		[],
-        file:			nil,
-        pathname:		nil,
-        stdin:			$stdin,
-        stdout:			$stdout,
-        stderr:			$stderr,
+        echo:                   true,
+        transcribe:             false,
+        strip_leading:          true,
+        strip_trailing:         true,
+        allow_heredoc:          true,
+        in_heredoc:             false,
+        heredoc:                nil,
+        prompt:                 '> ',
+        completion_proc:        nil,
+        history:                [],
+        file:                   nil,
+        pathname:               nil,
+        input:                  $stdin,
+        output:                 $stdout,
+        error:                  $stderr,
       }
 
       # Constructor for Context class instances.
@@ -217,7 +381,7 @@ module TAGF
         settings[:context] = self
         if (settings[:file])
           self.inputmethod = ViaFile.new(**settings)
-        elsif (self.stdin.tty?)
+        elsif (self.input.tty?)
           self.inputmethod = ViaReadline.new(**settings)
         else
           raise(RuntimeError, "can't determine input type")
@@ -254,7 +418,12 @@ module TAGF
     # Class defining the input method to read input from a file.
     class ViaFile < InputMethod
 
+      # Eigenglass for ViaFile class.
       class << self
+
+        # ... I'm not sure what's going on here, but I'm pretty sure
+        # it's artifactual of IRC.  The input method isn't a type of
+        # IO.
         def open(file, &block)
           begin
             io		= new(file)
@@ -273,14 +442,24 @@ module TAGF
 
       # Creates a new ViaFile input method object, for reading input
       # from a non-terminal file-like source.
+      # @see Readline
+      # @param [Array]			args
+      # @param [Hash<Symbol=>Object>]	kwargs
+      # @option kwargs [String]		:context
+      # @option kwargs [String]		:file
+      # @option kwargs [String]		:pathname
+      # @option kwargs [String]		:input
+      # @option kwargs [String]		:output
+      # @option kwargs [String]		:completion_proc
       def initialize(*args, **kwargs)
         debugger
         super
         file		= kwargs[:file]
         unless (file.kind_of?(String) || file.kind_of?(IO))
-          raise(RuntimeError,
-                format('%s constructor requires a file: keyword ' \
-                       'specifying a filename or IO stream',
+          raise_exception(ArgumentError,
+                          format('%s constructor requires a ' \
+                                 + 'file: keyword specifying a ' \
+                                 + 'filename or IO stream',
                        self.class.name))
         end
         @pathname	||= kwargs[:pathname] || file
@@ -291,7 +470,10 @@ module TAGF
       end                       # def initialize(file, *args, **kwargs)
 
       # Whether the end of this input method has been reached, returns
-      # `true` if there is no more data to read.
+      # `true` if there is no more data to read.  Since we're reading
+      # from a file-like source, there's only one "end of file" —
+      # attempts to read further should just keep hitting that
+      # condition.
       #
       # See IO#eof? for more information.
       def eof?
@@ -302,8 +484,19 @@ module TAGF
       #
       # See IO#gets for more information.
       def gets
-        self.stdout.print(self.context.prompt)
-        return @io.gets
+        text_in		= @io.gets
+        if (self.context.transcribe?)
+          if (text_in.nil? && self.eof?)
+            transcription = format("%s[end of file]\n",
+                                   self.context.prompt)
+          else
+            transcription = format('%s%s',
+                                   self.context.prompt,
+                                   text_in)
+          end
+          self.output.print(transcription)
+        end
+        return text_in
       end                       # def gets
       public(:gets)
 
@@ -312,7 +505,7 @@ module TAGF
         return @external_encoding
       end                       # def encoding
 
-      # For debug message
+      # For debugging messages
       def inspect
         return format('%s file=%s',
                       __method__.to_s,
@@ -347,24 +540,22 @@ module TAGF
       # Creates a new input method object using Readline
       def initialize(*args, **kwargs)
         self.class.initialize_readline
-=begin
-          if (Readline.respond_to?(:encoding_system_needs))
-            IRB.__send__(:set_encoding,
-                         Readline.encoding_system_needs.name,
-                         override: false)
-          end
-=end
         super
+        if (Readline.respond_to?(:encoding_system_needs))
+          self.input.__send__(:set_encoding,
+                              Readline.encoding_system_needs.name,
+                              override: false)
+        end
         debugger
         @line_no	= 0
         @line		= []
         @eof		= false
 
 =begin
-          @stdin	= IO.open(STDIN.to_i,
+          @input	= IO.open(STDIN.to_i,
                                   :external_encoding => IRB.conf[:LC_MESSAGES].encoding,
                                   :internal_encoding => '-')
-          @stdout	= IO.open(STDOUT.to_i,
+          @output	= IO.open(STDOUT.to_i,
                                   'w',
                                   :external_encoding => IRB.conf[:LC_MESSAGES].encoding,
                                   :internal_encoding => '-')
@@ -373,18 +564,15 @@ module TAGF
           Readline.basic_word_break_characters = Context::DEFAULT_WORD_BREAK_CHARS
         end
         Readline.completion_append_character = nil
-=begin
-          Readline.completion_proc =
-          IRB::InputCompletor::CompletionProc
-=end
+        Readline.completion_proc = self.context.completion_proc
       end                       # def initialize(*args, **kwargs)
 
       # Reads the next line from this input method.
       #
       # See IO#gets for more information.
       def gets
-        Readline.input	= self.stdin
-        Readline.output	= self.stdout
+        Readline.input	= self.input
+        Readline.output	= self.output
         if (l = readline(self..prompt, false))
           HISTORY.push(l) unless (l.empty?)
           @line[@line_no += 1] = l + "\n"
@@ -422,7 +610,7 @@ module TAGF
 
       # The external encoding for standard input.
       def encoding
-        return @context.stdin.external_encoding
+        return @context.input.external_encoding
       end                       # def encoding
 
       # For debug message
@@ -681,7 +869,7 @@ module TAGF
             trap('SIGCONT', old_sigcont)
           end
           result	= input
-        end                     # if ((opts[:echo] || (! $stdin.tty?))
+        end                     # if ((opts[:echo] || (! self.input.tty?))
         return result
       end                       # def readline(prompt, opts_p={})
 
