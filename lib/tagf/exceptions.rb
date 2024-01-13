@@ -20,7 +20,7 @@
 #require('tagf')
 require_relative('mixin/dtypes')
 require_relative('mixin/universal')
-require('contracts')
+#require('contracts')
 require('ostruct')
 
 # @!macro doc.TAGF.module
@@ -236,6 +236,10 @@ module TAGF
       # @param [Hash<Symbol=>Object>]	kwargs		({})
       # @option kwargs [Symbol,Integer]	:severity	(nil)
       def initialize(*args, **kwargs)
+        @msg		= nil
+        if ((args.count > 0) && args[0].kind_of?(String))
+          @msg		||= args[0]
+        end
         self.severity	||= kwargs[:severity] || SEVERITY.severe
       end                       # def initialize(*args, **kwargs)
 
@@ -266,9 +270,7 @@ module TAGF
           super
           inv		= args[0]
           newitem	= args[1]
-          if (inv.kind_of?(String))
-            msg		= inv
-          else
+          if (@msg.nil?)
             #
             # Work around the object not having an #owned_by method.
             #
@@ -284,7 +286,7 @@ module TAGF
             owner_klass	= owner.class.name
             owner_name	= owner.name
             owner_eid	= owner.eid
-            msg		= format('inventory for %s:"%s" is full; ' \
+            @msg		= format('inventory for %s:"%s" is full; ' \
                                  + '%i/%i %s, cannot add "%s"',
                                  owner_klass,
                                  (owner_name || owner_eid).to_s,
@@ -294,7 +296,7 @@ module TAGF
                                            owner.capacity_items),
                                  (newitem.name || newitem.eid).to_s)
           end
-          self._set_message(msg)
+          self._set_message(@msg)
         end                     # def initialize
 
         nil
@@ -331,15 +333,12 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
-          msg		= format('invalid severity level: %s:%s',
-                                 arg.class.name,
-                                 arg.inspect)
+        if (@msg.nil?)
+          @msg		= format('invalid severity level: %s:%s',
+                                 args[0].class.name,
+                                 args[0].inspect)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -357,14 +356,10 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
-          objtype	= arg.class.name
-          msg		= 'no "file" keyword specified for game load'
+        if (@msg.nil?)
+          @msg		= 'no "file" keyword specified for game load'
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -382,24 +377,21 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
+        if (@msg.nil?)
           if ((loadfile = kwargs[:file]).nil?)
-            msg		= 'invalid file specified for game load'
+            @msg		= 'invalid file specified for game load'
           else
             if ((exc = kwargs[:exception]) && exc.kind_of?(Exception))
-              msg	= format('invalid file "%s" specified: %s',
+              @msg	= format('invalid file "%s" specified: %s',
                                  loadfile,
                                  exc.to_s)
             else
-              msg	= format('invalid file "%s" specified',
+              @msg	= format('invalid file "%s" specified',
                                  loadfile)
             end
           end
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -417,16 +409,13 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
-          objtype	= arg.class.name
-          msg		= format('not an exception class: %s:%s',
+        if (@msg.nil?)
+          objtype	= args[0].class.name
+          @msg		= format('not an exception class: %s:%s',
                                  objtype,
-                                 arg.to_s)
+                                 arg[0].to_s)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -444,16 +433,13 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
-          objtype	= arg.class.name
-          msg		= format('not a game object: <%s>[%s]',
+        if (@msg.nil?)
+          objtype	= arg[0].class.name
+          @msg		= format('not a game object: <%s>[%s]',
                                  objtype,
-                                 arg.to_s)
+                                 arg[0].to_s)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -471,17 +457,14 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
-          objtype	= arg.class.name
-          msg		= format('no owner specified ' \
+        if (@msg.nil?)
+          objtype	= arg[0].class.name
+          @msg		= format('no owner specified ' \
                                  + 'on creation of: %s:%s',
                                  objtype,
-                                 arg.to_s)
+                                 arg[0].to_s)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -499,15 +482,13 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        if (args[0].kind_of?(String))
-          msg		= args[0]
-        else
+        if (@msg.nil?)
           oeid		= args[0] || kwargs[:eid]
           obj		= args[1] || kwargs[:object]
           ckobj		= args[2] || kwargs[:ckobject]
           iname		= args[3] || kwargs[:inventory_name]
 
-          msg		= format("value for key '%s' in %s " \
+          @msg		= format("value for key '%s' in %s " \
                                  + "fails to match: %s:'%s' " \
                                  + "instead of %s:'%s'",
                                  oeid.to_s,
@@ -515,7 +496,7 @@ module TAGF
                                  (ckobj.name || ckobj.eid).to_s,
                                  (obj.name || obj.eid).to_s)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -533,12 +514,11 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        if ((args.count == 1) && args[0].kind_of?(String))
-          msg	= args[0]
-        else
-          msg	= 'attempt to create in-game object failed (#game not set)'
+        if (@msg.nil?)
+          @msg		= 'attempt to create in-game object ' \
+                          + 'failed (#game not set)'
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -556,17 +536,17 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg	= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg	= arg
-        elsif (arg.kind_of?(Symbol))
-          msg	= format("attribute '%s' is already set " \
-                         + 'and cannot be changed',
-                         arg.to_s)
-        else
-          msg	= 'specific attribute cannot be changed once set'
+        if (@msg.nil?)
+          if (arg[0].kind_of?(Symbol))
+            @msg		= format("attribute '%s' is already set " \
+                                 + 'and cannot be changed',
+                                 arg.to_s)
+          else
+            @msg		= 'specific attribute cannot be changed ' \
+                          + 'once set'
+          end
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -584,25 +564,22 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg	= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg	= arg
-        else
-          obj	= args[0]
-          objtype = obj.class.name.sub(%r!^.*::!, '')
-          name	= obj.name || obj.eid
+        if (@msg.nil?)
+          obj		= args[0]
+          objtype	= obj.class.name.sub(%r!^.*::!, '')
+          name		= obj.name || obj.eid
           if (name)
-            msg	= format("%s object '%s' is static " \
-                         + 'and cannot be relocated',
-                         objtype,
-                         name)
+            @msg		= format("%s object '%s' is static " \
+                                 + 'and cannot be relocated',
+                                 objtype,
+                                 name)
           else
-            msg	= format('%s object is static ' \
-                         + 'and cannot be relocated',
-                         objtype)
+            @msg		= format('%s object is static ' \
+                                 + 'and cannot be relocated',
+                                 objtype)
           end
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -620,18 +597,14 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        name		= nil
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
+        if (@msg.nil?)
           obj		= args[0]
           objtype	= obj.class.name
           name		= format('<%s>[%s]', objtype, obj.eid.to_s)
-          msg		= format('element %s is not a container',
+          @msg		= format('element %s is not a container',
                                  name ? name : objtype)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -653,18 +626,14 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        name		= nil
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
+        if (@msg.nil?)
           obj		= args[0]
           objtype	= obj.class.name
           name		= format('<%s>[%s]', objtype, obj.eid.to_s)
-          msg		= format('element %s is not a container',
+          @msg		= format('element %s is not a container',
                                  name ? name : objtype)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -675,7 +644,7 @@ module TAGF
 
       self.severity	= :error
 
-      extend(Contracts::Core)
+#      extend(Contracts::Core)
 
 #      Contract([Class,
 #                Class,
@@ -693,11 +662,7 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg		= args[0]
-        name		= nil
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg		= arg
-        else
+        if (@msg.nil?)
           msgargs	= []
           msgargs.push(args[0].class.name)
           msgargs.push(args[0].eid.to_s)
@@ -707,11 +672,11 @@ module TAGF
           msgargs.push(args[3].eid.to_s)
           msgargs.push(args[4].to_s.sub(%r![^[:alnum:]]$!, ''))
           msgargs.push(args[5].to_s)
-          msg		= format('<%s>[%s].%s cannot be set to %s ' \
+          @msg		= format('<%s>[%s].%s cannot be set to %s ' \
                                  + 'if <%s>[%s].%s is %s',
                                  *msgargs)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -729,25 +694,22 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        arg	= args[0]
-        if ((args.count == 1) && arg.kind_of?(String))
-          msg	= arg
-        else
-          obj	= args[0]
+        if (@msg.nil?)
+          obj		= args[0]
           objtype	= obj.class.name.sub(%r!^.*::!, '')
-          name	= obj.name || obj.eid
+          name		= obj.name || obj.eid
           if (name)
-            msg	= format("cannot remove %s object '%s' " \
-                         + 'from the master inventory',
-                         objtype,
-                         name)
+            @msg		= format("cannot remove %s object '%s' " \
+                                 + 'from the master inventory',
+                                 objtype,
+                                 name)
           else
-            msg	= format('cannot remove %s object ' \
-                         + 'from the master inventory',
-                         objtype)
+            @msg		= format('cannot remove %s object ' \
+                                 + 'from the master inventory',
+                                 objtype)
           end
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -765,24 +727,24 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        if ((args.count == 1) && args[0].kind_of?(String))
-          msg		= args[0]
-        elsif (args[0].kind_of?(Mixin::Element))
-          name		= args[0].name || args[0].eid.to_s
-          case(args.count)
-          when 0
-            msg		= 'object has no inventory'
-          when 1
-            msg		= format("%s object '%s' has no inventory",
+        if (@msg.nil?)
+          if (args[0].kind_of?(Mixin::Element))
+            name	= args[0].name || args[0].eid.to_s
+            case(args.count)
+            when 0
+              @msg	= 'object has no inventory'
+            when 1
+              @msg	= format("%s object '%s' has no inventory",
                                  args[0].class.name,
                                  name)
-          else
-            msg		= format('unforeseen arguments to ' \
+            else
+              @msg	= format('unforeseen arguments to ' \
                                  + 'exception: %s',
                                  args.inspect)
-          end                   # case(args.count)
+            end                 # case(args.count)
+          end
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -800,9 +762,7 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        if ((args.count >= 1) && args[0].kind_of?(String))
-          msg		= args[0]
-        else
+        if (@msg.nil?)
           target	= args[0]
           unless (target.has_inventory?)
             raise_exception(RuntimeError,
@@ -815,12 +775,12 @@ module TAGF
                                    target.eid.to_s),
                             levels: -1)
           end
-          msg		= format('cannot replace ' \
+          @msg		= format('cannot replace ' \
                                  + 'existing inventory for <%s>[%s]',
                                  target.class.name,
                                  target.eid.to_s)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -839,31 +799,31 @@ module TAGF
         _dbg_exception_start(__method__)
         super
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
-        if ((args.count >= 1) && args[0].kind_of?(String))
-          msg		= args[0]
-        elsif (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(Mixin::Element) })
-          case(args.count)
-          when 0
-            msg		= 'object already in inventory'
-          when 1
-            msg		= format("%s object '%s' " \
+        if (@msg.nil?)
+          if (args[0..[args.count-1,1].min].all? { |o| o.kind_of?(Mixin::Element) })
+            case(args.count)
+            when 0
+              @msg	= 'object already in inventory'
+            when 1
+              @msg	= format("%s object '%s' " \
                                  + 'already in inventory',
                                  args[0].class.name,
                                  (args[0].name || args[0].eid).to_s)
-          when 2
-            msg		= format("%s object '%s' " \
+            when 2
+              @msg	= format("%s object '%s' " \
                                  + 'already in inventory, ' \
                                  + 'cannot add %s with same eid',
                                  args[0].class.name,
                                  (args[0].name || args[0].eid).to_s,
                                  args[1].class.name)
-          else
-            msg		= format('unforeseen arguments ' \
+            else
+              @msg	= format('unforeseen arguments ' \
                                  + 'to exception: %s',
                                  args.inspect)
-          end                   # case(args.count)
+            end                 # case(args.count)
+          end
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -881,9 +841,7 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        if ((args.count >= 1) && args[0].kind_of?(String))
-          msg		= args[0]
-        else
+        if (@msg.nil?)
           target	= args[0]
           newcontent	= args[1]
           if (newcontent.kind_of?(Class))
@@ -893,12 +851,12 @@ module TAGF
                                  newcontent.class.name,
                                  newcontent.eid.to_s)
           end
-          msg		= format('element %s is static and cannot be ' \
+          @msg		= format('element %s is static and cannot be ' \
                                  + 'stored in inventory of %s',
                                  target,
                                  newcontent)
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
@@ -916,20 +874,20 @@ module TAGF
       def initialize(*args, **kwargs)
         _dbg_exception_start(__method__)
         super
-        type	= self.class.name.sub(%r!^.*Duplicate!, '')
-        if ((args.count == 1) && args[0].kind_of?(String))
-          msg	= args[0]
-        elsif (args[0].respond_to?(:eid))
-          msg	= format('attempt to register ' \
-                         'new %s using existing UID %s',
-                         type,
-                         args[0].eid)
-        else
-          msg	= format('attempt to register new %s ' \
-                         + 'with existing UID',
-                         type)
+        type		= self.class.name.sub(%r!^.*Duplicate!, '')
+        if (@msg.nil?)
+          if (args[0].respond_to?(:eid))
+            @msg		= format('attempt to register ' \
+                                 'new %s using existing UID %s',
+                                 type,
+                                 args[0].eid)
+          else
+            @msg		= format('attempt to register new %s ' \
+                                 + 'with existing UID',
+                                 type)
+          end
         end
-        self._set_message(msg)
+        self._set_message(@msg)
       end                       # def initialize
 
       nil
