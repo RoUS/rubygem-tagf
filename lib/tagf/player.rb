@@ -17,10 +17,10 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-if ((! Kernel.const_defined?('TAGF')) \
-    || (! TAGF.ancestors.include?(Contracts::Core)))
+#if ((! Kernel.const_defined?('TAGF')) \
+#    || (! TAGF.ancestors.include?(Contracts::Core)))
 #  require('tagf')
-end
+#end
 require('tagf/mixin/actor')
 require('tagf/mixin/dtypes')
 require('set')

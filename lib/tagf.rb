@@ -19,7 +19,7 @@ require('rubygems')
 require('bundler')
 Bundler.setup
 require('byebug')
-require('contracts')
+#require('contracts')
 require('linguistics')
 require('ostruct')
 require('set')
@@ -116,7 +116,7 @@ module TAGF
   # And now to complete the configuration of the top-level namespace
   # module..
   #
-  include(Contracts::Core)
+#  include(Contracts::Core)
   include(Mixin::UniversalMethods)
   extend(Mixin::DTypes)
   #

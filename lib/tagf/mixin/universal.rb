@@ -18,16 +18,16 @@
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 
-require('contracts')
+#require('contracts')
 
 #
 # Require the master file unless some of its key definitions have been
 # declared.
 #
-if ((! Kernel.const_defined?('TAGF')) \
-    || (! TAGF.ancestors.include?(Contracts::Core)))
+#if ((! Kernel.const_defined?('TAGF')) \
+#    || (! TAGF.ancestors.include?(Contracts::Core)))
 #  require('tagf')
-end
+#end
 
 
 # @!macro doc.TAGF.module
@@ -74,7 +74,7 @@ module TAGF
       end                       # class UniversalMethods eigenclass
       
       #
-      include(Contracts::Core)
+#      include(Contracts::Core)
 
       #
       # List of game-wide option flags to impose (or relax) certain

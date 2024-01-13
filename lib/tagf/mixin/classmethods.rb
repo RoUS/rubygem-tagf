@@ -102,7 +102,7 @@ module TAGF
 #      include(TAGF::Mixin::UniversalMethods)
 
       #
-      include(Contracts::Core)
+#      include(Contracts::Core)
 
       #
       # Modules for automatic inclusion for `include`:
@@ -125,12 +125,12 @@ module TAGF
       # @!macro doc.TAGF.module.classmethod.included
       def included(klass)
 #       debugger
+=begin
         whoami		= format('%s.%s; %s.include(%s)',
                                  self.name,
                                  __method__.to_s,
                                  klass.name,
                                  self.name)
-=begin
       if (TAGF.debugging?(:include))
         warn(whoami)
         warn(format('  %s.include(%s) processed',
@@ -182,13 +182,13 @@ module TAGF
 
       # @!macro doc.TAGF.module.classmethod.extended
       def extended(klass)
+=begin
 #       debugger
         whoami		= format('%s#%s; %s.extend(%s)',
                                  self.name,
                                  __method__.to_s,
                                  klass.name,
                                  self.name)
-=begin
       if (TAGF.debugging?(:extend))
         warn(whoami)
       end

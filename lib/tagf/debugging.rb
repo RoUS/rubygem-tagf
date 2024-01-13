@@ -16,12 +16,12 @@
 # frozen_string_literal: true
 
 require('tagf/mixin/debugging')
-require('contracts')
+#require('contracts')
 
-if ((! Kernel.const_defined?('TAGF')) \
-    || (! TAGF.ancestors.include?(Contracts::Core)))
+#if ((! Kernel.const_defined?('TAGF')) \
+#    || (! TAGF.ancestors.include?(Contracts::Core)))
 #  require('tagf')
-end
+#end
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -70,10 +70,12 @@ module TAGF
 
     # @!macro doc.TAGF.module.classmethod.included
     def included(klass)
+=begin
       whoami            = format('<%s>[eigenclass.%s]',
                                  self.name,
                                  __method__.to_s)
-#      invasion_force(klass)
+      invasion_force(klass)
+=end
       return nil
     end                         # def included(klass)
 

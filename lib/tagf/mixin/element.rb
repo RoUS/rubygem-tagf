@@ -267,7 +267,7 @@ module TAGF
       def add_inventory(**kwargs)
         return self.inventory if (self.has_inventory?)
         kwargs_new	= kwargs.merge({ game: self.game, owned_by: self })
-        self.inventory	= Inventory.new(**kwargs)
+        self.inventory	= Inventory.new(**kwargs_new)
         return self.inventory
       end                       # def add_inventory
 

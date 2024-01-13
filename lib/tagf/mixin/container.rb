@@ -276,7 +276,7 @@ module TAGF
                         self.class.name,
                         self.eid.to_s))
           end
-          result	= self.inventory.add(invobj)
+          self.inventory.add(invobj)
         end
         return self.inventory
       end                       # def update_inventory!

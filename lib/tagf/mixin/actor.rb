@@ -44,10 +44,10 @@ module TAGF
 
         # @!macro doc.TAGF.module.classmethod.included
         def included(klass)
+=begin
           whoami		= format('%s eigenclass.%s',
                                          self.name,
                                          __method__.to_s)
-=begin
           warn(format('%s called for %s',
                       whoami,
 		      klass.name))

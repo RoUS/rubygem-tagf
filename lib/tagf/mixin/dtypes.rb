@@ -40,7 +40,7 @@ module TAGF
 #      include(TAGF::Mixin::UniversalMethods)
 
       #
-      include(Contracts::Core)
+#      include(Contracts::Core)
 
 
       # @!macro doc.TAGF.classmethod.flag.declare
