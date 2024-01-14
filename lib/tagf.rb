@@ -33,6 +33,7 @@ require('set')
 # @!macro doc.TAGF.module
 module TAGF
 
+  # @!method debugging?(*args, **kwargs)
   # Dummy method for debugging before any real methods are defined.
   #
   # @param [Array] args ([])
