@@ -55,12 +55,12 @@ module TAGF
       extend(Mixin::DTypes)
       extend(Forwardable)
 
-      attr_reader(:pathname)
       attr_reader(:context)
-      def_delegator(:@context, :input)
-      def_delegator(:@context, :output)
       def_delegator(:@context, :prompt)
       def_delegator(:@context, :transcribe?)
+      def_delegator(:@context, :pathname)
+      def_delegator(:@context, :input)
+      def_delegator(:@context, :output)
 
       # Reads the next line from this input method.
       #
@@ -159,16 +159,33 @@ module TAGF
     #   alphanumerics and the underscore (`_`) character.  Trailing
     #   whitespace is ignored.
     # * <em>text-line</em> —
-    #   Lines of text comprising the actual value of the
+    #   Lines of text comprising the actual value of the here-doc
     class HereDoc
 
-      #
       attr_accessor(:prefix)
       attr_accessor(:delimiter)
       attr_accessor(:delimiter_re)
       attr_accessor(:raw)
       attr_accessor(:lines)
 
+      # Constructor for HereDoc class.  Set any instance variables
+      # whose names appear in `kwargs`.
+      # @param [Hash<Symbol=>Object>] kwargs
+      # @option kwargs [String] 	:prefix
+      # @option kwargs [String] 	:delimiter
+      # @option kwargs [Regexp] 	:delimiter_re
+      # @option kwargs [String]		:raw
+      # @option kwargs [Array<String>]	:lines
+      def initialize(**kwargs)
+        %i[ prefix delimiter delimiter_re raw lines ].each do |kw|
+          if (val = kwargs[kw])
+            setter	= format('%s=', kw.to_s).to_sym
+            self.send(setter, val)
+          end
+        end
+      end                       # def initialize(**kwargs)
+
+      nil
     end                         # class HereDoc
 
     # Main supervisory class for getting and processing input from the
@@ -193,28 +210,109 @@ module TAGF
       # nitty-gritty lower-level details.
       extend(Forwardable)
 
-      # Instance of the class that will be used to read from the input
-      # stream in this context.  Supported values are any object that
-      # subclasses TAGF::UI::InputMethod.
-      # @return [InputMethod]
-      attr_accessor(:inputmethod)
+      # Names of fields in the Context instance.  Used to process
+      # constructor keyword arguments, but also for cloning when
+      # creating a subordinate context.
+      KWSYMS		= {
+        #
+        # Should input be visible/show up in the output stream?
+        # (Doesn't include prompts, which aren't input.)
+        #
+        echo:                   true,
+        #
+        # Should input operations (prompt plus echoed input) be copied
+        # to the output stream?  Mostly for ViaFile, since Readline
+        # handle this itself.
+        #
+        transcribe:             false,
+        #
+        # Should input lines be recorded in the history buffer?  Only
+        # echoed lines are eligible; unechoed input doesn't get
+        # recorded *any*where.
+        #
+        record:			true,
+        #
+        # Should leading whitespace be stripped before input is
+        # returned to the caller?
+        #
+        strip_leading:          true,
+        #
+        # How about trailing whitespace, and newlines?  Trailing
+        # newlines are left untouched in here-docs.
+        #
+        strip_trailing:         true,
+        #
+        # Do we check input lines for here-doc delimiters (except when
+        # processing a here-doc)?  Or just treat them verbatim?
+        #
+        allow_heredoc:          true,
+        #
+        # Runtime flag indicating whether or not we're in the middle
+        # of processing a here-doc.
+        #
+        in_heredoc:             false,
+        #
+        # HereDoc object when processing (or just completed processing
+        # of) a set of input lines comprising a here-doc.
+        #
+        heredoc:                nil,
+        #
+        # Input prompt.  Used directly by ViaReadline, and by ViaFile
+        # when transcribing.
+        #
+        prompt:                 '> ',
+        #
+        # Support for (e.g.) TAB-completion during input.  nil means
+        # 'no.'  (ViaReadline only)
+        #
+        completion_proc:        nil,
+        #
+        # Whether history is retained when pushing a new context.  If
+        # false, the new context will start with an empty history
+        # buffer.  (ViaReadline only)
+        #
+        propagate_history:      true,
+        #
+        # Array of text lines read in the current context; part of our
+        # module, not Readline's HISTORY buffer.
+        #
+        lines:                  [],
+        #
+        # Instance of class tailored to reading from an input source;
+        # either ViaFile or ViaReadline.  All actual obtaining of
+        # input goes through this; source-agnostic processing occurs
+        # in the Context methods.
+        #
+        inputmethod:		nil,
+        #
+        # Name of the input file to open and read.  (ViaFile only)
+        #
+        file:                   nil,
+        #
+        # Human-readable rendition of the input source.
+        #
+        pathname:               nil,
+        #
+        # IO streams to be used in the current context.
+        #
+        input:                  $stdin,
+        output:                 $stdout,
+        error:                  $stderr,
+      }
 
-      # @!attribute [rw] input ($stdin)
-      # IO stream from which we read for the current context.
-      # @return [IO,String]
-      file_accessor(input:	$stdin)
-
-      # @!attribute [rw] output ($stdout)
-      # IO stream to which we send normal output, such as prompts,
-      # reports, descriptions, <em>&c.</em>
-      # @return [IO,String]
-      file_accessor(output:	$stdout)
-
-      # @!attribute [rw] error ($stdin)
-      # IO stream to which we send error messages and exception
-      # reports.
-      # @return [IO,String]
-      file_accessor(error:	$stderr)
+      # Boolean flag indicating whether lines read from the input
+      # stream should be echoed to the output stream.  If the input
+      # method is ViaReadline, this is handled directly by the
+      # {Readline#readline} library.  If the input stream is a file
+      # (<em>i.e.</em>, the input method is ViaFile), such echoing
+      # must be done manually.
+      # @see transcribe
+      # @see record
+      # @return [Boolean]
+      #   `true` if text read from the input stream should be echoed
+      #   <em>verbatim</em> to the output stream as it's typed.
+      # @ ! macro [attach] doc.TAGF.classmethod.flag.invoke
+      flag(echo:	true)
 
       # Boolean flag indicating whether lines read from the input
       # stream should be echoed to the output stream <em>after having
@@ -231,18 +329,13 @@ module TAGF
       # @ ! macro [attach] doc.TAGF.classmethod.flag.invoke
       flag(transcribe:	false)
 
-      # Boolean flag indicating whether lines read from the input
-      # stream should be echoed to the output stream.  If the input
-      # method is ViaReadline, this is handled directly by the
-      # {Readline#readline} library.  If the input stream is a file
-      # (<em>i.e.</em>, the input method is ViaFile), such echoing
-      # must be done manually.
+      # @see echo
       # @see transcribe
       # @return [Boolean]
       #   `true` if text read from the input stream should be echoed
       #   <em>verbatim</em> to the output stream as it's typed.
       # @ ! macro [attach] doc.TAGF.classmethod.flag.invoke
-      flag(echo:	true)
+      flag(record:	true)
 
       # @!attribute [rw] strip_leading
       # Boolean flag indicating whether input lines should have
@@ -278,8 +371,6 @@ module TAGF
       #   @return [Boolean]
       #     whether both leading and trailing whitespace should be
       #     removed.
-      # @overload strip=(val)
-      #   @return [Boolean] the argument value.
       # @overload strip!
       #   @return [Boolean] `true`, as both of the #strip_leading and
       #   the #strip_trailing attributes are unconditionally set.
@@ -288,6 +379,9 @@ module TAGF
         return result
       end                       # def strip
       alias_method(:strip?, :strip)
+      # @overload strip=(val)
+      #   @param [Boolean] val
+      #   @return [Boolean] the argument value.
       def strip=(val)
         val		= truthify(val)
         self.strip_leading = val
@@ -299,6 +393,43 @@ module TAGF
         self.strip_trailing = true
         return true
       end                       # def strip!
+
+      # Boolean flag indicating whether input lines should be checked
+      # for here-doc header signatures.
+      # @see Here_Documents
+      # @note
+      #   If a here-doc is in progress, this flag is disabled;
+      #   here-docs cannot be nested.
+      # @return [Boolean]
+      #   `true` if input lines are to check for here-doc syntax and
+      #   processed appropriately.
+      # @ ! macro doc.TAGF.classmethod.flag.invoke
+      flag(allow_heredoc: true)
+
+      # Boolean flag indicating whether we're currently reading lines
+      # of a here-doc.  When true, input lines are checked for the
+      # here-doc terminator, and new here-docs are not allowed (or,
+      # rather, are treated as just normal text).
+      # @return [Boolean]
+      #   `true` if the input processor is in the middle of readine a
+      #   here-doc.
+      # @ ! macro doc.TAGF.classmethod.flag.invoke
+      flag(in_heredoc:	false)
+
+      # Particulars of the most recent (or current) here-doc
+      # processed.  Here-docs are more complicated than simple one-off
+      # input lines, so we use a more complex storage tool for them.
+      # @return [HereDoc,nil]
+      #   the HereDoc object currently being processed.
+      attr_accessor(:heredoc)
+
+      # @!attribute [rw] prompt
+      # Prompt used when requesting input in this context.  New ones
+      # are pushed when read context changes (such as reading lines of
+      # a here-doc), and popped when that reverts.
+      # @return [String]
+      #   the current prompt string
+      attr_accessor(:prompt)
 
       # @!attribute [rw] completion_proc
       # Proc or method object that should be used to handle completion
@@ -331,28 +462,6 @@ module TAGF
         @completion_proc = handler
       end                       # def completion_proc=(handler)
 
-      # Boolean flag indicating whether input lines should be checked
-      # for here-doc header signatures.
-      # @see Here_Documents
-      # @note
-      #   If a here-doc is in progress, this flag is disabled;
-      #   here-docs cannot be nested.
-      # @return [Boolean]
-      #   `true` if input lines are to check for here-doc syntax and
-      #   processed appropriately.
-      # @ ! macro doc.TAGF.classmethod.flag.invoke
-      flag(allow_heredoc: true)
-
-      # Boolean flag indicating whether we're currently reading lines
-      # of a here-doc.  When true, input lines are checked for the
-      # here-doc terminator, and new here-docs are not allowed (or,
-      # rather, are treated as just normal text).
-      # @return [Boolean]
-      #   `true` if the input processor is in the middle of readine a
-      #   here-doc.
-      # @ ! macro doc.TAGF.classmethod.flag.invoke
-      flag(in_heredoc:	false)
-
       # @!attribute [rw] propagate_history (true)
       # When a new context is pushed, it can either start a new list
       # of recorded lines, or it can
@@ -361,53 +470,48 @@ module TAGF
       #   we push a new context.
       flag(propagate_history: true)
 
-      # Particulars of the most recent (or current) here-doc
-      # processed.  Here-docs are more complicated than simple one-off
-      # input lines, so we use a more complex storage tool for them.
-      # @return [HereDoc,nil]
-      #   the HereDoc object currently being processed.
-      attr_accessor(:heredoc)
-
-      # Prompts used when requesting input in this context.  New ones
-      # are pushed when read context changes (such as reading lines of
-      # a here-doc), and popped when that reverts.
-      # @return [String]
-      #   the current prompt string
-      attr_reader(:prompt)
-
       # Array of input lines stored as history.  New lines are pushed
       # on the end.
+      # @return [Array<String>]
       attr_reader(:lines)
+
+      # Instance of the class that will be used to read from the input
+      # stream in this context.  Supported values are any object that
+      # subclasses TAGF::UI::InputMethod.
+      # @return [InputMethod]
+      attr_accessor(:inputmethod)
+
+      # @!attribute rw [String] file
+      # @return [String]
+      #   name of input file
+      attr_accessor(:file)
+
+      # @!attribute [rw] pathname
+      # @return [String]
+      attr_accessor(:pathname)
+
+      # @!attribute [rw] input ($stdin)
+      # IO stream from which we read for the current context.
+      # @return [IO,String]
+      file_accessor(input:	$stdin)
+
+      # @!attribute [rw] output ($stdout)
+      # IO stream to which we send normal output, such as prompts,
+      # reports, descriptions, <em>&c.</em>
+      # @return [IO,String]
+      file_accessor(output:	$stdout)
+
+      # @!attribute [rw] error ($stdin)
+      # IO stream to which we send error messages and exception
+      # reports.
+      # @return [IO,String]
+      file_accessor(error:	$stderr)
 
       # Standard set of word-break characters for completion.
       DEFAULT_WORD_BREAK_CHARS = " \t\n`><=;|&{("
 
-      # Names of fields in the Context instance.  Used to process
-      # constructor keyword arguments, but also for cloning when
-      # creating a subordinate context.
-      KWSYMS		= {
-        echo:                   true,
-        transcribe:             false,
-        strip_leading:          true,
-        strip_trailing:         true,
-        allow_heredoc:          true,
-        in_heredoc:             false,
-        heredoc:                nil,
-        prompt:                 '> ',
-        completion_proc:        nil,
-        propagate_history:      true,
-        lines:                  [],
-        inputmethod:		nil,
-        file:                   nil,
-        pathname:               nil,
-        input:                  $stdin,
-        output:                 $stdout,
-        error:                  $stderr,
-      }
-
       # The end-of-file test actually lives in the input method object
       # rather than here in the context, but we might need it here.
-      #
       def_delegator(:@inputmethod, :eof?)
 
       # Constructor for Context class instances.
@@ -454,13 +558,70 @@ module TAGF
 
       # 'Smart' method for reading from the input stream.
       def read(*args, **kwargs)
-        self.gets
-      end                       # def read(*args, **kwargs)
+        text		= self.inputmethod.gets
+        #
+        # If we seem to be at EOF, just exit.
+        #
+        return text if (text.nil?)
+        #
+        # Here-doc processing is involved, so let's check for the
+        # simplest case (no here-docs) and get it out of the way.
+        #
+        unless (self.allow_heredoc? && (hdinfo = self.heredoc?(text)))
+          case(true)
+          when self.strip?
+            text.strip!
+          when self.strip_leading?
+            text.lstrip!
+          when self.strip_trailing?
+            text.rstrip!
+          end
+          return text
+        end                     # unless (self.allow_heredoc? && self.heredoc?(text))
+        #
+        # Okey, we're starting a here-doc.  `hdinfo` is a {HereDoc}
+        # object that has been preloaded with much of the information.
+        #
 
-      #
-      def gets
-        return self.inputmethod.gets
-      end                       # def gets
+        #
+        # Here is where we read the here-doc lines.
+        #
+        save_prompt	= self.prompt
+        self.prompt	= format('[Heredoc:%s]> ', hdinfo.delimiter)
+        result		= hdinfo
+        self.in_heredoc	= true
+        hdinfo.raw	= String.new
+        catch(:heredoc_read) do
+          while (true)
+            line	= self.inputmethod.gets
+            if (line.nil?)
+              #
+              # Got EOF before reaching the here-doc termination line.
+              #
+              warn(format('EOF encountered before ' \
+                          + 'end of "%s" here-doc; ' \
+                          + 'any partial input discarded',
+                          hdinfo.delimiter))
+              result	= ''
+              throw(:heredoc_read)
+            end
+            if (line.match(hdinfo.delimiter_re))
+              #
+              # We've hit the terminator line.  Don't include it, and
+              # exit the loop.
+              #
+              throw(:heredoc_read)
+            end
+            hdinfo.raw	<< line
+          end
+        end                     # catch(:heredoc_read) do
+        self.prompt	= save_prompt
+        self.in_heredoc	= false
+        if (hdinfo.raw)
+          hdinfo.lines	= hdinfo.raw.split(%r!\n!)
+        end
+        return hdinfo
+      end                       # def read(*args, **kwargs)
 
       def clone(*args, **kwargs)
         #
@@ -475,6 +636,85 @@ module TAGF
         nu_me		= self.class.new(**ckwargs)
         return nu_me
       end                       # def clone
+
+      # Method used to check whether a line of input starts a
+      # `here-document`.  Primarily intended for use by the
+      # administrator command-line and scripting tools, it either
+      # returns `false` if there's no `here-doc` indicator, or a
+      # structure for use in processing the `here-doc` text lines that
+      # follow.
+      #
+      # @param [String] input
+      #   A line of text to be checked for a `here-document` opener.
+      # @raise [RuntimeError]
+      #   The `here-doc` termination string was invalid, either in
+      #   outright composition or possibly by having mismatched
+      #   quotation marks.
+      # @return [HereDoc,false]
+      #   * If the last word (as defined by the shell) of the input
+      #     parameter <b>does not</b> match a valid `here-doc`
+      #     terminator pattern, this method returns `false`.
+      #   * If the last word <b>does</b> is a valid `here-doc`
+      #     terminator, the return value is a structure with the
+      #     following attributes:
+      #
+      #     * `.interpolate` [Boolean]
+      #       (Not currently used.)  Indicates whether the final value
+      #       of the `here-doc` should be subjected to variable
+      #       interpolation or other post-processing.  If `false`, it
+      #       should be treated as a raw string.
+      #     * `.delimiter_re` [Reqexp]
+      #       A regular expression identifying the format of a line
+      #       terminating the `here-doc` text.  It matches the
+      #       *entire* line, so no pre-parsing is necessary.
+      #
+      # @see Here_Documents
+      #
+      def heredoc?(input)
+        words		= Shellwords.split(input)
+        if (words.last[0,2] == '<<')
+          warn('Possible here-doc')
+          if (! (m = words.last.match(HEREDOC_RE)))
+            #
+            # Doesn't match our allowed pattern.  Don't explain why.
+            #
+            raise(RuntimeError,
+                  format('invalid here-doc suffix syntax: %s',
+                         words.last.inspect))
+          end
+          #
+          # We have a here-doc suffix that matches the pattern..
+          #
+          if (m.captures[1] != m.captures[3])
+            #
+            # .. except the '<<{word}' was quoted incorrectly.  Bzzzt!
+            #
+            raise(RuntimeError,
+                  format('invalid here-suffix ' \
+                         + '(mismatched quotes): %s',
+                         m.captures.inxpect
+                        ))
+          end
+          warn(format('Here-document ending with «%s»',
+                      m.captures[2]))
+          result	= HereDoc.new(
+            prefix:		input.sub(%r!<<.*!, '').chomp,
+            interpolate:	(! m.captures[1].nil?),
+            delimiter:		m.captures[2],
+            delimiter_re:	nil,
+            raw:		nil,
+            lines:		[]
+          )
+          pre_re	= format('^%s%s$',
+                                 (m.captures[0] == '-' \
+                                  ? '\s*' \
+                                  : ''),
+                                 Regexp.escape(m.captures[2]))
+          result.delimiter_re = Regexp.compile(pre_re)
+          return result
+        end                     # if (words.last[0,2] == '<<')
+        return false
+      end                       # def heredoc?(input)
 
       nil
     end                         # class Context
@@ -904,79 +1144,6 @@ module TAGF
       def initialize(*args, **kwargs)
         @contexts	= []
       end                       # def initialize
-
-      # Method used to check whether a line of input starts a
-      # `here-document`.  Primarily intended for use by the
-      # administrator command-line and scripting tools, it either
-      # returns `false` if there's no `here-doc` indicator, or a
-      # structure for use in processing the `here-doc` text lines that
-      # follow.
-      #
-      # @param [String] input
-      #   A line of text to be checked for a `here-document` opener.
-      # @raise [RuntimeError]
-      #   The `here-doc` termination string was invalid, either in
-      #   outright composition or possibly by having mismatched
-      #   quotation marks.
-      # @return [OpenStruct,false]
-      #   * If the last word (as defined by the shell) of the input
-      #     parameter <b>does not</b> match a valid `here-doc`
-      #     terminator pattern, this method returns `false`.
-      #   * If the last word <b>does</b> is a valid `here-doc`
-      #     terminator, the return value is a structure with the
-      #     following attributes:
-      #
-      #     * `.interpolate` [Boolean]
-      #       (Not currently used.)  Indicates whether the final value
-      #       of the `here-doc` should be sujected to variable
-      #       interpolation or other post-processing.  If `false`, it
-      #       should be treated as a raw string.
-      #     * `.term_re` [Reqexp]
-      #       A regular expression identifying the format of a line
-      #       terminating the `here-doc` text.  It matches the
-      #       *entire* line, so no pre-parsing is necessary.
-      #
-      # @see Here_Documents
-      #
-      def heredoc?(input)
-        words		= Shellwords.split(input)
-        if (words.last[0,2] == '<<')
-          warn('Possible here-doc')
-          if (! (m = words.last.match(HEREDOC_RE)))
-            #
-            # Doesn't match our allowed pattern.  Don't explain why.
-            #
-            raise(RuntimeError,
-                  format('invalid here-doc suffix syntax: %s',
-                         words.last.inspect))
-          end
-          #
-          # We have a here-doc suffix that matches the pattern..
-          #
-          if (m.captures[1] != m.captures[3])
-            #
-            # .. except the '<<{word}' was quoted incorrectly.  Bzzzt!
-            #
-            raise(RuntimeError,
-                  format('invalid here-suffix ' \
-                         + '(mismatched quotes): %s',
-                         m.captures.inxpect
-                        ))
-          end
-          warn(format('Here-document ending with «%s»',
-                      m.captures[2]))
-          result	= OpenStruct.new(
-            interpolate: (! m.captures[1].nil?),
-            term_re:	nil
-          )
-          terminator	= format('^%s%s$',
-                                 (m.captures[0] == '-' ? '\s*' : ''),
-                                 Regexp.escape(m.captures[2]))
-          result.term_re = Regexp.compile(terminator)
-          return result
-        end                     # if (words.last[0,2] == '<<')
-        return false
-      end                       # def heredoc?(input)
 
       #
       def readline(prompt=nil, **kwargs)
