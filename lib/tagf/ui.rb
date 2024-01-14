@@ -59,6 +59,8 @@ module TAGF
       attr_reader(:context)
       def_delegator(:@context, :input)
       def_delegator(:@context, :output)
+      def_delegator(:@context, :prompt)
+      def_delegator(:@context, :transcribe?)
 
       # Reads the next line from this input method.
       #
@@ -69,7 +71,7 @@ module TAGF
       public(:gets)
 
       def winsize
-        outstream	= self.context.output
+        outstream	= self.output
         if (outstream.respond_to?(:tty?) && outstream.tty?)
           result	= outstream.winsize
         else
@@ -157,7 +159,7 @@ module TAGF
     #   alphanumerics and the underscore (`_`) character.  Trailing
     #   whitespace is ignored.
     # * <em>text-line</em> —
-    #   Lines of text comprising the actual value of the 
+    #   Lines of text comprising the actual value of the
     class HereDoc
 
       #
@@ -197,13 +199,21 @@ module TAGF
       # @return [InputMethod]
       attr_accessor(:inputmethod)
 
-      # @!macro [attach] doc.TAGF.classmethod.file_accessor.invoke
+      # @!attribute [rw] input ($stdin)
+      # IO stream from which we read for the current context.
+      # @return [IO,String]
       file_accessor(input:	$stdin)
 
-      # @!macro doc.TAGF.classmethod.file_accessor.invoke
+      # @!attribute [rw] output ($stdout)
+      # IO stream to which we send normal output, such as prompts,
+      # reports, descriptions, <em>&c.</em>
+      # @return [IO,String]
       file_accessor(output:	$stdout)
 
-      # @!macro doc.TAGF.classmethod.file_accessor.invoke
+      # @!attribute [rw] error ($stdin)
+      # IO stream to which we send error messages and exception
+      # reports.
+      # @return [IO,String]
       file_accessor(error:	$stderr)
 
       # Boolean flag indicating whether lines read from the input
@@ -263,11 +273,11 @@ module TAGF
       # @overload strip
       #   @return [Boolean]
       #     whether both leading and trailing whitespace should be
-      #     removed. 
+      #     removed.
       # @overload strip?
       #   @return [Boolean]
       #     whether both leading and trailing whitespace should be
-      #     removed. 
+      #     removed.
       # @overload strip=(val)
       #   @return [Boolean] the argument value.
       # @overload strip!
@@ -293,7 +303,7 @@ module TAGF
       # @!attribute [rw] completion_proc
       # Proc or method object that should be used to handle completion
       # checking and processing when reading input interactively.
-      # @return [Proc,Method,Lambda,nil]
+      # @return [Proc,Method,nil]
       #   either the object that should be used by the Readline
       #   library to process completions, or `nil` if completion
       #   isn't enabled.
@@ -304,10 +314,10 @@ module TAGF
         return @completion_proc
       end                       # def completion_proc
       # @overload completion_proc=(handler)
-      #   @param [Proc] handler
-      #     A Proc, Lambda, or bound Method object that should be
+      #   @param [Proc,Method,nil] handler
+      #     A Proc or bound Method object that should be
       #     invoked by the Readline library to help the user enter a
-      #     command.
+      #     command.  Set to `nil` to disable completion processing.
       def completion_proc=(handler)
         valid_handler	= [Proc,Method].any? { |ht|
           (handler.nil? || handler.kind_of?(ht))
@@ -343,6 +353,14 @@ module TAGF
       # @ ! macro doc.TAGF.classmethod.flag.invoke
       flag(in_heredoc:	false)
 
+      # @!attribute [rw] propagate_history (true)
+      # When a new context is pushed, it can either start a new list
+      # of recorded lines, or it can
+      # @return [Boolean]
+      #   `true` if any existing history should be passed along when
+      #   we push a new context.
+      flag(propagate_history: true)
+
       # Particulars of the most recent (or current) here-doc
       # processed.  Here-docs are more complicated than simple one-off
       # input lines, so we use a more complex storage tool for them.
@@ -359,7 +377,7 @@ module TAGF
 
       # Array of input lines stored as history.  New lines are pushed
       # on the end.
-      attr_reader(:history)
+      attr_reader(:lines)
 
       # Standard set of word-break characters for completion.
       DEFAULT_WORD_BREAK_CHARS = " \t\n`><=;|&{("
@@ -377,7 +395,8 @@ module TAGF
         heredoc:                nil,
         prompt:                 '> ',
         completion_proc:        nil,
-        history:                [],
+        propagate_history:      true,
+        lines:                  [],
         inputmethod:		nil,
         file:                   nil,
         pathname:               nil,
@@ -386,6 +405,9 @@ module TAGF
         error:                  $stderr,
       }
 
+      # The end-of-file test actually lives in the input method object
+      # rather than here in the context, but we might need it here.
+      #
       def_delegator(:@inputmethod, :eof?)
 
       # Constructor for Context class instances.
@@ -400,8 +422,9 @@ module TAGF
           kivar		= format('@%s', kw.to_s).to_sym
           ksetter	= format('%s=', kw.to_s).to_sym
           #
-          # The inputmethod attribute is specit
-          if (kw == :inputmethod)
+          # The inputmethod attribute is specified as a string.
+          #
+          if ((kw == :inputmethod) && val)
             begin
               settings[kw] = UI.const_get(val)
             rescue NameError
@@ -525,13 +548,13 @@ module TAGF
       # See IO#gets for more information.
       def gets
         text_in		= @io.gets
-        if (self.context.transcribe?)
+        if (self.transcribe?)
           if (text_in.nil? && self.eof?)
             transcription = format("%s[end of file]\n",
-                                   self.context.prompt)
+                                   self.prompt)
           else
             transcription = format('%s%s',
-                                   self.context.prompt,
+                                   self.prompt,
                                    text_in)
           end
           self.output.print(transcription)
@@ -564,20 +587,143 @@ module TAGF
     # the Readline gem.
     class ViaReadline < InputMethod
 
-      # Require and initialise the Readline package, but keep it
-      # local to this input method.
-      # @return [void]
-      def self.initialize_readline
-        begin
-          require('readline')
-        rescue LoadError
-        else
-          include(::Readline)
+      #
+      # ViaReadline eigenclass
+      #
+      class << self
+
+        # @!attribute [r] readline_initialised
+        # Flag that we've performed the one-time setup bits for the
+        # Readline library (importing the code, saving any existing
+        # history lines, <em>&c.</em>).  Stored in the eigenclass for
+        # safety.
+        # @return [Boolean]
+        #   `true` if the Readline library is ready for use.
+        attr_reader(:readline_initialised)
+
+        # @!attribute [r] saved_history
+        # An array of all the lines stored in the Readline::HISTORY
+        # buffer at the point class method #initialise_readline was
+        # invoked.  The #restore_history class method is intended to
+        # reverse this process.
+        # @return [Array<String>]
+        attr_reader(:saved_history)
+
+        # Require and initialise the Readline package, but keep it
+        # local to this input method.  Also, make a copy of the
+        # Readline::HISTORY buffer, and then clear it so it only
+        # contains application input.
+        # @see #save_history
+        # @see #restore_history
+        # @return [void]
+        def initialize_readline
+          if (self.readline_initialised)
+            #
+            # We've already been here, done this.
+            #
+            return
+          end
+          begin
+            warn(format('%s.%s requiring readline',
+                        self.class.name.to_s,
+                        __method__.to_s))
+            require('readline')
+          rescue LoadError => exc
+            warn(format("%s.%s unable to load readline\n" \
+                        "\t%s",
+                        self.class.name.to_s,
+                        __method__.to_s.
+                          exc.to_s))
+            include(::Readline)
+            #
+            #
+            @saved_history = HISTORY.to_a
+            HISTORY.clear
+          else
+            warn(format('%s.%s including Readline',
+                        self.class.name.to_s,
+                        __method__.to_s))
+            include(::Readline)
+          end
+          @realine_initialised = true
+          return nil
+        end                     # def self.initialize_readline
+
+        nil
+      end                       # ViaReadline eigenclass
+
+      # @!method save_history(erase: false)
+      # Copy the Readline::HISTORY buffer and return the array of
+      # history lines.  Can optionally erase the Readline::HISTORY
+      # buffer after making the copy, depending upon the value of
+      # the `erase` argument.
+      # 
+      # @param [Boolean] erase (false)
+      #   Controls whether or not the Readline::HISTORY buffer is
+      #   cleared after all the lines have been copied from it.
+      # @return [Array<String>]
+      #   list of lines from the Readline::HISTORY buffer.
+      def save_history(erase: false)
+        saved_history	= []
+        Readline::HISTORY.each do |line|
+          saved_history << line
         end
-        return nil
-      end                       # def self.initialize_readline
+        Readline::HISTORY.clear if (erase)
+        return saved_history
+      end                       # def restore_history
+
+      # @!method load_history
+      # Attempt to clear the Readline::HISTORY buffer and read in
+      # new contents from the given file.  If the file cannot be
+      # read, a warning is displayed and Readline::HISTORY is
+      # unaffected.
+      def load_history(file)
+        hlines		= []
+        begin
+          hlines	= File.open(file, 'r').readlines
+        rescue StandardError => exc
+          raise_exception(BadHistoryFile,
+                          file:		file,
+                          exception:	exc)
+        end
+        Readline::HISTORY.clear
+        return self.set_history(hlines)
+      end                       # def load_history(file)
+
+      # @!method set_history(histlines)
+      # Clear the Readline::HISTORY buffer and copy saved lines from
+      # the `histlines` argument into it.
+      #
+      # @param [Array<String>] histlines
+      # @raise [ArgumentError]
+      #   if `histlines` isn't an array of Strings
+      # @return [Array<String>]
+      #   the new history contents.
+      def set_history(histlines)
+        unless (histlines.kind_of?(Array) \
+                && histlines.all? { |e| e.kind_of?(String) })
+          raise_error(ArgumentError,
+                      format('%s.%s requires an array of strings',
+                             self.class.name,
+                             __method__.to_s))
+        end
+        Readline::HISTORY.clear
+        histlines.each do |line|
+          Readline::HISTORY << line
+        end
+        return Readline::HISTORY.to_a
+      end                       # def set_history(histlines)
 
       # Creates a new input method object using Readline
+      # @param [Array]			args
+      # @param [Hash<Symbol=>Object>]	kwargs
+      # @option kwargs [String]		:context
+      # @option kwargs [String]         :history_file
+      # @option kwargs [String]		:file
+      # @option kwargs [String]		:pathname
+      # @option kwargs [String]		:input
+      # @option kwargs [String]		:output
+      # @option kwargs [String]		:completion_proc
       def initialize(*args, **kwargs)
         self.class.initialize_readline
         super
@@ -612,13 +758,30 @@ module TAGF
       def gets
         Readline.input	= self.input
         Readline.output	= self.output
-        if (l = readline(self..prompt, false))
-          HISTORY.push(l) unless (l.empty?)
-          @line[@line_no += 1] = l + "\n"
-        else
-          @eof		= true
-          l
-        end
+        @ttychars	= nil
+        @ttychars	= `stty -g`.chomp if (self.input.tty?)
+        begin
+          if (l = readline(self.prompt, true))
+            HISTORY.push(l) unless (l.empty?)
+            @line[@line_no += 1] = l + "\n"
+          else
+            @eof	= true
+            l
+          end
+        rescue Interrupt
+          #
+          # Restore the terminal settings if any were saved.
+          #
+          if (self.input.tty? && (@ttychars.to_s.length != 0))
+            system('stty', @ttychars)
+          end
+          self.class.handle_interrupt
+          #
+          # Re-raise the Interrupt exception so anything in our call
+          # tree wants to deal with it.
+          #
+          raise
+        end                     # rescue block for CTRL/C
       end                       # def gets
       public(:gets)
 
@@ -730,7 +893,7 @@ module TAGF
       # @param [Array]		args
       # @param [Hash<Symbol=>Object>]	kwargs		({})
       # @option kwargs [Boolean]	:echo		(true)
-      # @option kwargs [Boolean]	:history	(true)
+      # @option kwargs [Array]		:lines		([])
       # @option kwargs [Symbol]		:input		($stdin)
       # @option kwargs [Symbol]		:output		($stdout)
       # @option kwargs [Symbol]		:error		($stderr)
