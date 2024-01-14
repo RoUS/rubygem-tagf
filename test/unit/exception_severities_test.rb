@@ -7,6 +7,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   ExceptionClasses	= {
     InvalidSeverity:		SEVERITY.warning,
+    BadHistoryFile:		SEVERITY.warning,
     LimitItems:			SEVERITY.warning,
     NoLoadFile:			SEVERITY.error,
     BadLoadFile:		SEVERITY.severe,

@@ -345,6 +345,34 @@ module TAGF
     end                         # class InvalidSeverity
 
     #
+    class BadHistoryFile < ErrorBase
+
+      self.severity	= :warning
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [NoLoadFile] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__method__)
+        super
+        if (@msg.nil?)
+          if (args[0].nil?)
+            @msg	= 'cannot open/read command history file'
+          else
+            @msg	= format("cannot restore history from %s\n" \
+                                 + "\t%s",
+                                 kwargs[:file] || '<not specified>',
+                                 kwargs[:exception] || 'unknown reason')
+          end
+        end
+        self._set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class BadHistoryFile
+
+    #
     class NoLoadFile < ErrorBase
 
       self.severity	= :error
