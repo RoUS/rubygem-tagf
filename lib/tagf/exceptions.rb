@@ -87,12 +87,36 @@ module TAGF
     ]
 
     #
+    EXCEPTION_IDS	= {}
+
+    #
     class ErrorBase < StandardError
 
       #
       extend(TAGF::Mixin::DTypes)
 
       class << self
+
+        #
+        def assign_ID
+          our_name	= self.name.sub(%r!^.*::!, '')
+          unless ((our_id = Exceptions::EXCEPTION_IDS[our_name]).nil?)
+            return our_id
+          end
+          last_id	= Exceptions::EXCEPTION_IDS.values.max.to_i
+          our_id	= last_id + 1
+          Exceptions::EXCEPTION_IDS[our_name] = our_id
+          #
+          # Don't know why 'self.define_method(:exception_id)' isn't
+          # working..
+          #
+          self.eval(<<-EOMETH)
+            def exception_id
+              return #{our_id}
+            end
+          EOMETH
+          return our_id
+        end                     # def assign_id
 
         #
         # Array of all acceptable severity values, integers and
@@ -258,6 +282,11 @@ module TAGF
       #
       class LimitItems < ::TAGF::Exceptions::ErrorBase
 
+        #
+        # Assign this exception class a unique ID number
+        #
+        self.assign_ID
+
         self.severity	= :warning
 
         #
@@ -287,14 +316,14 @@ module TAGF
             owner_name	= owner.name
             owner_eid	= owner.eid
             @msg		= format('inventory for %s:"%s" is full; ' \
-                                 + '%i/%i %s, cannot add "%s"',
-                                 owner_klass,
-                                 (owner_name || owner_eid).to_s,
-                                 owner.items_current,
-                                 owner.capacity_items,
-                                 pluralise('item',
-                                           owner.capacity_items),
-                                 (newitem.name || newitem.eid).to_s)
+                                         + '%i/%i %s, cannot add "%s"',
+                                         owner_klass,
+                                         (owner_name || owner_eid).to_s,
+                                         owner.items_current,
+                                         owner.capacity_items,
+                                         pluralise('item',
+                                                   owner.capacity_items),
+                                         (newitem.name || newitem.eid).to_s)
           end
           self._set_message(@msg)
         end                     # def initialize
@@ -317,6 +346,11 @@ module TAGF
     #
     # @see SEVERITY
     class InvalidSeverity < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :warning
 
@@ -347,6 +381,11 @@ module TAGF
     #
     class BadHistoryFile < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :warning
 
       #
@@ -375,6 +414,11 @@ module TAGF
     #
     class NoLoadFile < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :error
 
       #
@@ -395,6 +439,11 @@ module TAGF
 
     #
     class BadLoadFile < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :severe
 
@@ -428,6 +477,11 @@ module TAGF
     #
     class NotExceptionClass < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :error
 
       #
@@ -451,6 +505,11 @@ module TAGF
 
     #
     class NotGameElement < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :severe
 
@@ -476,6 +535,11 @@ module TAGF
     #
     class NoObjectOwner < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :severe
 
       #
@@ -500,6 +564,11 @@ module TAGF
 
     #
     class KeyObjectMismatch < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :severe
 
@@ -533,6 +602,11 @@ module TAGF
     #
     class NoGameContext < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :severe
 
       #
@@ -555,6 +629,11 @@ module TAGF
     #
     class SettingLocked < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :warning
 
       #
@@ -567,11 +646,11 @@ module TAGF
         if (@msg.nil?)
           if (arg[0].kind_of?(Symbol))
             @msg		= format("attribute '%s' is already set " \
-                                 + 'and cannot be changed',
-                                 arg.to_s)
+                                         + 'and cannot be changed',
+                                         arg.to_s)
           else
             @msg		= 'specific attribute cannot be changed ' \
-                          + 'once set'
+                                  + 'once set'
           end
         end
         self._set_message(@msg)
@@ -582,6 +661,11 @@ module TAGF
 
     #
     class ImmovableObject < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :error
 
@@ -598,13 +682,13 @@ module TAGF
           name		= obj.name || obj.eid
           if (name)
             @msg		= format("%s object '%s' is static " \
-                                 + 'and cannot be relocated',
-                                 objtype,
-                                 name)
+                                         + 'and cannot be relocated',
+                                         objtype,
+                                         name)
           else
             @msg		= format('%s object is static ' \
-                                 + 'and cannot be relocated',
-                                 objtype)
+                                         + 'and cannot be relocated',
+                                         objtype)
           end
         end
         self._set_message(@msg)
@@ -615,6 +699,11 @@ module TAGF
 
     #
     class NotAContainer < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :error
 
@@ -645,6 +734,11 @@ module TAGF
     #
     class AliasRedefinition < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :warning
 
       #
@@ -669,6 +763,11 @@ module TAGF
 
     #
     class UnscrewingInscrutable < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :error
 
@@ -713,6 +812,11 @@ module TAGF
     #
     class MasterInventory < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :error
 
       #
@@ -728,13 +832,13 @@ module TAGF
           name		= obj.name || obj.eid
           if (name)
             @msg		= format("cannot remove %s object '%s' " \
-                                 + 'from the master inventory',
-                                 objtype,
-                                 name)
+                                         + 'from the master inventory',
+                                         objtype,
+                                         name)
           else
             @msg		= format('cannot remove %s object ' \
-                                 + 'from the master inventory',
-                                 objtype)
+                                         + 'from the master inventory',
+                                         objtype)
           end
         end
         self._set_message(@msg)
@@ -745,6 +849,11 @@ module TAGF
 
     #
     class HasNoInventory < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :error
 
@@ -781,6 +890,11 @@ module TAGF
     #
     class AlreadyHasInventory < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :warning
 
       #
@@ -816,6 +930,11 @@ module TAGF
 
     #
     class AlreadyInInventory < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :warning
 
@@ -860,6 +979,11 @@ module TAGF
     #
     class ImmovableElementDestinationError < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :error
 
       #
@@ -893,6 +1017,11 @@ module TAGF
     #
     class DuplicateObject < ErrorBase
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :warning
 
       #
@@ -906,13 +1035,13 @@ module TAGF
         if (@msg.nil?)
           if (args[0].respond_to?(:eid))
             @msg		= format('attempt to register ' \
-                                 'new %s using existing UID %s',
-                                 type,
-                                 args[0].eid)
+                                         'new %s using existing UID %s',
+                                         type,
+                                         args[0].eid)
           else
             @msg		= format('attempt to register new %s ' \
-                                 + 'with existing UID',
-                                 type)
+                                         + 'with existing UID',
+                                         type)
           end
         end
         self._set_message(@msg)
@@ -924,12 +1053,22 @@ module TAGF
     #
     class DuplicateItem < DuplicateObject
 
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
       self.severity	= :warning
 
     end                         # class DuplicateItem
 
     #
     class DuplicateLocation < DuplicateObject
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
 
       self.severity	= :warning
 
