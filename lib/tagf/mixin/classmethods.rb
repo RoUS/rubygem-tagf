@@ -15,7 +15,7 @@
 #++
 # frozen_string_literal: true
 
-#require_relative('debugging')
+#require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 
 require('tagf/mixin/dtypes')

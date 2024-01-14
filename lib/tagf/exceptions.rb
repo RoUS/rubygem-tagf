@@ -18,8 +18,8 @@
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 #require('tagf')
-require_relative('mixin/dtypes')
-require_relative('mixin/universal')
+require('tagf/mixin/dtypes')
+require('tagf/mixin/universal')
 #require('contracts')
 require('ostruct')
 

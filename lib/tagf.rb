@@ -55,7 +55,7 @@ end                             # module TAGF
 # exception module, since any problems will be reported using our
 # specific exceptions.
 #
-require_relative('tagf/version')
+require('tagf/version')
 
 unless ((RUBY_ENGINE == 'ruby') \
         && (RUBY_VERSION >= ::TAGF::RUBY_VERSION_MIN))
@@ -81,34 +81,34 @@ require('binding_of_caller')
 #
 # Pull in all the mixin module definitions first.
 #
-require_relative('tagf/mixin/actor')
-require_relative('tagf/mixin/classmethods')
-require_relative('tagf/mixin/container')
-#require_relative('tagf/mixin/debugging')
-require_relative('tagf/mixin/dtypes')
-require_relative('tagf/mixin/element')
-require_relative('tagf/mixin/events')
-require_relative('tagf/mixin/location')
-require_relative('tagf/mixin/universal')
+require('tagf/mixin/actor')
+require('tagf/mixin/classmethods')
+require('tagf/mixin/container')
+#require('tagf/mixin/debugging')
+require('tagf/mixin/dtypes')
+require('tagf/mixin/element')
+require('tagf/mixin/events')
+require('tagf/mixin/location')
+require('tagf/mixin/universal')
 
 #
 # Now the 'top-level' modules.
 #
-require_relative('tagf/cli')
-require_relative('tagf/container')
+require('tagf/cli')
+require('tagf/container')
 #require_relative('tagf/debugging')
-require_relative('tagf/exceptions')
-require_relative('tagf/faction')
-require_relative('tagf/feature')
-require_relative('tagf/game')
-require_relative('tagf/inventory')
-require_relative('tagf/item')
-require_relative('tagf/location')
-require_relative('tagf/npc')
-require_relative('tagf/player')
-require_relative('tagf/reality')
-require_relative('tagf/ui')
-require_relative('tagf/version')
+require('tagf/exceptions')
+require('tagf/faction')
+require('tagf/feature')
+require('tagf/game')
+require('tagf/inventory')
+require('tagf/item')
+require('tagf/location')
+require('tagf/npc')
+require('tagf/player')
+require('tagf/reality')
+require('tagf/ui')
+require('tagf/version')
 
 # @!macro doc.TAGF.module
 module TAGF

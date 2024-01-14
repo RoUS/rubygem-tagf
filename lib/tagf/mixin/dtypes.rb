@@ -15,10 +15,10 @@
 #++
 # frozen_string_literal: true
 
-#require_relative('debugging')
+#require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 
-require_relative('universal')
+require('tagf/mixin/universal')
 require('byebug')
 
 # @!macro doc.TAGF.module
