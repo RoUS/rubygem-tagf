@@ -24,6 +24,7 @@ require('byebug')
 # @!macro doc.TAGF.module
 module TAGF
 
+  # @!macro doc.TAGF.Mixin.module
   module Mixin
 
     # @!macro doc.TAGF.Mixin.DTypes.module
