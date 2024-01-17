@@ -48,6 +48,7 @@ group(:default, :development, :test) do
   gem('cri')
   gem('linguistics')
   gem('ostruct',	'>= 0.5.5')
+  gem('pathname',	'>= 0.2.0')
   gem('psych')
   gem('readline')
   gem('tagf',
