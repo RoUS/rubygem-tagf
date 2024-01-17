@@ -251,6 +251,40 @@
 #   @return [void]
 #
 
+# Documentation for the shared attributes defined in
+# {TAGF::UI::KWSYMS}.
+# @!macro [new] doc.TAGF.UI.input_formals
+#   @param [Array]                      args            ([])
+#   @param [Hash<Symbol=>Object>]       kwargs          ({})
+#   @option kwargs [Boolean]            :echo           (true)
+#   @option kwargs [Boolean]            :transcribe     (false)
+#   @option kwargs [Boolean]            :record         (true)
+#   @option kwargs [Boolean]            :raise_on_eof   (true)
+#   @option kwargs [Boolean]            :strip_leading  (true)
+#   @option kwargs [Boolean]            :strip_trailing (true)
+#   @option kwargs [Boolean]            :allow_heredoc  (true)
+#   @option kwargs [Boolean]            :in_heredoc     (false)
+#   @option kwargs [HereDoc]            :heredoc        (nil)
+#   @option kwargs [String]             :prompt         ("> ")
+#   @option kwargs [Proc]               :completion_proc (nil)
+#   @option kwargs [Boolean]            :propagate_history (true)
+#   @option kwargs [Array<String>]      :lines          ([])
+#     Name (or instance) of the input method class that should be
+#     instantiated to handle actually reading from the input source.
+#   @option kwargs [InputMethod,String] :inputmethod    (nil)
+#   @option kwargs [String]             :file
+#   @option kwargs [String]             :pathname       (nil)
+#     String to use when rendering the stream's path for human
+#     consumption.
+#   @option kwargs [Context]            :context
+#     (<b>Ignored for Context and Interface objects</b>
+#     <b>REQUIRED.</b>
+#     Interface context to use.  Contains relevant details such as
+#     the current prompt, whether to echo input, <em>&c.</em>
+#   @option kwargs [String,IO]          :input          ($stdin)
+#   @option kwargs [String,IO]          :output         ($stdout)
+#   @option kwargs [String,IO]          :error          ($stderr)
+
 # @!macro [new] doc.TAGF.classmethod.flag.invoke
 #   @!attribute [rw] $1
 #   false 0="$0" 1="$1" 2="$2" 3="$3" 4="$4" &="$&"
