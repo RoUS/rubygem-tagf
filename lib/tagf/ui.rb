@@ -18,14 +18,15 @@
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 #require('tagf')
-require('contracts')
+#require('contracts')
 #require('tagf/classmethods')
+require('tagf/exceptions')
 require('tagf/mixin/dtypes')
 require('tagf/mixin/universal')
 require('forwardable')
 require('ostruct')
+require('pathname')
 require('shellwords')
-require('singleton')
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -36,269 +37,109 @@ module TAGF
     include(Mixin::UniversalMethods)
     extend(Mixin::DTypes)
 
-    #
-    # Regular expression describing the header of a 'here-doc'.
-    #
-    HEREDOC_RE		= %r!^
-			     <<(-)?
-			     (['"])?
-			     ([[:alnum:]][-_[:alnum:]]*)
-			     (['"])?
-			     $!x
+    # Names of fields largely used by the Interface, Context, and
+    # InputMethod classes to allow defaults to bubble down.  Used to
+    # process constructor keyword arguments, but also for cloning when
+    # creating a subordinate context.
+    KWSYMS              = {
+      #
+      # Should input be visible/show up in the output stream?
+      # (Doesn't include prompts, which aren't input.)
+      #
+      echo:                     true,
+      #
+      # Should input operations (prompt plus echoed input) be copied
+      # to the output stream?  Mostly for ViaFile, since Readline
+      # handle this itself.
+      #
+      transcribe:               false,
+      #
+      # Should input lines be recorded in the history buffer?  Only
+      # echoed lines are eligible; unechoed input doesn't get
+      # recorded *any*where.
+      #
+      record:                   true,
+      #
+      # Should we raise an exception when we encounter an EOF
+      # condition?
+      #
+      raise_on_eof:             true,
+      #
+      # Should leading whitespace be stripped before input is
+      # returned to the caller?
+      #
+      strip_leading:            true,
+      #
+      # How about trailing whitespace, and newlines?    Trailing
+      # newlines are left untouched in here-docs.
+      #
+      strip_trailing:           true,
+      #
+      # Do we check input lines for here-doc delimiters (except when
+      # processing a here-doc)?  Or just treat them verbatim?
+      #
+      allow_heredoc:            true,
+      #
+      # Runtime flag indicating whether or not we're in the middle
+      # of processing a here-doc.
+      #
+      in_heredoc:               false,
+      #
+      # HereDoc object when processing (or just completed processing
+      # of) a set of input lines comprising a here-doc.
+      #
+      heredoc:                  nil,
+      #
+      # Input prompt.    Used directly by ViaReadline, and by ViaFile
+      # when transcribing.
+      #
+      prompt:                   '> ',
+      #
+      # Support for (e.g.) TAB-completion during input.  nil means
+      # 'no.'    (ViaReadline only)
+      #
+      completion_proc:          nil,
+      #
+      # Whether history is retained when pushing a new context.  If
+      # false, the new context will start with an empty history
+      # buffer.  (ViaReadline only)
+      #
+      propagate_history:        true,
+      #
+      # Array of text lines read in the current context; part of our
+      # module, not Readline's HISTORY buffer.
+      #
+      lines:                    [],
+      #
+      # Instance of class tailored to reading from an input source;
+      # either ViaFile or ViaReadline.  All actual obtaining of
+      # input goes through this; source-agnostic processing occurs
+      # in the Context methods.
+      #
+      inputmethod:              nil,
+      #
+      # Name of the input file to open and read.  (ViaFile only)
+      #
+      file:                     nil,
+      #
+      # Human-readable rendition of the input source.
+      #
+      pathname:                 nil,
+      #
+      # IO streams to be used in the current context.
+      #
+      input:                    $stdin,
+      output:                   $stdout,
+      error:                    $stderr,
+    }
 
-    #
-    # Bits of this are unashamedly cadged from the IRB source — with
-    # ignorance aforethought.
-    # @!macro doc.TAGF.UI.InputMethod.module
-    class InputMethod
+    # Module declaring attributes based on the {KWSYMS} keywords.
+    # Included by classes that communicate these values up and down
+    # the call chain.
+    module Controls
 
+      # We need our custom attribute accessor class methods.
       extend(Mixin::DTypes)
-      extend(Forwardable)
-
-      attr_reader(:context)
-      def_delegator(:@context, :prompt)
-      def_delegator(:@context, :transcribe?)
-      def_delegator(:@context, :pathname)
-      def_delegator(:@context, :input)
-      def_delegator(:@context, :output)
-
-      # Reads the next line from this input method.
-      #
-      # See IO#gets for more information.
-      def gets
-        fail(NotImplementedError, 'abstract gets method')
-      end                       # def gets
-      public(:gets)
-
-      def winsize
-        outstream	= self.output
-        if (outstream.respond_to?(:tty?) && outstream.tty?)
-          result	= outstream.winsize
-        else
-          result	= [24, 80]
-        end
-        return result
-      end                       # def winsize
-
-      # Whether this input method is still readable when there is no
-      # more data to read.
-      #
-      # See IO#eof for more information.
-      def readable_after_eof?
-        false
-      end                       # def readable_after_eof?
-
-      # For debugging message; describe this particular class.
-      def inspect
-        return 'Abstract InputMethod'
-      end                       # def inspect
-
-
-      # Constructor for input method objects.
-      #
-      # @param	       [Array]	   	args		([])
-      # @param	       [Array]		kwargs		({})
-      # @option kwargs [Context]	:context
-      #   <b>REQUIRED.</b>
-      #   Interface context to use.  Contains relevant details such as
-      #   the current prompt, whether to echo input, <em>&c.</em>
-      # @option kwargs [String,IO]	:input		($stdin)
-      # @option kwargs [String,nil]	:pathname	(nil)
-      #   String to use when rendering the stream's path for human
-      #   consumption.
-      def initialize(*args, **kwargs)
-        context		= kwargs[:context]
-        unless (context.kind_of?(Context))
-          raise(TypeError,
-                format('%s.new requires a UI::Context object as ' \
-                       + 'for the :context keyword',
-                       self.class.name))
-        end
-        @context	= context
-        @pathname	= kwargs[:pathname] \
-                          || kwargs[:file] \
-                          || kwargs[:input].inspect
-      end                       # def initialize(*args, **kwargs)
-
-      nil
-    end                         # class InputMethod
-
-    # Record the paticulars of a here-doc.  Here-docs are input lines
-    # designed to be processed as a group.  They have a basic format
-    # as follows (characters and words in brackets (<b>`[]`</b>) are
-    # optional):
-    #
-    #    [<em>prefix</em>]<<[-]<em>delimiter</em>
-    #    [<em>text-line</em>...]
-    #    <em>delimiter</em>
-    #
-    # As an example:
-    #
-    #    two_liner = <<-EOF
-    #      You're at the end of a road.
-    #      There is a small shed here.
-    #      EOF
-    #
-    # * <em>prefix</em> —
-    #   Everything, including whitespace, preceding the `<<`
-    #   introducer.  In the example, this would be
-    #
-    #    "`two_liner = `"
-    #
-    #   Notice the inclusion of the spaces.
-    # * Optional hyphen —
-    #   The presence of the hyphen (dash) immediately preceding the
-    #   delimiter signals that when the delimiter is encountered, it
-    #   <em>may</em> be preceded by irrelevant whitespace, which is to
-    #   be stripped and ignored.  This is intended to improve
-    #   readability by humans (not software).
-    # * <em>delimiter</em> —
-    #   A 'word' which, when read on a line by itself, signals the end
-    #   of the here-doc content.  The delimiter is at least one
-    #   character long, is case-sensitive, and may be composed of
-    #   alphanumerics and the underscore (`_`) character.  Trailing
-    #   whitespace is ignored.
-    # * <em>text-line</em> —
-    #   Lines of text comprising the actual value of the here-doc
-    class HereDoc
-
-      attr_accessor(:prefix)
-      attr_accessor(:delimiter)
-      attr_accessor(:delimiter_re)
-      attr_accessor(:raw)
-      attr_accessor(:lines)
-
-      # Constructor for HereDoc class.  Set any instance variables
-      # whose names appear in `kwargs`.
-      # @param [Hash<Symbol=>Object>] kwargs
-      # @option kwargs [String] 	:prefix
-      # @option kwargs [String] 	:delimiter
-      # @option kwargs [Regexp] 	:delimiter_re
-      # @option kwargs [String]		:raw
-      # @option kwargs [Array<String>]	:lines
-      def initialize(**kwargs)
-        %i[ prefix delimiter delimiter_re raw lines ].each do |kw|
-          if (val = kwargs[kw])
-            setter	= format('%s=', kw.to_s).to_sym
-            self.send(setter, val)
-          end
-        end
-      end                       # def initialize(**kwargs)
-
-      nil
-    end                         # class HereDoc
-
-    # Main supervisory class for getting and processing input from the
-    # user.  Each time we change something about how we read, such as
-    # the input source or even the prompt, a new context should be
-    # created, pushed on a stack, and used.  When the changed
-    # conditions terminate, we should revert to the previous context.
-    class Context
-
-      # Import our app's own datatype accessor class methods.
-      extend(Mixin::DTypes)
-
-      # In the interest of readability at higher levels, we blur the
-      # details of how interfaces, contexts, and input methods
-      # actually interact.  Input methods 'inherit' some methods and
-      # attributes from their calling contexts, and contexts do
-      # likewise with aspects of the active input method.  This is
-      # handled by delegating the methods in question to the
-      # appropriate instance variable using the Forwardable module's
-      # features.  The programmer should only have to worry about the
-      # Interface and Context classes, and not any of the more
-      # nitty-gritty lower-level details.
-      extend(Forwardable)
-
-      # Names of fields in the Context instance.  Used to process
-      # constructor keyword arguments, but also for cloning when
-      # creating a subordinate context.
-      KWSYMS		= {
-        #
-        # Should input be visible/show up in the output stream?
-        # (Doesn't include prompts, which aren't input.)
-        #
-        echo:                   true,
-        #
-        # Should input operations (prompt plus echoed input) be copied
-        # to the output stream?  Mostly for ViaFile, since Readline
-        # handle this itself.
-        #
-        transcribe:             false,
-        #
-        # Should input lines be recorded in the history buffer?  Only
-        # echoed lines are eligible; unechoed input doesn't get
-        # recorded *any*where.
-        #
-        record:			true,
-        #
-        # Should leading whitespace be stripped before input is
-        # returned to the caller?
-        #
-        strip_leading:          true,
-        #
-        # How about trailing whitespace, and newlines?  Trailing
-        # newlines are left untouched in here-docs.
-        #
-        strip_trailing:         true,
-        #
-        # Do we check input lines for here-doc delimiters (except when
-        # processing a here-doc)?  Or just treat them verbatim?
-        #
-        allow_heredoc:          true,
-        #
-        # Runtime flag indicating whether or not we're in the middle
-        # of processing a here-doc.
-        #
-        in_heredoc:             false,
-        #
-        # HereDoc object when processing (or just completed processing
-        # of) a set of input lines comprising a here-doc.
-        #
-        heredoc:                nil,
-        #
-        # Input prompt.  Used directly by ViaReadline, and by ViaFile
-        # when transcribing.
-        #
-        prompt:                 '> ',
-        #
-        # Support for (e.g.) TAB-completion during input.  nil means
-        # 'no.'  (ViaReadline only)
-        #
-        completion_proc:        nil,
-        #
-        # Whether history is retained when pushing a new context.  If
-        # false, the new context will start with an empty history
-        # buffer.  (ViaReadline only)
-        #
-        propagate_history:      true,
-        #
-        # Array of text lines read in the current context; part of our
-        # module, not Readline's HISTORY buffer.
-        #
-        lines:                  [],
-        #
-        # Instance of class tailored to reading from an input source;
-        # either ViaFile or ViaReadline.  All actual obtaining of
-        # input goes through this; source-agnostic processing occurs
-        # in the Context methods.
-        #
-        inputmethod:		nil,
-        #
-        # Name of the input file to open and read.  (ViaFile only)
-        #
-        file:                   nil,
-        #
-        # Human-readable rendition of the input source.
-        #
-        pathname:               nil,
-        #
-        # IO streams to be used in the current context.
-        #
-        input:                  $stdin,
-        output:                 $stdout,
-        error:                  $stderr,
-      }
 
       # Boolean flag indicating whether lines read from the input
       # stream should be echoed to the output stream.  If the input
@@ -337,12 +178,20 @@ module TAGF
       # @ ! macro [attach] doc.TAGF.classmethod.flag.invoke
       flag(record:	true)
 
+      # @return [Boolean]
+      #   `true` if an exception should be raised if an attempt to
+      #   read from the input stream encounters an unexpected
+      #   end-of-file condition.
+      #   <em>verbatim</em> to the output stream as it's typed.
+      # @ ! macro [attach] doc.TAGF.classmethod.flag.invoke
+      flag(raise_on_eof: true)
+
       # @!attribute [rw] strip_leading
       # Boolean flag indicating whether input lines should have
       # leading whitespace removed after reading and before processing
       # or storage.
-      # @see #strip_trailing
-      # @see #strip
+      # @see Context#strip_trailing
+      # @see Context#strip
       # @return [Boolean]
       # @ ! macro doc.TAGF.classmethod.flag.invoke
       flag(strip_leading: false)
@@ -470,11 +319,13 @@ module TAGF
       #   we push a new context.
       flag(propagate_history: true)
 
+      # @!attribute [r] lines
       # Array of input lines stored as history.  New lines are pushed
       # on the end.
       # @return [Array<String>]
       attr_reader(:lines)
 
+      # @!attribute [rw] inputmethod
       # Instance of the class that will be used to read from the input
       # stream in this context.  Supported values are any object that
       # subclasses TAGF::UI::InputMethod.
@@ -507,6 +358,424 @@ module TAGF
       # @return [IO,String]
       file_accessor(error:	$stderr)
 
+      # @!method controls(obj)
+      # Collect the values of any attributes of `rcvr` that are
+      # mentioned in the {KWSYMS} list into a hash; basically, save
+      # the receiver's current control settings.
+      #
+      # The list of attributes to process can be modified by two
+      # constants that might be declared in the receiver's class:
+      #
+      # * `CONTROLS_ADD` — an array of symbols identifying attributes
+      #   that aren't included in KWSYMS but are specific to the
+      #   declaring class, and should be included in the collection
+      # * `CONTROLS_OMIT` — an array of symbols identifying attributes
+      #   that <em>might</em> be included in KWSYMS and <em>might</em>
+      #   be valid for the receiver, which should nevertheless not be
+      #   included in the collection.
+      # @param [Object] obj (self)
+      # @return [Hash<Symbol=>Object>]
+      def controls(rcvr=self)
+        ckeys		= KWSYMS.keys
+        #
+        # Check for attributes that are specific to the receiver's
+        # class, and not defined in KWSYMS, that should be preserved
+        # as part of the control collection.
+        #
+        if (rcvr.class.const_defined?(:CONTROLS_ADD, false))
+          ckeys		|= rcvr.class.const_get(:CONTROLS_ADD)
+        end
+        #
+        # Check for attributes that are calculated or delegated; they
+        # shouldn't be included in the collection.
+        #
+        if (rcvr.class.const_defined?(:CONTROLS_OMIT, false))
+          ckeys		-= rcvr.class.const_get(:CONTROLS_OMIT)
+        end
+        csettings	= ckeys.inject({}) { |memo,kw|
+          ivar		= format('@%s', kw.to_s).to_sym
+          memo[kw]	= rcvr.instance_variable_get(ivar)
+          memo
+        }
+        return csettings
+      end                       # def controls(rcvr=self)
+
+      # @!method merge_controls(rcvr, **kwargs)
+      # Severl TAGF::UI classes share the same set of control
+      # settings, allowing more specific uses to override 'defaults'
+      # set for objects farther up the call tree.  This method allows
+      # @param [Object] rcvr (self)
+      # @param [Hash<Symbol=>Object>] kwargs
+      #   See {KWSYMS} for the possible keywords and their
+      #   significance.
+      # @raise [Hash<Symbol=>Object>]
+      #   a hash of control settings in which those passed in the
+      #   `kwargs` actual override the current object's values.
+      def merge_controls(rcvr=self, **kwargs)
+        begin
+          rsettings	= rcvr.controls
+        rescue NoMethodError
+          raise_exception(NoMethodError,
+                          format('receiver object %s:%s ' \
+                                 + 'not compatible with UI controls',
+                                 rcvr.class.name,
+                                 rcvr.inspect))
+        end
+        msettings	= KWSYMS.keys.inject({}) { |memo,kw|
+          if (kwargs.has_key?(kw))
+            memo[kw]	= kwargs[kw]
+          else
+            begin
+              memo[kw]	= rcvr.send(kw)
+            rescue NoMethodError
+              #
+              # Don't add an element for a nonexistent control
+              # attribute.
+              #
+            end
+          end
+          memo
+        }
+        return msettings
+      end                       # def merge_controls(**kwargs)
+
+      nil
+    end                         # module UI::Controls
+
+    #
+    # Bits of this are unashamedly cadged from the IRB source — with
+    # ignorance aforethought.
+    # @!macro doc.TAGF.UI.InputMethod.module
+    class InputMethod
+
+      extend(Mixin::DTypes)
+      extend(Forwardable)
+
+      # @!attribute [r] context
+      # @return [Context]
+      attr_reader(:context)
+
+      # @!attribute [r] prompt
+      # @return [String]
+      def_delegator(:@context, :prompt)
+
+      # @!attribute [r] transcribe?
+      # @return [Boolean]
+      def_delegator(:@context, :transcribe?)
+
+      # @!attribute [rw] pathname
+      # @return [String]
+      def_delegator(:@context, :pathname)
+      def_delegator(:@context, :pathname=)
+
+      # @!attribute [r] input
+      # @return [IO]
+      def_delegator(:@context, :input)
+
+      # @!attribute [r] output
+      # @return [IO]
+      def_delegator(:@context, :output)
+
+      # @!method gets
+      # @abstract
+      # Reads the next line from this input method.
+      #
+      # See IO#gets for more information.
+      # @raise [NotImplementedError]
+      #   because this is an 'abstract' class.  Subclasses must
+      #   override this method.
+      def gets
+        fail(NotImplementedError, 'abstract gets method')
+      end                       # def gets
+      public(:gets)
+
+      # @!attribute [r] winsize
+      # @return [Array<Integer,Integer>]
+      def winsize
+        outstream	= self.output
+        if (outstream.respond_to?(:tty?) && outstream.tty?)
+          result	= outstream.winsize
+        else
+          result	= [24, 80]
+        end
+        return result
+      end                       # def winsize
+
+      # @!attribute [r] readable_after_eof?
+      # Whether this input method is still readable when there is no
+      # more data to read.
+      #
+      # See IO#eof for more information.
+      # @return [Boolean]
+      def readable_after_eof?
+        false
+      end                       # def readable_after_eof?
+
+      # @!method inspect
+      # For debugging message; describe this particular class.
+      # @return [String]
+      #   Subclasses are expected to override this method.
+      def inspect
+        return format('Abstract %s', self.class.name)
+      end                       # def inspect
+
+
+      # @!method initialize(*args, **kwargs)
+      # Constructor for input method objects.
+      #
+      # @!macro doc.TAGF.UI.input_formals
+      # @return [void]
+      def initialize(*args, **kwargs)
+        context		= kwargs[:context]
+        unless (context.kind_of?(Context))
+          raise(TypeError,
+                format('%s.new requires a UI::Context object as ' \
+                       + 'for the :context keyword',
+                       self.class.name))
+        end
+        @context	= context
+      end                       # Constructor for class InputMethod
+
+      nil
+    end                         # class InputMethod
+
+    # Record the paticulars of a here-doc.  Here-docs are input lines
+    # designed to be processed as a group.  They have a basic format
+    # as follows (characters and words in brackets (<b>`[]`</b>) are
+    # optional):
+    #
+    #      [<em>prefix</em>]<<[-]<em>delimiter</em>
+    #      [<em>text-line</em>...]
+    #      <em>delimiter</em>
+    #
+    # As an example:
+    #
+    #      two_liner = <<-EOF
+    #        You're at the end of a road.
+    #        There is a small shed here.
+    #        EOF
+    #
+    # * <em>prefix</em> —
+    #   Everything, including whitespace, preceding the `<<`
+    #   introducer.  In the example, this would be
+    #
+    #     "`two_liner = `"
+    #
+    #   Notice the inclusion of the spaces.
+    # * Optional hyphen —
+    #   The presence of the hyphen (dash) immediately preceding the
+    #   delimiter signals that when the delimiter is encountered, it
+    #   <em>may</em> be preceded by irrelevant whitespace, which is to
+    #   be stripped and ignored.  This is intended to improve
+    #   readability by humans (not software).
+    # * <em>delimiter</em> —
+    #   A 'word' which, when read on a line by itself, signals the end
+    #   of the here-doc content.  The delimiter is at least one
+    #   character long, is case-sensitive, and may be composed of
+    #   alphanumerics and the underscore (`_`) character.  Trailing
+    #   whitespace is ignored.
+    # * <em>text-line</em> —
+    #   Lines of text comprising the actual value of the here-doc
+    class HereDoc
+
+      #
+      # Regular expression describing the header of a 'here-doc'.
+      #
+      HEREDOC_RE        = %r!^
+                             <<(-)?
+                             (['"])?
+                             ([[:alnum:]][-_[:alnum:]]*)
+                             (['"])?
+                             $
+                            !x
+
+      # @!attribute [rw] intro_line
+      # The complete first line of the here-doc block, containing the
+      # here-doc delimiter signature.  For example, for a here-doc
+      # starting with
+      #
+      #```
+      #    primitive = <<TEXTBLOCK
+      #```
+      #
+      # the #intro_line attribute would contain `"primitive =
+      # <<TEXTBLOCK"`.  Possibly with leading and/or trailing
+      # whitespace stripped.
+      # @todo
+      #   Semantics of whitespace stripping of here-doc text?
+      # @see #prefix
+      # @see Context#strip
+      # @see Context#strip_leading
+      # @see Context#strip_trailing
+      # @return [String]
+      #   the complete line introducing the here-doc
+      attr_accessor(:intro_line)
+
+      # @!attribute [rw] prefix
+      # Everthing on the here-doc introductory line up to, but not
+      # including, the `"<<"` starting the delimiter.  For example,
+      # for a here-doc starting with
+      #
+      #```
+      #    primitive = <<TEXTBLOCK
+      #```
+      #
+      # the #prefix attribute would contain `"primitive = "`.
+      # Possibly with leading whitespace stripped.  Whitespace
+      # preceding the `"<<"` is <em>not</em> stripped.
+      # @todo
+      #   Semantics of whitespace stripping of here-doc text?
+      # @see #intro_line
+      # @see Context#strip
+      # @see Context#strip_leading
+      # @see Context#strip_trailing
+      # @return [String]
+      #   all the text on the line introducing the here-doc up to, but
+      #   not including, the `"<<"`
+      attr_accessor(:prefix)
+
+      # @!attribute [rw] delimiter
+      # The here-doc termination signal, called the delimiter,
+      # obtained from the 'word' following the `"<<"` here-doc
+      # signature.  Any leading dash ("`-`") or surrounding quotation
+      # marks are not included.  For example, for a here-doc starting
+      # with
+      #
+      #```
+      #    primitive = <<TEXTBLOCK
+      #```
+      #
+      # the #delimiter attribute would contain `"TEXTBLOCK"`.
+      # @see #intro_line
+      # @see #prefix
+      # @see #delimiter_re
+      # @return [String]
+      #   the word following the `"<<"` on the here-doc introductory
+      #   line, minus any quotation marks or other special indicators
+      attr_accessor(:delimiter)
+
+      # @!attribute [rw] delimiter_re
+      # The regular expression derived from the here-doc introductory
+      # line that will exactly match the termination line syntax.  For
+      # example, for a here-doc starting with
+      #
+      #```
+      #    primitive = <<TEXTBLOCK
+      #```
+      #
+      # the #delimiter_re attribute would contain the equivalent of
+      # `%r[^TEXTBLOCK$]`.
+      # @see #delimiter
+      # @return [Regexp]
+      #   a regular expression matching the complete line syntax that
+      #   terminates the here-doc
+      attr_accessor(:delimiter_re)
+
+      # @!attribute [rw] raw
+      # The raw text content of the here-doc as a single string,
+      # including any embedded newlines or other special characters.
+      # @todo
+      #   Semantics of whitespace stripping of here-doc text?
+      # @see #lines
+      # @return [String]
+      #   the complete text of the here-doc as a single string
+      attr_accessor(:raw)
+
+      # @!attribute [rw] lines
+      # The text content of the here-doc as an array of strings built
+      # by splitting the raw text on newline (`"\n"`) characters.
+      # @todo
+      #   Semantics of whitespace stripping of here-doc text?
+      # @see #raw
+      # @return [Array<String>]
+      #   the complete text of the here-doc as an array of strings,
+      #   one <em>per</em> line
+      attr_accessor(:lines)
+
+      # Names (as symbols) of all the attributes defined by this
+      # class.  Used to collect all the names/values into a hash.
+      HereDoc_Fields	= %i[
+        intro_line
+        prefix
+        delimiter
+        delimiter_re
+        raw
+        lines
+      ]
+
+      # Constructor for HereDoc class.  Set any instance variables
+      # whose names appear in `kwargs`.
+      # @param [Hash<Symbol=>Object>]   kwargs          ({})
+      # @option kwargs [String]         :intro_line
+      # @option kwargs [String]         :prefix
+      # @option kwargs [String]         :delimiter
+      # @option kwargs [Regexp]         :delimiter_re
+      # @option kwargs [String]         :raw
+      # @option kwargs [Array<String>]  :lines
+      def initialize(**kwargs)
+        HereDoc_Fields.each do |kw|
+          if (kwargs.has_key?(kw))
+            setter	= format('%s=', kw.to_s).to_sym
+            self.send(setter, kwargs[kw])
+          end
+        end
+      end                       # Constructor for class HereDoc
+
+      nil
+    end                         # class HereDoc
+
+    # Main supervisory class for getting and processing input from the
+    # user.  Each time we change something about how we read, such as
+    # the input source or even the prompt, a new context should be
+    # created, pushed on a stack, and used.  When the changed
+    # conditions terminate, we should revert to the previous context.
+    class Context
+
+      # Import our app's own datatype accessor class methods.
+      extend(Mixin::DTypes)
+
+      # @!macro CONTROLS_ADD
+      #   Array of symbols identifying attributes that exist in this
+      #   class but not in {KWSYMS}.  When attribute values are being
+      #   collected, these are added to the list
+      CONTROLS_ADD	= %i[
+        interface      
+      ]
+
+      # @!macro CONTROLS_OMIT
+      #   Array of symbols identifying attributes that may or may not
+      #   exist in this class probably do in {KWSYMS}.  When attribute
+      #   values are being collected, these are removed from the list.
+      #   Attributes that are calculated, or don't actually exist in
+      #   this class, or are delegated elsewhere, should appear in
+      #   this list.
+      CONTROLS_OMIT	= %i[
+      ]
+
+      # @!attribute [r] interface
+      # Reference to the interface which is the parent of this context
+      # instance.  The interface object holds things which are truly
+      # global to the input reading call chain — such as the named
+      # history buffers.
+      # @return [Interface]
+      attr_reader(:interface)
+
+      # In the interest of readability at higher levels, we blur the
+      # details of how interfaces, contexts, and input methods
+      # actually interact.  Input methods 'inherit' some methods and
+      # attributes from their calling contexts, and contexts do
+      # likewise with aspects of the active input method.  This is
+      # handled by delegating the methods in question to the
+      # appropriate instance variable using the Forwardable module's
+      # features.  The programmer should only have to worry about the
+      # Interface and Context classes, and not any of the more
+      # nitty-gritty lower-level details.
+      extend(Forwardable)
+
+      # Include the constants, attribute declarations, and methods
+      # that are common to all classes in the input chain.
+      include(UI::Controls)
+
       # Standard set of word-break characters for completion.
       DEFAULT_WORD_BREAK_CHARS = " \t\n`><=;|&{("
 
@@ -515,11 +784,7 @@ module TAGF
       def_delegator(:@inputmethod, :eof?)
 
       # Constructor for Context class instances.
-      # @param [Array]			args		([])
-      # @param [Hash<Symbol=>Object>]	kwargs		({})
-      # @option kwargs [String]		:inputmethod
-      #   Name of the input method class that should be instantiated
-      #   to handle actually reading from the input source.
+      # @!macro doc.TAGF.UI.input_formals
       def initialize(*args, **kwargs)
         settings	= KWSYMS.merge(kwargs)
         settings.each do |kw,val|
@@ -529,13 +794,25 @@ module TAGF
           # The inputmethod attribute is specified as a string.
           #
           if ((kw == :inputmethod) && val)
-            begin
-              settings[kw] = UI.const_get(val)
-            rescue NameError
+            if (val.kind_of?(InputMethod))
+              settings[kw] = val
+            elsif (val.kind_of?(String))
+              begin
+                settings[kw] = UI.const_get(val)
+              rescue NameError
+                raise_exception(ArgumentError,
+                                format('unknown input method %s',
+                                       val))
+              end
+            else
               raise_exception(ArgumentError,
-                              format('unknown input method %s',
-                                     val))
+                              format('unknown input method %s:%s',
+                                     val.class.name,
+                                     val.inspect))
             end
+            #
+            # Skip to the next keyword.
+            #
             next
           end
           if (self.respond_to?(ksetter))
@@ -544,6 +821,28 @@ module TAGF
             self.instance_variable_set(kivar, val)
           end
         end
+        #
+        # The interface is required, and must be an Interface
+        # instance.
+        #
+        unless ((iface = settings[:interface]).kind_of?(Interface))
+          if (settings[:interface].nil?)
+            raise_exception(ArgumentError,
+                            format('interface keyword is required ' \
+                                   + 'for class %s',
+                                   self.class.name))
+          else
+            raise_exception(ArgumentError,
+                            format('interface keyword value ' \
+                                   + 'must be an instance of ' \
+                                   + 'Interface: %s:%s',
+                                   iface.class.name,
+                                   iface.inspect))
+          end
+        end
+        #
+        # Settings propagated and ready for final processing.
+        #
         settings[:context] = self
         if (imclass = settings[:inputmethod])
           self.inputmethod = imclass.new(**settings)
@@ -554,7 +853,7 @@ module TAGF
         else
           raise(RuntimeError, "can't determine input type")
         end
-      end                       # def initialize(*args, **kwargs)
+      end                       # Constructor for class Context
 
       # 'Smart' method for reading from the input stream.
       def read(*args, **kwargs)
@@ -598,11 +897,18 @@ module TAGF
               #
               # Got EOF before reaching the here-doc termination line.
               #
+              if (self.raise_on_eof?)
+                raise_exception(Exceptions::UnterminatedHeredoc,
+                                hdinfo)
+              end
               warn(format('EOF encountered before ' \
                           + 'end of "%s" here-doc; ' \
                           + 'any partial input discarded',
                           hdinfo.delimiter))
-              result	= ''
+              #
+              # `nil` signifies that EOF was encountered.
+              #
+              result	= nil
               throw(:heredoc_read)
             end
             if (line.match(hdinfo.delimiter_re))
@@ -617,22 +923,48 @@ module TAGF
         end                     # catch(:heredoc_read) do
         self.prompt	= save_prompt
         self.in_heredoc	= false
-        if (hdinfo.raw)
-          hdinfo.lines	= hdinfo.raw.split(%r!\n!)
+        if (result.kind_of?(HereDoc) && result.raw)
+          result.lines	= result.raw.split(%r!\n!)
         end
-        return hdinfo
+        return result
       end                       # def read(*args, **kwargs)
 
-      def clone(*args, **kwargs)
+      # Clone the current context and merge in any modified settings
+      # passed in kwargs.
+      def mutate(*args, **kwargs)
+        mutant		= self.clone
+        ccontrols	= self.controls
+        ccontrols.each do |kw,val|
+          if (KWSYMS.has_key?(kw))
+            kwivar	= format('@%s', kw.to_s).to_sym
+            mutant.instance_variable_set(kwivar, val)
+          else
+            warn(format('not mutating unknown attribute %s',
+                        kw.inspect))
+          end
+        end                     # ccontrols.each do
         #
-        # Hash up the settings of the current context.
+        # All of the receiver's control attribute values have been
+        # copied to the new instance.
         #
-        ckwargs		= KWSYMS.keys.inject({}) { |memo,kwsym|
-          kwivar	= format('@%s', kwsym.to_s).to_sym
-          memo[kwsym]	= self.instance_variable_get(kwivar)
-          memo
-        }
-        ckwargs		= ckwargs.merge(**kwargs)
+        return mutant
+      end                       # def mutate(*args, **kwargs)
+
+      # @!method clone
+      # Create a deep copy of the receiver (a Context object).  All
+      # known attributes are read through the instance variable
+      # methods (to avoid accessor side-effects) and in a hash, which
+      # is passed to the constructor.
+      # @return [Context]
+      #   a new Context object with the same attribute values as the
+      #   caller.
+      def clone
+        #
+        # Hash up the settings of the current context.  Use the
+        # instance-variable syntax as opposed to the attribute-getter
+        # on to avoid any side-effects or accessor-less controls.
+        #
+        ckwargs		= self.controls
         nu_me		= self.class.new(**ckwargs)
         return nu_me
       end                       # def clone
@@ -673,7 +1005,6 @@ module TAGF
       def heredoc?(input)
         words		= Shellwords.split(input)
         if (words.last[0,2] == '<<')
-          warn('Possible here-doc')
           if (! (m = words.last.match(HEREDOC_RE)))
             #
             # Doesn't match our allowed pattern.  Don't explain why.
@@ -695,9 +1026,8 @@ module TAGF
                          m.captures.inxpect
                         ))
           end
-          warn(format('Here-document ending with «%s»',
-                      m.captures[2]))
           result	= HereDoc.new(
+            intro_line:		input.chomp,
             prefix:		input.sub(%r!<<.*!, '').chomp,
             interpolate:	(! m.captures[1].nil?),
             delimiter:		m.captures[2],
@@ -740,21 +1070,10 @@ module TAGF
         nil
       end                       # class ViaFile eigenclass
 
-      # The file name of this input method, usually given during
-      # initialization.
-      attr_reader(:file_name)
-
       # Creates a new ViaFile input method object, for reading input
       # from a non-terminal file-like source.
       # @see Readline
-      # @param [Array]			args
-      # @param [Hash<Symbol=>Object>]	kwargs
-      # @option kwargs [String]		:context
-      # @option kwargs [String]		:file
-      # @option kwargs [String]		:pathname
-      # @option kwargs [String]		:input
-      # @option kwargs [String]		:output
-      # @option kwargs [String]		:completion_proc
+      # @!macro doc.TAGF.UI.input_formals
       def initialize(*args, **kwargs)
         super
         file		= kwargs[:file]
@@ -765,12 +1084,22 @@ module TAGF
                                  + 'filename or IO stream',
                        self.class.name))
         end
-        @pathname	||= kwargs[:pathname] || file
+        #
+        # Expand any non-absolute filename path to a fully-qualified
+        # one.  Mostly for display purposes, but also to remove any
+        # ambiguities.
+        #
+        debugger
+        if (file.kind_of?(String) \
+            && Pathname(file).relative?)
+          file		= File.absolute_path(file)
+        end
+        self.pathname	||= kwargs[:pathname] || file
         @io		= (file.is_a?(IO) \
                            ? file \
                            : File.open(file, 'r'))
         @external_encoding = @io.external_encoding
-      end                       # def initialize(file, *args, **kwargs)
+      end                       # Constructor for class ViaFile
 
       # Whether the end of this input method has been reached, returns
       # `true` if there is no more data to read.  Since we're reading
@@ -810,7 +1139,7 @@ module TAGF
 
       # For debugging messages
       def inspect
-        return format('%s file=%s',
+        return format('InputMethod:%s file=%s',
                       self.class.name.sub(%r!^.*::!, ''),
                       self.pathname.inspect)
       end                       # def inspect
@@ -955,15 +1284,9 @@ module TAGF
       end                       # def set_history(histlines)
 
       # Creates a new input method object using Readline
-      # @param [Array]			args
-      # @param [Hash<Symbol=>Object>]	kwargs
+      # @!macro doc.TAGF.UI.input_formals
       # @option kwargs [String]		:context
       # @option kwargs [String]         :history_file
-      # @option kwargs [String]		:file
-      # @option kwargs [String]		:pathname
-      # @option kwargs [String]		:input
-      # @option kwargs [String]		:output
-      # @option kwargs [String]		:completion_proc
       def initialize(*args, **kwargs)
         self.class.initialize_readline
         super
@@ -990,7 +1313,7 @@ module TAGF
         end
         Readline.completion_append_character = nil
         Readline.completion_proc = self.context.completion_proc
-      end                       # def initialize(*args, **kwargs)
+      end                       # Constructor for class ViaReadline
 
       # Reads the next line from this input method.
       #
@@ -1060,7 +1383,7 @@ module TAGF
         readline_impl	= (defined?(Reline) && Readline == Reline) \
                           ? 'Reline' \
                           : 'ext/readline'
-        str		= format('%s with %s %s',
+        str		= format('InputMethod:%s with %s %s',
                                  self.class.name.sub(%r!^.*::!, ''),
                                  readline_impl,
                                  Readline::VERSION)
@@ -1084,7 +1407,36 @@ module TAGF
 
       extend(Mixin::DTypes)
       include(Mixin::UniversalMethods)
+      include(UI::Controls)
 
+      # @!macro CONTROLS_ADD
+      CONTROLS_ADD	= %i[
+        histories
+        contexts
+      ]
+      
+      # @!macro CONTROLS_OMIT
+      CONTROLS_OMIT	= %i[
+      ]
+
+      # @!attribute [r] histories
+      # Allow temporary storage of input history lines, grouped by
+      # tag.  This allows lines to be associated by prompt, or
+      # heredoc, or similar.  This way there doesn't have to be a
+      # single monolithic list of all input lines regardless of their
+      # context.
+      # @return [Hash<String=>Array]
+      attr_reader(:histories)
+
+      # @!attribute [r] contexts
+      # @return [Array<Context>]
+      #   all the contexts that have been pushed by the interface.
+      #   The last one in the list (contexts.last, contexts[-1]) is
+      #   the one currently active.
+      # @todo
+      #   Clarify what 'popping a context' means; does it remain
+      #   active?  Can you push an existing context onto the stack w/o
+      #   creating a new one?  When does its input stream get closed?
       attr_reader(:contexts)
 
       # Return the 'current' context object; that is, the most recent
@@ -1096,26 +1448,28 @@ module TAGF
 
       #
       def push_context(*args, **kwargs)
+        ccontrols	= self.merge_controls(**kwargs)
+        ccontrols[:interface] = self
         if (@contexts.empty?)
-          new_ctx	= Context.new(*args, **kwargs)
+          new_ctx	= Context.new(*args, **ccontrols)
         else
-          new_ctx	= @contexts.last.clone(*args, **kwargs)
+          new_ctx	= @contexts.last.clone(*args, **ccontrols)
         end
         return @contexts.push(new_ctx).last
       end                       # def push_context(*args, **kwargs)
 
-      #
+      # @todo
+      #   Clarify what 'popping a context' means; does it remain
+      #   active?  Can you push an existing context onto the stack w/o
+      #   creating a new one?  When does its input stream get closed?
       def pop_context
-        @contexts.pop
-        if (@contacts.empty?)
+        if (@contexts.empty?)
           raise_exception(Exceptions::IfaceStackEmpty)
         end
+        lastcx		= @contexts.pop
+        lastcx.close
         return self.context
       end                       # def pop_context
-
-      attr_accessor(:prompts)
-      protected(:prompts=)
-
 
       # Constructor for the Interface class, which is a main part of
       # the 'user interface' for TAGF.  Its primary purpose is getting
@@ -1130,20 +1484,11 @@ module TAGF
       # is also on the goal list.  Multi-line descriptions, for
       # instance.
       #
-      # @param [Array]		args
-      # @param [Hash<Symbol=>Object>]	kwargs		({})
-      # @option kwargs [Boolean]	:echo		(true)
-      # @option kwargs [Array]		:lines		([])
-      # @option kwargs [Symbol]		:input		($stdin)
-      # @option kwargs [Symbol]		:output		($stdout)
-      # @option kwargs [Symbol]		:error		($stderr)
-      # @option kwargs [String]		:prompt		('> ')
-      # @option kwargs [Boolean]	:allow_heredoc	(true)
-      # @option kwargs [Object]		:cmdtree	(nil)
+      # @!macro doc.TAGF.UI.input_formals
       # @raise [RuntimeError]
       def initialize(*args, **kwargs)
         @contexts	= []
-      end                       # def initialize
+      end                       # Constructor for class Interface
 
       #
       def readline(prompt=nil, **kwargs)
@@ -1248,96 +1593,8 @@ module TAGF
     nil
   end                           # module UI
 
-  #
-  # Directions, possibly prefixed with `go` (as in `south` or
-  # `go south`), and other actions (like `get`, `take`, `drop`,
-  # `throw`, and so forth).
-  #
-  class Verb
 
-    #
-#    include(Mixin::Element)
-
-    #
-    # @return [String]
-    #
-    attr_accessor(:name)
-
-    #
-    # @return [???]
-    #
-    attr_accessor(:type)
-
-    #
-    # @return [???]
-    #
-    attr_accessor(:objects)
-
-    #
-    # @return [???]
-    #
-    attr_accessor(:prepositions)
-
-    #
-    # @return [???]
-    #
-    attr_accessor(:target)
-
-    #
-    # @!macro doc.TAGF.formal.kwargs
-    # @return [Verb] self
-    #
-    def initialize(*args, **kwargs)
-#      TAGF::Mixin::Debugging.invocation
-      kwargs[:type] = :intransitive unless (kwargs[:type])
-      self.initialize_element(*args, **kwargs)
-      return self
-    end                         # def initialize(*args, **kwargs)
-
-    nil
-  end                           # class Verb
-
-  #
-  # Like `xyzzy`, `plugh`, and `y2` in ADVENT.
-  #
-  class Imperative
-
-    #
-#    include(Mixin::Element)
-
-    #
-    # @!macro doc.TAGF.formal.kwargs
-    # @return [Imperative] self
-    def initialize(*args, **kwargs)
-#      TAGF::Mixin::Debugging.invocation
-      self.initialize_element(*args, **kwargs)
-      return self
-    end                         # def initialize(*args, **kwargs)
-
-    nil
-  end                           # class Imperative
-
-  #
-  # Things that can be objects of verbs, like items or locations.
-  #
-  class Noun
-
-    #
-#    include(Mixin::Element)
-
-    #
-    # @!macro doc.TAGF.formal.kwargs
-    # @return [Noun] self
-    #
-    def initialize(*args, **kwargs)
-#      TAGF::Mixin::Debugging.invocation
-      self.initialize_element(*args, **kwargs)
-    end                         # def initialize(*args, **kwargs)
-
-    nil
-  end                           # class Noun
-
-  #
+  # Example commands:
   # :l
   # :look
   # :inventory
@@ -1359,67 +1616,6 @@ module TAGF
   # :attack {Mixin::Actor} with {Item}
   # :kill {Item}
   # :kill {Item} with {Item}
-=begin
-  DEFAULTS              = {
-    noun:               {
-    },
-    verb:               {
-      l:                Verb.new(type:          :intransitive),
-      look:             Verb.new(type:          :intransitive),
-      inventory:        Verb.new(alii:          %i[ i invent ],
-                                 type:          :intransitive),
-      go:               Verb.new(objects:       :direction,
-                                 type:          :transitive),
-      get:              Verb.new(alii:          %i[ g take ],
-                                 type:          :transitive,
-                                 object:        [ :all, Item ],
-                                 :clause =>     {
-                                   :optional => { :from => [ Mixin::Actor,
-                                                             Item,
-                                                             Feature
-                                                           ]
-                                                }
-                                 }),
-      drop:             Verb.new(type:          :transitive,
-                                 object:        [ :all, Item ]),
-      place:            Verb.new(alii:          %i[ put ],
-                                 type:          :transitive,
-                                 object:        [ :all, Item ],
-                                 :clause =>     {
-                                   :required => { in: [ Item ],
-                                                  on: [ Feature ]
-                                                }
-                                 }),
-      #
-      # `throw` is a Ruby keyword, so beware..
-      #
-      throw:            nil,
-    },
-    direction:          {
-      #
-      # Special direction: return to previous location if possible.
-      #
-      back:             nil,
-      north:            %i! n    !,
-      northeast:        %i! ne   !,
-      east:             %i! e    !,
-      southeast:        %i! se   !,
-      south:            %i! s    !,
-      west:             %i! w    !,
-      up:               %i! u    !,
-      down:             %i! d    !,
-    },
-    #
-    # These assume the player is facing a particular direction, and we
-    # can figure out to which compass direction they refer.
-    #
-    handed:             {
-      left:             nil,
-      right:            nil,
-      forward:          %i! straight !,
-    },
-  }
-=end
 
   nil
 end                             # module TAGF
