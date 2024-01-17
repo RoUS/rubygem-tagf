@@ -87,17 +87,33 @@ module TAGF
     ]
 
     #
+    # Hash mapping exceptions in the TAGF::Exceptions module to unique
+    # integer identifiers.  The exception names (keys in the hash) are
+    # represented as symbols, and the values are determined and stored
+    # as part of exception class declaration.
+    # @see #assign_ID
     EXCEPTION_IDS	= {}
 
-    #
+    # Base class for this package's custom exceptions.  It enhances
+    # StandardError by adding a bunch of functionality, and all of our
+    # exceptions subclass it.
     class ErrorBase < StandardError
 
       #
       extend(TAGF::Mixin::DTypes)
 
+      # ErrorBase eigenclass, declaring class methods for ErrorBase
+      # and all classes that subclass it.
       class << self
 
-        #
+        # @!method assign_ID
+        # Assign a unique integer ID for the receiving class, and
+        # store it in the Exceptions::EXCEPTION_IDS hash.  Multiple
+        # invocations within the same class will always return the
+        # same value.
+        # @see EXCEPTION_IDS
+        # @return [Integer]
+        #   integer identifier unique to this class.
         def assign_ID
           our_name	= self.name.sub(%r!^.*::!, '')
           unless ((our_id = Exceptions::EXCEPTION_IDS[our_name]).nil?)
@@ -110,7 +126,7 @@ module TAGF
           # Don't know why 'self.define_method(:exception_id)' isn't
           # working..
           #
-          self.eval(<<-EOMETH)
+          self.instance_eval(<<-EOMETH)
             def exception_id
               return #{our_id}
             end
@@ -1073,6 +1089,70 @@ module TAGF
       self.severity	= :warning
 
     end                         # class DuplicateLocation
+
+    class UnterminatedHeredoc < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
+      self.severity	= :error
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [UnterminatedHeredoc] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__method__)
+        super
+        if (@msg.nil?)
+          @msg			= 'EOF encountered while ' \
+                                  + 'reading here-doc'
+          if (args[0].kind_of?(UI::HereDoc))
+            @msg		= format("%s\n\t%s",
+                                         @msg,
+                                         args[0].intro_line)
+          end
+        end
+        self._set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class UnterminatedHeredoc
+
+    class UnsupportedObject < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
+      self.severity	= :fatal
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @return [UnsupportedObject] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__method__)
+        super
+        if (@msg.nil?)
+          @msg			= 'object unsupported ' \
+                                  + 'for this operation'
+          if (kwargs.has_key?(:object))
+            obj			= kwargs[:object]
+            @msg		= format('%s: %s:%s',
+                                         @msg,
+                                         obj.class.name,
+                                         obj.inspect)
+          end
+        end
+        self._set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class UnsupportedObject
 
     nil
   end                           # module TAGF::Exceptions
