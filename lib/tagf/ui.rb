@@ -141,6 +141,9 @@ module TAGF
       # We need our custom attribute accessor class methods.
       extend(Mixin::DTypes)
 
+      #
+      include(Mixin::UniversalMethods)
+
       # Boolean flag indicating whether lines read from the input
       # stream should be echoed to the output stream.  If the input
       # method is ViaReadline, this is handled directly by the
@@ -1089,7 +1092,6 @@ module TAGF
         # one.  Mostly for display purposes, but also to remove any
         # ambiguities.
         #
-        debugger
         if (file.kind_of?(String) \
             && Pathname(file).relative?)
           file		= File.absolute_path(file)
