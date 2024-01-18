@@ -1,10 +1,40 @@
-require('tagf/mixin/base')
+require('tagf/mixin/universal')
 require('test/unit')
+require('pp')
+require('byebug')
 
 class Test_Truthify < Test::Unit::TestCase
 
+  include TAGF::Mixin::UniversalMethods
+
+  FixturesDir		= File.join(Pathname(__FILE__).dirname,
+                                    '..',
+                                    'fixtures')
+  TrueValues		= [
+    true,
+    'true',
+    'True',
+    't',
+    'T',
+    1,
+  ]
+
+  FalseValues		= [
+    false,
+    'false',
+    'False',
+    'f',
+    'F',
+    nil,
+    'nil',
+    0,
+    0.0,
+    (0+0i),
+  ]
+
   def setup
-    @samples		= YAML.load('../fixtures/truthify.yaml')
+
+    nil
   end                           # def setup
 
   def teardown
@@ -13,12 +43,23 @@ class Test_Truthify < Test::Unit::TestCase
 
   #
   def test_true
-    @samples['true'].each do |testval|
-      assert(format('truthify(%s) => true failed', testval.inspect) do
-      TAGF.truthify(testval)
+    TrueValues.each do |testval|
+      assert(format('truthify(%s) => true failed', testval.inspect)) do
+        truthify(testval)
+      end
     end                         # @samples['true'].each do
   end                           # def test_true
 
+  #
+  def test_false
+    FalseValues.each do |testval|
+      assert(format('truthify(%s) => false failed', testval.inspect)) do
+        (! truthify(testval))
+      end
+    end                         # @samples['true'].each do
+  end                           # def test_true
+
+  nil
 end                             # class Test_Truthify
 
 # Local Variables:
