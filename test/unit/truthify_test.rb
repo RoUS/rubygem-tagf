@@ -17,6 +17,11 @@ class Test_Truthify < Test::Unit::TestCase
     't',
     'T',
     1,
+    '1',
+    17,
+    '17',
+    Math::PI,
+    Math::PI.to_s,
   ]
 
   FalseValues		= [
@@ -47,7 +52,7 @@ class Test_Truthify < Test::Unit::TestCase
       assert(format('truthify(%s) => true failed', testval.inspect)) do
         truthify(testval)
       end
-    end                         # @samples['true'].each do
+    end                         # TrueValues.each do |testval|
   end                           # def test_true
 
   #
@@ -56,8 +61,18 @@ class Test_Truthify < Test::Unit::TestCase
       assert(format('truthify(%s) => false failed', testval.inspect)) do
         (! truthify(testval))
       end
-    end                         # @samples['true'].each do
-  end                           # def test_true
+    end                         # FalseValues.each do |testval|
+  end                           # def test_false
+
+  #
+  def test_true_value_array
+    
+  end                           # def test_true_value_array
+
+  #
+  def test_truthiness_proc
+    
+  end                           # def test_truthines_proc
 
   nil
 end                             # class Test_Truthify

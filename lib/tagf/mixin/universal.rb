@@ -279,51 +279,177 @@ module TAGF
       #
       Truthy_Strings	= %w[ y yes t true on ]
 
+      #
+      # Regular expression pattern matching an integer or bignum
+      # string.  Used by itself, and also by {Float_String} and
+      # {Complex_String}.
+      #
+      Digit_String	= '\d+'
+
+      #
+      # Regular expression pattern matching a floating point string.
+      # Also used by {Complex_String}.
+      #
+      Float_String	= format('%s(?:\.%s)?',
+                                 Digit_String,
+                                 Digit_String)
+
+      #
+      # Regular expression matching a Ruby complex number string.
+      #
+      Complex_String	= format('\(%s\+%si\)',
+                                 Float_String,
+                                 Float_String)
+
+      #
+      # Compiled regular expression matching a string of digits (an
+      # integer or bignum).
+      #
+      Integer_String_RE	= %r!^#{Digit_String}$!
+
+      #
+      # Compiled regular expression matching a Ruby Float as a string.
+      #
+      Float_String_RE	= %r!^#{Float_String}$!
+
+      #
+      # Compiled regular expression matching Ruby's representation of
+      # a complex numeric value.
+      #
+      Complex_String_RE	= %r!^#{Complex_String}$!
+
+      #
+      # Default proc used to test for truthyness of any value of any
+      # kind.  Used by #truthify.  Can be used as an example for
+      # custom truthiness test procs.
+      #
+      #
+      Truthy_TestProc	= Proc.new { |testvalue|
+        #
+        # This is a messy tree of if/elsif/else/end checks.  Each
+        # [els]if block is moronically simple, making this look
+        # overengineered, but there are reasons.  Firstly because
+        # there are several conditions (and subconditions) to check,
+        # and secondly because putting them all into a single
+        # conditional is even worse (and 'first true result
+        # short-circuits the rest of the expression' wasn't working as
+        # expected).  Plus, this makes adding/changing/deleting checks
+        # much simpler.
+        #
+        # First, check explicit Boolean values, since they
+        # short-circuit the testing massively.  `true` is, of course,
+        # true.
+        #
+        if ((testvalue == false) ||
+            testvalue.nil?)
+          result	= false
+        elsif (testvalue == true)
+          result	= true
+        elsif (testvalue.kind_of?(Numeric) &&
+               (! testvalue.zero?))
+          #
+          # If it's a numeric value (of any kind), anything that
+          # isn't zero is considered true.
+          #
+          # Checking past this point is for strings, which depends
+          # heavily on regular expression matching, which is
+          # consumptive.
+          #
+          result	= true
+        elsif (testvalue.kind_of?(String))
+          #
+          # Now comes the complex part: checking to see if this string
+          # evaluates to something we should treat as true.  Explicit
+          # text string (checked in list of truthy strings), or string
+          # representations of numbers (checked as evaluating to
+          # zero).
+          #
+          # But first, is it one of our explicitly truthy strings?
+          # (Easy first test.)
+          #
+          if (Truthy_Strings.include?(testvalue.downcase))
+            result	= true
+          elsif ((testvalue =~ Integer_String_RE) &&
+                 (! testvalue.to_i.zero?))
+            #
+            # It'a string of just decimal digits, but not evaluating
+            # to zero.
+            #
+            result	= true
+          elsif ((testvalue =~ Float_String_RE) &&
+                 (! testvalue.to_f.zero?))
+            #
+            # Non-zero floating-point string.
+            #
+            result	= true
+          elsif ((testvalue =~ Complex_String_RE) &&
+                 (! testvalue.to_c.zero?))
+            #
+            # Non-zero complex number.
+            #
+            result	= true
+          end
+        else
+          #
+          # Sorry, didn't meet any of our conditions; not truthy.
+          #
+          result	= false
+        end
+        result
+      }
+
       # Convert a value (string, numeric, any kind of object) into a
       # Boolean.  This varies slightly from normal Ruby semantics in
       # that an integer 0 is considered `false` whereas normal Ruby
       # interpretation would consider it `true`.
       #
-      # @param [Object]		testvalue
+      # Any value which isn't represented in the list of truthy values
+      # is considered `false`.
+      #
+      # The default list of truthy values can be augmented or replaced
+      # by using the keyword arguments `:true_values` and `:replace`.
+      # See the option descriptions below.
+      #
+      # More involved checking can be performed by supplying a proc
+      # (which is what the default implementation uses).  This module
+      # supplies some possibly-useful string and Regexp constants.
+      # @see Truthy_Test_Proc
+      # @see Truthy_Strings
+      # @see Digit_String
+      # @see Float_String
+      # @see Complex_String
+      # @see Integer_String_RE
+      # @see Float_String_RE
+      # @see Complex_String_RE
+      #
+      # @param [Object]			testvalue
       #   value to evaluate for truthiness.
+      # @param [Hash<Symbol=>Object>]	kwargs
+      # @option kwargs [Array]		:true_values
+      #   An array of objects that are the only ones that will be
+      #   considered truthy.  <em>Any more involved checking than 'is
+      #   it one of these?' should be handled with a truthiness
+      #   proc.</em> 
+      #
+      #   This is only meaningful if `:truthiness_proc` isn't used.
+      # @option kwargs [Proc]		:truthiness_proc
+      #   Proc to be called
       # @return [Boolean]
       #   the result of the evaluation.
       #
-      def truthify(testvalue)
-        #
-        # Fast-track actual Booleans.
-        #
-        if ([true, false].include?(testvalue))
-          result	= testvalue
-        elsif (testvalue.nil?)
-          result	= false
-        #
-        # If it's some kind of number, zero is false.
-        #
-        elsif (testvalue.kind_of?(Numeric))
-          result	= (! testvalue.zero?)
-        #
-        # If it's a string, see if it's one of our truthy keywords.
-        #
-        elsif (testvalue.kind_of?(String))
-          if (Truthy_Strings.include?(testvalue.downcase))
-            result	= true
-          else
-            result	= (! testvalue.to_f.zero?)
-          end
-        #
-        # See if it can be turned into a float, whatever it is.
-        #
-        elsif (testvalue.respond_to?(:to_f))
-          result	= testvalue.to_f.zero?
-        #
-        # Shrug.  False it is.
-        #
-        else
-          result	= false
+      def truthify(testvalue, **kwargs)
+        if (testproc = kwargs[:truthiness_proc])
+          return testproc.call(testval)
         end
-        return result
-      end                       # def truthify(testvalue)
+        unless (kwargs.has_key?(:true_values))
+          return Truthy_TestProc.call(testvalue)
+        end
+        #
+        # We were passed an explicit list of truthy values.  Is this
+        # in the list?
+        #
+        return kwargs[:true_values].include?(testvalue)
+      end                       # def truthify(testvalue, **kwargs)
 
       # @private
       # Given a symbolic attribute name and potentially a default
