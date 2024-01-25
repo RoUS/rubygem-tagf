@@ -160,7 +160,7 @@ module TAGF
         # @overload severity
         #   @return [Integer]
         def severity
-          msyms		= _method2syms(__method__)
+          msyms		= _method2syms(__callee__)
           unless (self.instance_variable_defined?(msyms.ivar) \
                   && self.instance_variable_get(msyms.ivar))
             warn(format('%s.%s not set, setting to :severe',
@@ -177,7 +177,7 @@ module TAGF
         #   @raise [TypeError]
         #   @raise [InvalidSeverity]
         def severity=(sevlevel)
-          msyms		= _method2syms(__method__)
+          msyms		= _method2syms(__callee__)
           sevlevel	= self.validate_severity(sevlevel)
           self.instance_variable_set(msyms.ivar, sevlevel)
         end                     # def severity=
@@ -228,7 +228,7 @@ module TAGF
       # @overload severity
       #   @return [Integer]
       def severity
-        msyms		= self.class._method2syms(__method__)
+        msyms		= self.class._method2syms(__callee__)
         unless (self.instance_variable_defined?(msyms.ivar) \
                 && self.instance_variable_get(msyms.ivar))
           self.send(msyms.setter, self.class.send(msyms.getter))
@@ -239,7 +239,7 @@ module TAGF
       #   @param [Symbol,Integer]
       #   @return [Integer]
       def severity=(sevlevel)
-        msyms		= self.class._method2syms(__method__)
+        msyms		= self.class._method2syms(__callee__)
         sevlevel	= self.singleton_class.validate_severity(sevlevel)
         self.instance_variable_set(msyms.ivar, sevlevel)
       end                       # def severity=(level)
@@ -311,7 +311,7 @@ module TAGF
         # @return [InventoryLimitExceeded::LimitItems] self
         #
         def initialize(*args, **kwargs)
-          _dbg_exception_start(__method__)
+          _dbg_exception_start(__callee__)
           super
           inv		= args[0]
           newitem	= args[1]
@@ -381,7 +381,7 @@ module TAGF
       #   exception object
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           @msg		= format('invalid severity level: %s:%s',
@@ -409,7 +409,7 @@ module TAGF
       # @return [NoLoadFile] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           if (args[0].nil?)
@@ -442,7 +442,7 @@ module TAGF
       # @return [NoLoadFile] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           @msg		= 'no "file" keyword specified for game load'
@@ -468,7 +468,7 @@ module TAGF
       # @return [BadLoadFile] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           if ((loadfile = kwargs[:file]).nil?)
@@ -505,7 +505,7 @@ module TAGF
       # @return [NotExceptionClass] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           objtype	= args[0].class.name
@@ -534,7 +534,7 @@ module TAGF
       # @return [NotGameElement] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           objtype	= arg[0].class.name
@@ -563,7 +563,7 @@ module TAGF
       # @return [NoObjectOwner] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           objtype	= arg[0].class.name
@@ -593,7 +593,7 @@ module TAGF
       # @return [KeyObjectMismatch] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           oeid		= args[0] || kwargs[:eid]
@@ -630,7 +630,7 @@ module TAGF
       # @return [NoGameContext] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           @msg		= 'attempt to create in-game object ' \
@@ -657,7 +657,7 @@ module TAGF
       # @return [SettingLocked] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           if (arg[0].kind_of?(Symbol))
@@ -690,7 +690,7 @@ module TAGF
       # @return [ImmovableObject] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           obj		= args[0]
@@ -728,7 +728,7 @@ module TAGF
       # @return [NotAContainer] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           obj		= args[0]
@@ -762,7 +762,7 @@ module TAGF
       # @return [AliasRedefinition] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           obj		= args[0]
@@ -803,7 +803,7 @@ module TAGF
       # @return [UnscrewingInscrutable] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           msgargs	= []
@@ -840,7 +840,7 @@ module TAGF
       # @return [MasterInventory] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           obj		= args[0]
@@ -878,7 +878,7 @@ module TAGF
       # @return [HasNoInventory] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           if (args[0].kind_of?(Mixin::Element))
@@ -918,7 +918,7 @@ module TAGF
       # @return [AlreadyHasInventory] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           target	= args[0]
@@ -959,7 +959,7 @@ module TAGF
       # @return [AlreadyInInventory] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if (@msg.nil?)
@@ -1007,7 +1007,7 @@ module TAGF
       # @return [ImmovableElementDestinationError] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           target	= args[0]
@@ -1045,7 +1045,7 @@ module TAGF
       # @return [DuplicateObject] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         type		= self.class.name.sub(%r!^.*Duplicate!, '')
         if (@msg.nil?)
@@ -1104,7 +1104,7 @@ module TAGF
       # @return [UnterminatedHeredoc] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           @msg			= 'EOF encountered while ' \
@@ -1135,7 +1135,7 @@ module TAGF
       # @return [UnsupportedObject] self
       #
       def initialize(*args, **kwargs)
-        _dbg_exception_start(__method__)
+        _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
           @msg			= 'object unsupported ' \
