@@ -19,7 +19,7 @@ desc "Create gettext files"
 task(:makemo) do
   require('gettext/tools')
   GetText.create_mofiles
-end
+end                             # task(:makemo) do
 
 # Local Variables:
 # mode: ruby
