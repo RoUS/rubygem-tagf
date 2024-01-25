@@ -57,6 +57,7 @@ config/macros.yard
 # Other source files.
 #
 lib/**/*.rb
+test/**/*.rb
 #features/**/*.rb
 #
 # Marker for 'extra' files, and the list of same.
