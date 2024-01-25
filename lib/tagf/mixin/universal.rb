@@ -280,6 +280,12 @@ module TAGF
       Truthy_Strings	= %w[ y yes t true on ]
 
       #
+      # List of (case-insensitive) strings that explicitly evaluate to
+      # a Boolean `false` value.
+      #
+      UnTruthy_Strings	= %w[ n no f false off nil null ]
+
+      #
       # Regular expression pattern matching an integer or bignum
       # string.  Used by itself, and also by {Float_String} and
       # {Complex_String}.
@@ -288,17 +294,20 @@ module TAGF
 
       #
       # Regular expression pattern matching a floating point string.
-      # Also used by {Complex_String}.
+      # Also used by {Complex_String}.  Modern Ruby requires digits on
+      # both sides of the decimal point.
       #
-      Float_String	= format('%s(?:\.%s)?',
+      Float_String	= format('%s\.%s',
                                  Digit_String,
                                  Digit_String)
 
       #
       # Regular expression matching a Ruby complex number string.
       #
-      Complex_String	= format('\(%s\+%si\)',
+      Complex_String	= format('\(?(?:%s|%s)[-+](?:%s|%s)i\)?',
+                                 Digit_String,
                                  Float_String,
+                                 Digit_String,
                                  Float_String)
 
       #
@@ -326,6 +335,13 @@ module TAGF
       #
       Truthy_TestProc	= Proc.new { |testvalue|
         #
+        # Symbols we don't handle directly, so convert them into
+        # Strings for evaluation.  This is perhaps a cop-out.
+        #
+        if (testvalue.kind_of?(Symbol))
+          testvalue	= testvalue.to_s
+        end
+        #
         # This is a messy tree of if/elsif/else/end checks.  Each
         # [els]if block is moronically simple, making this look
         # overengineered, but there are reasons.  Firstly because
@@ -345,8 +361,7 @@ module TAGF
           result	= false
         elsif (testvalue == true)
           result	= true
-        elsif (testvalue.kind_of?(Numeric) &&
-               (! testvalue.zero?))
+        elsif (testvalue.kind_of?(Numeric))
           #
           # If it's a numeric value (of any kind), anything that
           # isn't zero is considered true.
@@ -355,7 +370,7 @@ module TAGF
           # heavily on regular expression matching, which is
           # consumptive.
           #
-          result	= true
+          result	= (! testvalue.zero?)
         elsif (testvalue.kind_of?(String))
           #
           # Now comes the complex part: checking to see if this string
@@ -364,36 +379,54 @@ module TAGF
           # representations of numbers (checked as evaluating to
           # zero).
           #
-          # But first, is it one of our explicitly truthy strings?
-          # (Easy first test.)
-          #
           if (Truthy_Strings.include?(testvalue.downcase))
+            #
+            # But first, is it one of our explicitly truthy strings?
+            # (Easy first test.)
+            #
             result	= true
-          elsif ((testvalue =~ Integer_String_RE) &&
-                 (! testvalue.to_i.zero?))
+          elsif (UnTruthy_Strings.include?(testvalue.downcase))
+            #
+            # How about one of our explicitly UNtruthy strings?
+            #
+            result	= false
+          elsif (testvalue =~ Integer_String_RE)
             #
             # It'a string of just decimal digits, but not evaluating
             # to zero.
             #
-            result	= true
-          elsif ((testvalue =~ Float_String_RE) &&
-                 (! testvalue.to_f.zero?))
+            result	= (! Integer(testvalue).zero?)
+          elsif (testvalue =~ Float_String_RE)
             #
-            # Non-zero floating-point string.
+            # Non-zero floating-point string?
             #
-            result	= true
-          elsif ((testvalue =~ Complex_String_RE) &&
-                 (! testvalue.to_c.zero?))
+            result	= (! Float(testvalue).zero?)
+          elsif (testvalue =~ Complex_String_RE)
             #
-            # Non-zero complex number.
+            # Non-zero complex number?  The Complex coercion doesn't
+            # deal with parenthesised strings, so remove those before
+            # converting.  We could do it with a regex substitution,
+            # but slicing is faster.
             #
-            result	= true
+            temp	= testvalue
+            if ((testvalue[0,1] == '(') && (testvalue[-1,1] == ')'))
+              temp	= testvalue[1,testvalue.length - 2]
+            end
+            result	= (! Complex(temp).zero?)
+          else
+            #
+            # None of our string cases matched, so it isn't explicitly
+            # truthy and isn't explicitly untruthy.  So it's false by
+            # default.
+            #
+            result	= false
           end
         else
           #
-          # Sorry, didn't meet any of our conditions; not truthy.
+          # Sorry, didn't meet any of our conditions; not explicitly
+          # truthy.  Fall back on Ruby's interpretation.
           #
-          result	= false
+          result	= testvalue ? true : false
         end
         result
       }
@@ -439,7 +472,7 @@ module TAGF
       #
       def truthify(testvalue, **kwargs)
         if (testproc = kwargs[:truthiness_proc])
-          return testproc.call(testval)
+          return testproc.call(testvalue)
         end
         unless (kwargs.has_key?(:true_values))
           return Truthy_TestProc.call(testvalue)

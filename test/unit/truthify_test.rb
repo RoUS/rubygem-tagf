@@ -7,21 +7,48 @@ class Test_Truthify < Test::Unit::TestCase
 
   include TAGF::Mixin::UniversalMethods
 
-  FixturesDir		= File.join(Pathname(__FILE__).dirname,
-                                    '..',
-                                    'fixtures')
   TrueValues		= [
     true,
     'true',
     'True',
     't',
     'T',
-    1,
-    '1',
-    17,
-    '17',
+    :true,
     Math::PI,
     Math::PI.to_s,
+    1,
+    17,
+    1.0,
+    0.1,
+    (1+0i),
+    (1-0i),
+    (0+1i),
+    (0-1i),
+    (1.0+0i),
+    (1.0-0i),
+    (0+1.0i),
+    (0-1.0i),
+    (0.0+1.0i),
+    (0.0-1.0i),
+    (1.0+1.0i),
+    (1.0-1.0i),
+    '1',
+    '17',
+    '1.0',
+    '0.1',
+    '(1+0i)',
+    '(1-0i)',
+    '(0+1i)',
+    '(0-1i)',
+    '(1.0+0i)',
+    '(1.0-0i)',
+    '(0+1.0i)',
+    '(0-1.0i)',
+    '(0.0+1.0i)',
+    '(0.0-1.0i)',
+    '(1.0+1.0i)',
+    '(1.0-1.0i)',
+    Object.new,
   ]
 
   FalseValues		= [
@@ -30,12 +57,36 @@ class Test_Truthify < Test::Unit::TestCase
     'False',
     'f',
     'F',
+    :false,
     nil,
     'nil',
+    'empty',
+    'unknown',
     0,
+    '0',
     0.0,
+    '0.0',
     (0+0i),
+    (0-0i),
+    (0.0+0i),
+    (0.0-0i),
+    (0+0.0i),
+    (0-0.0i),
+    (0.0+0.0i),
+    (0.0-0.0i),
+    '(0+0i)',
+    '(0-0i)',
+    '(0.0+0i)',
+    '(0.0-0i)',
+    '(0+0.0i)',
+    '(0-0.0i)',
+    '(0.0+0.0i)',
+    '(0.0-0.0i)',
   ]
+
+  TruthyProc_AlwaysTrue	= Proc.new { |testvalue| true }
+
+  TruthyProc_AlwaysFalse = Proc.new { |testvalue| false }
 
   def setup
 
@@ -49,18 +100,20 @@ class Test_Truthify < Test::Unit::TestCase
   #
   def test_true
     TrueValues.each do |testval|
-      assert(format('truthify(%s) => true failed', testval.inspect)) do
-        truthify(testval)
-      end
+      msg		= format('truthify(%s:%s) => true failed',
+                                 testval.class.name,
+                                 testval.inspect)
+      assert_true(truthify(testval), msg)
     end                         # TrueValues.each do |testval|
   end                           # def test_true
 
   #
   def test_false
     FalseValues.each do |testval|
-      assert(format('truthify(%s) => false failed', testval.inspect)) do
-        (! truthify(testval))
-      end
+      msg		= format('truthify(%s:%s) => false failed',
+                                 testval.class.name,
+                                 testval.inspect)
+      assert_false(truthify(testval), msg)
     end                         # FalseValues.each do |testval|
   end                           # def test_false
 
@@ -70,9 +123,28 @@ class Test_Truthify < Test::Unit::TestCase
   end                           # def test_true_value_array
 
   #
-  def test_truthiness_proc
-    
-  end                           # def test_truthines_proc
+  def test_truthiness_proc_true
+    (TrueValues + FalseValues).each do |testval|
+      msg		= format('truthify(%s:%s) => true',
+                                 testval.class.name,
+                                 testval.inspect)
+      assert_true(truthify(testval,
+                           truthiness_proc: TruthyProc_AlwaysTrue),
+                  msg)
+    end
+  end                           # def test_truthiness_proc_true
+
+  #
+  def test_truthiness_proc_false
+    (TrueValues + FalseValues).each do |testval|
+      msg		= format('truthify(%s:%s) => false',
+                                 testval.class.name,
+                                 testval.inspect)
+      assert_false(truthify(testval,
+                            truthiness_proc: TruthyProc_AlwaysFalse),
+                   msg)
+    end
+  end                           # def test_truthiness_proc_false
 
   nil
 end                             # class Test_Truthify

@@ -46,6 +46,7 @@ group(:default, :development, :test) do
   gem('binding_of_caller')
   gem('contracts',	'< 0.17.0')
   gem('cri')
+  gem('gettext')
   gem('linguistics')
   gem('ostruct',	'>= 0.5.5')
   gem('pathname',	'>= 0.2.0')
@@ -77,7 +78,6 @@ group(:development, :test) do
   gem('rdiscount')
   gem('coveralls')
   gem('cucumber')
-  gem('gettext')
   gem('github-markup')
   #
   # Needed for Yard, of all things
