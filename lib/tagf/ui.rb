@@ -782,6 +782,10 @@ module TAGF
       # Standard set of word-break characters for completion.
       DEFAULT_WORD_BREAK_CHARS = " \t\n`><=;|&{("
 
+      # Closing the context means forwarding the request to the input
+      # method.
+      def_delegator(:@inputmethod, :close)
+
       # The end-of-file test actually lives in the input method object
       # rather than here in the context, but we might need it here.
       def_delegator(:@inputmethod, :eof?)
@@ -1055,6 +1059,9 @@ module TAGF
     # Class defining the input method to read input from a file.
     class ViaFile < InputMethod
 
+      #
+      extend(Forwardable)
+
       # Eigenglass for ViaFile class.
       class << self
 
@@ -1072,6 +1079,8 @@ module TAGF
 
         nil
       end                       # class ViaFile eigenclass
+
+      def_delegator(:@io, :close)
 
       # Creates a new ViaFile input method object, for reading input
       # from a non-terminal file-like source.
@@ -1145,10 +1154,6 @@ module TAGF
                       self.class.name.sub(%r!^.*::!, ''),
                       self.pathname.inspect)
       end                       # def inspect
-
-      def close
-        return @io.close
-      end                       # def close
 
       nil
     end                         # class ViaFile
