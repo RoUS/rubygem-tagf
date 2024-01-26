@@ -6,16 +6,11 @@ require('test/unit')
 
 class Test_InputMethod_ViaFile_Base < Test::Unit::TestCase
 
-  FixtureDir		= File.absolute_path(
-    File.join(Pathname(__FILE__).dirname,
-              '..',
-              'fixtures'))
-
   include TAGF::UI
   include TAGF::Exceptions
 
   def setup
-    @fixtures		= Dir[File.join(FixtureDir, 'viafile-*.txt')]
+    @fixtures		= Dir[File.join(FixturesDir, 'viafile-*.txt')]
                             .sort
     @iface		= Interface.new(inputmethod:	'ViaFile',
                                         record:		false,
@@ -35,7 +30,7 @@ class Test_InputMethod_ViaFile_Base < Test::Unit::TestCase
   end                           # def teardown
 
   def access_file(base)
-    fspec		= File.expand_path(base, FixtureDir)
+    fspec		= File.expand_path(base, FixturesDir)
     @context		= Context.new(interface:	@iface,
                                       inputmethod:	'ViaFile',
                                       record:		false,
