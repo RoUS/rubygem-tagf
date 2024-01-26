@@ -151,7 +151,7 @@ module TAGF
       self.owned_by	= kwargs[:game]
       kwargs.delete(:eid) if (@eid = kwargs[:eid])
       kwargs.delete(:name) if (self.name = kwargs[:name])
-      @eid		||= self.object_id
+      @eid		||= self.object_id.to_s
       self.name		||= ''
       self.is_static!
       self.initialize_element(*args, **kwargs)
