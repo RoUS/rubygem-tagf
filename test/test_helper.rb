@@ -23,6 +23,35 @@ require('test-unit')
 FixturesDir		= File.join(Pathname(__FILE__).dirname,
                                     'fixtures')
 
+#
+# Helper method to generate a dynamic test name (symbol).
+#
+# @param [Hash<Symbol=>Object>] kwargs
+# @option kwargs [Object]       :testval
+# @option kwargs [Boolean]      :expect       (true)
+# @option kwargs [String]       :prefix       ("for")
+# @option kwargs [String]       :suffix       (kwargs[:testval].to_s)
+# @return [Symbol]
+#
+def mktestname(**kwargs)
+  testval		= kwargs[:testval]
+  suffix		= kwargs[:suffix] || testval.inspect
+  expect		= kwargs[:expect] ? true : false
+  prefix		= kwargs[:prefix] || 'for'
+  unless (suffix[0,1] == '_')
+    suffix		= format('%s_%s',
+				 testval.class.name.sub(%r!^.*::!, ''),
+				 suffix)
+  else
+    suffix		= suffix[1,suffix.length]
+  end
+  testname		= format('test_%s_%s_%s',
+				 prefix,
+				 expect.to_s,
+				 suffix)
+  return testname.to_sym
+end
+
 # @!macro doc.TAGF.module
 module TAGF
 
@@ -167,18 +196,18 @@ module TAGF
   #   Passes if assertion is failed in block.
   #
   #   @example
-  #     assert_fail_assertion {assert_equal("A", "B")}  # -> pass
-  #     assert_fail_assertion {assert_equal("A", "A")}  # -> fail
+  #     assert_fail_assertion { assert_equal("A", "B") }  # -> pass
+  #     assert_fail_assertion { assert_equal("A", "A") }  # -> fail
   #
   # assert_raise_message(expected, message=nil)
   #   Passes if an exception is raised in block and its message is
   #   `expected`.
   #
   #   @example
-  #     assert_raise_message("exception") {raise "exception"}  # -> pass
-  #     assert_raise_message(/exc/i) {raise "exception"}       # -> pass
-  #     assert_raise_message("exception") {raise "EXCEPTION"}  # -> fail
-  #     assert_raise_message("exception") {}                   # -> fail
+  #     assert_raise_message("exception") { raise "exception" }  # -> pass
+  #     assert_raise_message(/exc/i) { raise "exception" }       # -> pass
+  #     assert_raise_message("exception") { raise "EXCEPTION" }  # -> fail
+  #     assert_raise_message("exception") {}                     # -> fail
   #
   # assert_const_defined(object, constant_name, message=nil)
   #   Passes if `object`.const_defined?(`constant_name`)
@@ -237,7 +266,7 @@ module TAGF
   #     assert_empty({})                       # -> pass
   #     assert_empty(" ")                      # -> fail
   #     assert_empty([nil])                    # -> fail
-  #     assert_empty({1 => 2})                 # -> fail
+  #     assert_empty({ 1 => 2 })               # -> fail
   #
   # assert_not_empty(object, message=nil)
   #
