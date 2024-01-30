@@ -23,34 +23,601 @@ require('test-unit')
 FixturesDir		= File.join(Pathname(__FILE__).dirname,
                                     'fixtures')
 
-#
-# Helper method to generate a dynamic test name (symbol).
-#
-# @param [Hash<Symbol=>Object>] kwargs
-# @option kwargs [Object]       :testval
-# @option kwargs [Boolean]      :expect       (true)
-# @option kwargs [String]       :prefix       ("for")
-# @option kwargs [String]       :suffix       (kwargs[:testval].to_s)
-# @return [Symbol]
-#
-def mktestname(**kwargs)
-  testval		= kwargs[:testval]
-  suffix		= kwargs[:suffix] || testval.inspect
-  expect		= kwargs[:expect] ? true : false
-  prefix		= kwargs[:prefix] || 'for'
-  unless (suffix[0,1] == '_')
-    suffix		= format('%s_%s',
+# Module for personal functions, customisations, and other bits that
+# aren't project/package-specific.
+module RoUS
+
+  # Module defining helper methods and other assistive bits for
+  # `Test::Unit` test classes and methods.
+  module TestHelpers
+
+    # Eigenclass for module RoUS::TestHelpers
+    class << self
+
+      # Invoked when RoUS::TestHelpers is included; add it to the
+      # includer's eigenclass as well (making instance methods class
+      # methods as well).
+      #
+      # @param [Class] klass
+      #   The receiver that invoked `include(RoUS::TestHelpers)`.
+      # @return [void]
+      def included(klass)
+        klass.extend(RoUS::TestHelpers)
+        nil
+      end                       # def included(klass)
+
+      nil
+    end                         # module RoUS::TestHelpers eigenclass
+
+    # Coerce a String into another class.  Helper designed to allow us
+    # to display a value in a canonical form rather than the one to
+    # which Ruby might reduce it.  For example, `'00' ~= 00.to_s`.
+    #
+    # @param [Class,Method,Proc]	coercer
+    #   Class to which the value should be cast, or a method/proc
+    #   that will do the coercion.
+    # @param [String]			val
+    #   The string representation of the item to be coerced.
+    # @return [Any]
+    #   The value returned by the coercing method or class, or the
+    #   unmodified input value if `coercer` is `nil`.
+    # @raise [ArgumentError]
+    #   `coerce_to requires an object of type Class, Proc, or Method`
+    # @raise [ArgumentError]
+    #   `only String objects are supported for coercion: `
+    #   <em>`val.class`</em>`:`<em>`val.inspect`</em>
+    # @raise [ArgumentError]
+    #   `object `<em>`coercer-class`</em>`:`<em>`coercer.inspect`</em> `
+    #   `does not support casting/coercion`
+    def coerce_to(coercer, val)
+      result		= val
+      if (coercer)
+        #
+        # Coercion requires an actual class that supports
+        # casting/coercion, or else a Proc or Method object.
+        #
+        unless (coercer.kind_of?(Class) ||
+                coercer.kind_of?(Proc) ||
+                coercer.kind_of?(Method))
+          raise(ArgumentError,
+                format('%s requires ' +
+                       'an object of type Class, Proc, or Method',
+                       __callee__.to_s))
+        end
+        unless (val.kind_of?(String))
+          raise(ArgumentError,
+                format('only String objects are supported ' +
+                       'for coercion: %s:%s',
+                       val.class.name,
+                       val.inspect))
+        end
+        if (coercer.kind_of?(Class))
+          begin
+            coercer_m	= coercer.method(coercer.name.to_sym)
+          rescue NameError => exc
+            raise(ArgumentError,
+                  format('object %s:%s does not support ' +
+                         'casting/coercion',
+                         coercer.class.name,
+                         coercer.inspect))
+          end
+        else
+          coercer_m	= coercer
+        end
+        rawval		= val.dup
+        if (coercer == Complex)
+          #
+          # @note
+          #   Meh.  The Complex converter doesn't handle parenthesised
+          #   complex numbers.  WTH?
+          #
+          rawval.sub!(%r!^\((.*)\)$!, '\1')
+        end
+        result		= coercer_m.call(rawval)
+      end                       # if (coercer)
+      return result
+    end                         # def coerce_to(coercer, val)
+
+    #
+    # Helper method to generate a dynamic test name (symbol).  Since
+    # `Unit::Test` invokes test methods using `__send__`, names are
+    # <em>not</em> limited to `[_[:alnum:]]*` and we don't have to
+    # pussyfoot around things like floating-point or complex number
+    # representations.
+    #
+    # @param [Hash<Symbol=>Object>] kwargs
+    #   All arguments are passed by position-independent keyword.
+    # @option kwargs [Object]       :testval
+    #   The value under test, which will be built into the test name.
+    # @option kwargs [Class]	    :coerce
+    #   Sometimes the `:testval` is passed as a string representation
+    #   to retain syntax, but needs to be coerced back to the original
+    #   class in order to derive its class.  As an example,
+    #   `(0.0-1.1i).to_s` evaluates to `"0.0-1.1i"`.  If we want the
+    #   test name to include the original, we would use
+    #```
+    #    testval: '(0.0-1.1i)', coerce: Complex
+    #```
+    # @option kwargs [Boolean]      :expect       (true)
+    #   The result expectation for the test being named.
+    # @option kwargs [String]       :prefix       ("for")
+    #   Any additional explanatory text between the prefix and the
+    #   test value.
+    # @option kwargs [String]       :suffix       (kwargs[:testval].inspect)
+    #   Text to use as the suffix of the test name, overriding the
+    #   calculation of a derived value
+    #   ("<em>`testval-class`</em>`_`<em>`testval.inspect`</em>").
+    # @return [Symbol]
+    #   A symbol suitable for use as a `Test::Unit` test method name,
+    #   built from
+    #   "`test_`<em>`prefix`</em>`_`<em>`expect`</em>`_`<em>`suffix`</em>" 
+    def mktestname(**kwargs)
+      unless (kwargs.has_key?(:testval))
+        raise(ArgumentError,
+              format('%s keyword arg :testval required but omitted',
+                     __callee__.to_s))
+      end
+      testval		= kwargs[:testval]
+      coercer		= kwargs[:coerce]
+      testval		= coerce_to(coercer, testval)
+      suffix		||= coercer ? elt : testval.inspect
+      expect		= kwargs[:expect] ? true : false
+      prefix		= kwargs[:prefix] || 'for'
+      if (suffix = kwargs[:suffix])
+        unless (suffix[0,1] == '_')
+          suffix	= format('%s_%s',
 				 testval.class.name.sub(%r!^.*::!, ''),
 				 suffix)
-  else
-    suffix		= suffix[1,suffix.length]
-  end
-  testname		= format('test_%s_%s_%s',
+        else
+          suffix	= suffix[1,suffix.length]
+        end
+      else
+        suffix		= coercer ? elt : testval.inspect
+      end
+      testname		= format('test_%s_%s_%s',
 				 prefix,
 				 expect.to_s,
 				 suffix)
-  return testname.to_sym
-end
+      return testname.to_sym
+    end                         # def mktestname(**kwargs)
+
+    # Primitive subclassable prototype class for storing a value to be
+    # used for testing, and metadata about it.  Default supported
+    # attributes include:
+    #
+    # * `:value` — the actual value to be tested
+    # * `:suffix` — for use in assertion messages and potentially
+    #   generated test method names
+    # * `:render` — how the test value should be rendered as a string.
+    #   By default, this is built from `:value`'s class name and
+    #   `#inspect` result.
+    #   @see #value
+    #   @see #update_rendition
+    #   @see #render=
+    #
+    class TestElement
+
+      extend(Forwardable)
+
+      class << self
+
+        # @private
+        # Array of attributes that have been dynamically added
+        # class-wide.
+        # @return Array[<Symbol>]
+        attr_accessor(:klass_attributes)
+
+        nil
+      end                       # Eigenclass for class TestElement
+
+      def_delegator(self, :klass_attributes)
+      def_delegator(self, :klass_attributes=)
+      private(:klass_attributes, :klass_attributes=)
+      
+      # @private
+      # @!attribute [rw] value_set
+      # @see #value_set?
+      # @see #value_set!
+      # @overload value_set
+      #   @return [Boolean]
+      #     `true` if the test value has been set with `#value=`,
+      #     `false` otherwise.
+      def value_set
+        unless (self.instance_variable_defined?(:@value_set))
+          @value_set	= false
+        end
+        return @value_set ? true : false
+      end                       # def value_set
+      # @overload value_set=(val)
+      #   @see #value_set
+      #   @see #value_set?
+      #   @see #value_set!
+      #   @param [Any] val
+      #     Any object of any kind; it will be evaluated using Ruby's
+      #     rules for truthiness, and the `@value_set` instance
+      #     variable set to `true` or `false` accordingly.
+      #   @return [Boolean]
+      #     `true` if the test value has been set with `#value=`,
+      #     `false` otherwise.
+      def value_set=(val)
+        @value_set	= val ? true : false
+        return @value_set
+      end                       # def value_set=(val)
+      # @overload value_set!
+      #   Unconditionally sets `@value_set` to `true`.
+      #   @see #value_set
+      #   @see #value_set?
+      #   @return [Boolean]
+      #     `true`.
+      def value_set!
+        self.value_set	= true
+        return @value_set
+      end                       # def value_set!
+      # @overload value_set?
+      #   @see #value_set
+      #   @see #value_set!
+      #   @return [Boolean]
+      #     `true` if the test value has been set with `#value=`,
+      #     `false` otherwise.
+      def value_set?
+        return @value_set ? true : false
+      end                       # def value_set?
+
+      # The `value_set` bits are part of the class' internal
+      # management, and not for outsiders to invoke.
+      protected(:value_set, :value_set=, :value_set!, :value_set?)
+
+      # @!attribute [rw] value
+      # The actual value to be used in testing.
+      # @return [Any]
+      #   The actual value to be used in testing.
+      attr_reader(:value)
+      # @overload value=val
+      #   Set the value to be tested.
+      #   @note
+      #     A one-time operation: once set, the `:value=` method is
+      #     disabled. 
+      #   @param [Any] val
+      #     Whatever object is the focus of this instance of the
+      #     class. 
+      #   @raise [RuntimeError]
+      #     if an attempt is made to change the test value for an
+      #     existing instance of the class.
+      def value=(val)
+        if (self.value_set)
+          raise(RuntimeError,
+                'test value has already been set ' +
+                'and cannot be changed')
+        end
+        @value		= val
+        self.value_set!
+        self.update_rendition
+        return val
+      end                       # def value=(val)
+
+      # @attribute [rw] render
+      # How the test value should be rendered as a string.  Must be a
+      # string.
+      #
+      # @see #value
+      # @see #update_rendition
+      # @raise [TypeError]
+      #   if an attempt is made to set to a non-String value.
+      attr_reader(:render)
+      def render=(val)
+        unless (val.kind_of?(String))
+          raise(TypeError,
+                format('%s :render value can only be strings',
+                       self.class.name))
+        end
+        @render		= val
+        #
+        # We've done it through the setter method, so deductive
+        # updating (via #update_rendition) is now disabled.
+        #
+        @explicit_rendition = true
+        return val
+      end                       # def render=(val)
+
+      # @private
+      # Array of attributes that have been dynamically added to the
+      # current instance.
+      # @return [Array<Symbol>
+      attr_reader(:local_attributes)
+
+      attr_accessor(:suffix)
+
+      Default_Render_Proc = Proc.new { |testval|
+        format('%s_%s', testval.class.name, testval.inspect)
+      }
+
+      # @!attribute [rw] render_proc
+      # @overload render_proc
+      #   Return the current `Proc` or `Method` responsible for
+      #   rendering a test value into a string representation.
+      #   @return [Proc,Method]
+      def render_proc
+        unless (self.instance_variable_defined?(:@render_proc))
+          self.render_proc = Default_Render_Proc
+        end
+        return @render_proc
+      end
+      # @overload render_proc=(val)
+      #   Install a `Proc` or `Method` (or anything that responds to
+      #   `:call`) to deduce default string representations of test
+      #   values.
+      #   @param [Proc,Method] val
+      #   @raise [TypeError]
+      #     if the `val` object isn't callable (doesn't respond to
+      #     `:call`).
+      #   @return [Proc,Method]
+      #     the newly-installed rendering procedure.
+      def render_proc=(val)
+        unless (val.respond_to?(:call))
+          raise(TypeError,
+                format('invalid render_proc: ' +
+                       '%s:%s is not a callable object',
+                       val.class.name,
+                       val.inspect))
+        end
+        @render_proc	= val
+        return @render_proc
+      end                       # def render_proc=(val)
+
+      # @private
+      attr_accessor(:explicit_rendition)
+      protected(:explicit_rendition, :explicit_rendition=)
+
+      # @private
+      # Try to deduce an appropriate string representation of the test
+      # value.
+      # Unless a rendition has been explicitly set with #render=,
+      # changes to the test value <em>via</em> #value= will invoke
+      # this method.
+      def update_rendition
+        #
+        # If the `:render` attribute is `nil`, or we haven't set
+        # it with the `#render=` method, we can perform our
+        # deduction.  Otherwise it's been done explicitly so we make
+        # no changes and just return what's there.
+        #
+        if (! self.explicit_rendition)
+          @render	= self.render_proc.call(self.value)
+        end
+        return @render
+      end                       # def update_rendition
+      protected(:update_rendition)
+
+      # @!attribute [rw] attrscope
+      # Where to define dynamic attributes — for the instance, or
+      # class-wide?
+      # @override attrscope
+      #   Return the current scope of dynamic attributes.
+      #   @return [Symbol]
+      #     `:instance` or `:class`.
+      def attrscope
+        unless (self.instance_variable_defined?(:@attrscope))
+          self.attrscope = Object.new
+        end
+        return @attrscope
+      end
+      # @override attrscope=(val)
+      #   Set the scope of new dynamic attributes.  Default is
+      #  `:instance`.
+      #   @param [Any] val
+      #     If `val` is either `:instance` or an object whose class is
+      #     a Class object (meaning `val` is an instance), set the
+      #     scope to `:instance`.  If `val` is `:class` or is itself a
+      #     Class object, the scope is set to `:class`.  In all other
+      #     cases, the scope is set to `:instance`, but a warning is
+      #     displayed.
+      #   @return [Symbol]
+      #     `:instance` or `:class`.
+      def attrscope=(val)
+        if (%i[ class instance ].include?(val))
+          @attrscope	= val
+        elsif (val.kind_of?(Class))
+          @attrscope	= :class
+        elsif (val.class.class ==  Class)
+          @attrscope	= :instance
+        else
+          warn(format('%s(%s:%s) being treated as :instance',
+                      __callee__.inspect,
+                      val.class.name,
+                      val.inspect))
+          @attrscope	= :instance
+        end
+        return @attrscope
+      end                       # def attrscope=(val)
+
+      # When an attempt is made to set a value for an arbitrary
+      # undefined attribute, that attribute will be dynamically
+      # created for the class.  <em>Not</em> just for the specific
+      # instance.
+      # @param [Symbol] meth_sym
+      #   The symbollic name of the method being invoked but not
+      #   found.
+      # @param [Array] 		args
+      #   The order-dependent list of actuals passed as part of the
+      #   original method invocation.
+      # @param [Hash<Symbol=>Any] kwargs
+      #   Hash of any keyword arguments passed as part of the original
+      #   method invocation.
+      # @return [Any]
+      # @raise [NoMethodError]
+      #   if the method being invoked is anything other than an
+      #   attribute setter ("<em>name</em>=").
+      def method_missing(meth_sym, *args, **kwargs)
+        warn(format('%s#%s(%s, %s, %s)',
+                    self.class.name,
+                    __callee__.to_s,
+                    meth_sym.inspect,
+                    args.inspect,
+                    kwargs.inspect))
+        if (@defining_attribute)
+          begin
+            raise(RuntimeError,
+                  format('%s#%s(%s) called while already defining %s',
+                         self.class.name,
+                         __callee__.to_s,
+                         meth_sym.inspect,
+                         @defining_attribute.inspect))
+          ensure
+            @defining_attribute = nil
+          end
+        end
+        result		= nil
+        #
+        # Turn the method symbol into a String so we can manipulate
+        # it.
+        #
+        meth_sym_s	= meth_sym.to_s
+        if (meth_sym_s[-1,1] == '=')
+          @defining_attribute = meth_sym_s.to_sym
+          #
+          # We've been asked to set an attribute value.  Dynamically
+          # invoke `attr_accessor` for the base name of the method
+          # being invoked.
+          #
+          scope		= self.attrscope
+          receiver	= (scope == :instance) \
+                          ? self.singleton_class \
+                          : self.class.singleton_class
+          attr_getter	= (meth_sym_s[0,meth_sym_s.length-1]).to_sym
+          attr_setter	= format('%s=', attr_getter.to_s).to_sym
+          receiver.send(:attr_accessor, attr_getter)
+          attributes_added = [ attr_getter ]
+          if (scope == :instance)
+            self.local_attributes |= attributes_added
+          else
+            self.klass_attributes |= attributes_added
+            self.class.send(:def_delegator, self.class, attr_getter)
+            self.class.send(:def_delegator, self.class, attr_setter)
+          end
+          #
+          # Now invoke the new accessor with the original arguments.
+          #
+          @defining_attribute = nil
+          result	= self.send(meth_sym, *args, **kwargs)
+        else
+          #
+          # Not a request to set a value, so claim total ignorance.
+          #
+          raise(NoMethodError,
+                format("undefined method `%s' for %s:%s",
+                       meth_sym.to_s,
+                       self.class.name,
+                       self.class.class.name))
+        end
+        return result
+      end                       # def method_missing
+
+      # Constructor.
+      # @params [Hash<Symbol=>Any>]	kwargs
+      # @option kwargs [Any]		:value
+      # @option kwargs [String]		:suffix
+      # @option kwargs [String]		:render
+      # @option kwargs [Any]		any
+      # @return [void]
+      def initialize(**kwargs)
+        #
+        # Set up things so we can track dynamic attribute changes.
+        #
+        self.local_attributes	= []
+        unless (self.class.respond_to?(:klass_attributes))
+          self.class.singleton_class.send(:attr_accessor,
+                                          :klass_attributes)
+        end
+        unless (self.respond_to?(:klass_attributes))
+          self.class.send(:def_delegator,
+                          self.class,
+                          :klass_attributes)
+        end
+        self.klass_attributes	||= []
+        #
+        # Now start processing the keyword arguments.  Remove any that
+        # match methods we don't permit to be frobbed externally.
+        #
+        invalid_kws		= %i[
+          explicit_rendition
+          klass_attributes
+          local_attributes
+          value_set
+        ]
+        invalid_kws.each do |kw_sym|
+          kw_regex		= Regexp.new(format('^%s[?=1]?$',
+                                                    kw_sym.to_s))
+          kwargs.keys.grep(kw_regex).each do |kw_key|
+            warn(format('illegal keyword: %s', kw_key.to_s))
+            kwargs.delete(kw_key)
+          end
+        end
+        #
+        # Now to work on *real* keywords.  Start with ones that affect
+        # subsequent processing.
+        #
+        preproc_kw		= %i[
+          render_proc
+        ]
+        preproc_kw.each do |kw_sym|
+          kw_val		= kwargs[kw_sym]
+          next if (kw_val.nil?)
+          kw_setter		= format('%s=', kw_sym.to_s).to_sym
+          self.send(kw_setter, kw_val)
+          kwargs.delete(kw_sym)
+        end
+        #
+        # Save any setting for the :value keyword for later
+        # processing, since setting it can trigger other behaviour.
+        #
+        if (value_specified = kwargs.has_key?(:value))
+          value_val		= kwargs[:value]
+          kwargs.delete(:value)
+        end
+        #
+        # Now our statically defined attributes.
+        #
+        %i[
+          render
+          suffix
+          value
+        ].each do |attr|
+          #
+          # Directly preset all the attributes to nil; don't go
+          # through the getter/setter methods because they're trapped.
+          #
+          ivar		= format('@%s', attr.to_s).to_sym
+          self.instance_variable_set(ivar, nil)
+        end
+        #
+        # Now we're ready to go through the list of keyword
+        # arguments.  Any requiring special processing have been
+        # removed from the hash.
+        #
+        kwargs.each do |kw_sym,kw_val|
+          #
+          # We have a value, even if it's nil.
+          #
+          kw_setter		= format('%s=', kw_sym.to_s).to_sym
+          self.send(kw_setter, kw_val)
+        end
+        #
+        # Now is the time to set the test value.
+        #
+        if (value_specified)
+          self.value		= value_val
+        end
+        nil
+      end                       # def initialize(**kwargs)
+
+      nil
+    end                         # class TestElement
+
+    nil
+  end                           # module RoUS::TestHelpers
+
+  nil
+end                             # module RoUS
 
 # @!macro doc.TAGF.module
 module TAGF
