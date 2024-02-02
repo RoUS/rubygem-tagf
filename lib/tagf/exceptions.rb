@@ -271,10 +271,10 @@ module TAGF
         return result
       end                       # def render
 
-      # @!macro [new] severitydoc
-      # @param [Array]			args		([])
-      # @param [Hash<Symbol=>Object>]	kwargs		({})
-      # @option kwargs [Symbol,Integer]	:severity	(nil)
+      # @!macro [new] superinitialize
+      #   @param [Array]		   args		([])
+      #   @param [Hash<Symbol=>Object>]	   kwargs	({})
+      #   @option kwargs [Symbol,Integer]  :severity	(nil)
       def initialize(*args, **kwargs)
         @msg		= nil
         if ((args.count > 0) && args[0].kind_of?(String))
@@ -307,9 +307,10 @@ module TAGF
 
         #
         # @!macro doc.TAGF.formal.kwargs
-        # @!macro severitydoc
+        # @!macro superinitialize
         # @return [InventoryLimitExceeded::LimitItems] self
-        #
+        # @raise [UnsupportedObject]
+        #   if args[0] doesn't respond to `:owned_by`
         def initialize(*args, **kwargs)
           _dbg_exception_start(__callee__)
           super
@@ -371,6 +372,7 @@ module TAGF
       self.severity	= :warning
 
       # Constructor for InvalidSeverity exception.
+      # @!macro superinitialize
       # @param [Array]			args		([])
       #   If the first element of `args` is an Integer or a Symbol, it
       #   is used to calculate the exception object's message text.
@@ -1153,6 +1155,65 @@ module TAGF
 
       nil
     end                         # class UnsupportedObject
+
+    # Exception raised when an object needs to be invoked like a
+    # `proc`, but doesn't respond to `:call`.
+    class UncallableObject < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID
+
+      self.severity	= :severe
+
+      # Constructor for the `UncallableObject` exception, which is
+      # raised when an object should be invocable but doesn't respond
+      # to the `:call` method.
+      # @note
+      #   It is <strong>STRONGLY RECOMMENDED</strong> that exception
+      #   instances of this class be created solely using keyword
+      #   arguments, and never using the order-dependent `args` array.
+      #   If the offending object is a String, it will be treated as
+      #   the custom text of the exception message, rather than the
+      #   object which needs to be callable, if it is passed through
+      #   `args`.  Pass it as the value of the `:object` keyword
+      #   argument instead.
+      # @!macro doc.TAGF.formal.kwargs
+      # @!macro exsuperinitialize
+      # @param [Array]		args
+      #   `args[0]` is used as the offending object if the `:object`
+      #   keyword argument is omitted.
+      # @option kwargs [Any]	:object
+      #   The object that needs to be callable, but isn't.  `args[0]`
+      #   will be used if this keyword argument is omitted.
+      # @option kwargs [String]	:prefix
+      #   An optional string to prefix to the exception message, such
+      #   as `"invalid render_proc"`.  If specified, it will be
+      #   separated from the rest of the exception message by a colon
+      #   and a space (`": "`).
+      # @return [UncallableObject] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__callee__)
+        super
+        if (@msg.nil?)
+          offender	= kwargs[:object] || args[0] || 'unspecified'
+          if (prefix = kwargs[:prefix])
+            prefix	<< ': '
+          else
+            prefix	= ''
+          end
+          @msg		= format('%s%s:%s is not a callable object',
+                                 prefix,
+                                 offender.class.name,
+                                 offender.inspect)
+        end
+        self._set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class UncallableObject
 
     nil
   end                           # module TAGF::Exceptions

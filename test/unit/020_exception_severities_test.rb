@@ -31,6 +31,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
     DuplicateLocation:		SEVERITY.warning,
     UnterminatedHeredoc:	SEVERITY.error,
     UnsupportedObject:		SEVERITY.fatal,
+    UncallableObject:		SEVERITY.fatal,
   }
 
   def setup

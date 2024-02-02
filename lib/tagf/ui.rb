@@ -544,8 +544,8 @@ module TAGF
 
     # Record the paticulars of a here-doc.  Here-docs are input lines
     # designed to be processed as a group.  They have a basic format
-    # as follows (characters and words in brackets (<b>`[]`</b>) are
-    # optional):
+    # as follows (characters and words in brackets
+    # (<strong>`[]`</strong>) are optional):
     #
     #      [<em>prefix</em>]<<[-]<em>delimiter</em>
     #      [<em>text-line</em>...]
@@ -991,11 +991,12 @@ module TAGF
       #   quotation marks.
       # @return [HereDoc,false]
       #   * If the last word (as defined by the shell) of the input
-      #     parameter <b>does not</b> match a valid `here-doc`
-      #     terminator pattern, this method returns `false`.
-      #   * If the last word <b>does</b> is a valid `here-doc`
-      #     terminator, the return value is a structure with the
-      #     following attributes:
+      #     parameter <strong>does not</strong> match a valid
+      #     `here-doc` terminator pattern, this method returns
+      #     `false`.
+      #   * If the last word <strong>does</strong> is a valid
+      #     `here-doc` terminator, the return value is a structure
+      #     with the following attributes:
       #
       #     * `.interpolate` [Boolean]
       #       (Not currently used.)  Indicates whether the final value
@@ -1161,6 +1162,8 @@ module TAGF
 
     # Class defining the input method to read from a terminal using
     # the Readline gem.
+    # @note <strong>ViaReadline</strong>
+    #   Borrow heavily from byebug's `history.rb`
     class ViaReadline < InputMethod
 
       #

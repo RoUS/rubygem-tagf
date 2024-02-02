@@ -18,7 +18,8 @@
 $LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
 require('tagf')
 
-require('test-unit')
+require('test/unit')
+require('mocha/test_unit')
 
 FixturesDir		= File.join(Pathname(__FILE__).dirname,
                                     'fixtures')
@@ -34,7 +35,7 @@ module RoUS
     # Eigenclass for module RoUS::TestHelpers
     class << self
 
-      # Invoked when RoUS::TestHelpers is included; add it to the
+      # Invoked when `RoUS::TestHelpers` is included; add it to the
       # includer's eigenclass as well (making instance methods class
       # methods as well).
       #
@@ -204,18 +205,27 @@ module RoUS
         # @private
         # Array of attributes that have been dynamically added
         # class-wide.
-        # @return Array[<Symbol>]
+        # @return [Array<Symbol>]
         attr_accessor(:klass_attributes)
 
         nil
       end                       # Eigenclass for class TestElement
 
+      #
+      # Point the instance accessors for these to the class-wide ones.
+      #
       def_delegator(self, :klass_attributes)
       def_delegator(self, :klass_attributes=)
-      private(:klass_attributes, :klass_attributes=)
+      protected(:klass_attributes)
+      protected(:klass_attributes=)
       
       # @private
       # @!attribute [rw] value_set
+      # Control whether the #value= accessor will allow the variable
+      # to be changed.  By default, once it has been set, it's flagged
+      # to raise an exception if an attempt is made to change or set
+      # it again.  This is controlled by #value_set, which must be
+      # `false` to allow #value= to change the variable.
       # @see #value_set?
       # @see #value_set!
       # @overload value_set
@@ -268,7 +278,12 @@ module RoUS
       protected(:value_set, :value_set=, :value_set!, :value_set?)
 
       # @!attribute [rw] value
-      # The actual value to be used in testing.
+      # The actual value to be used in testing.  This attribute can
+      # only be set if the internal #value_set flag is `false`, and
+      # storing something in #value automatically sets that flag.  If
+      # the #value_set flag is `true`, attempts to store new contents
+      # in #value will result in a `RuntimeErorr` exception being
+      # raised.
       # @return [Any]
       #   The actual value to be used in testing.
       attr_reader(:value)
@@ -323,10 +338,37 @@ module RoUS
       # Array of attributes that have been dynamically added to the
       # current instance.
       # @return [Array<Symbol>
-      attr_reader(:local_attributes)
+      attr_accessor(:local_attributes)
+      protected(:local_attributes, :local_attributes=)
 
+      # @!attribute [rw] suffix
+      # Optional string intended to be appended to assertion messages
+      # and test method names that apply to this test element.
+      # @return [String,nil]
+      #   the current suffix string, or `nil` if none is set.
+      # @overload suffix=(val)
+      #   Set the suffix string.  Ordinarily this is done by the
+      #   constructor, but the suffix for an existing instance may be
+      #   subsequently modified.
+      #   @param [String] val
+      #     New value for the suffix string.
       attr_accessor(:suffix)
 
+      # @!attribute [rw] expected
+      # Optional expectation from whatever action is performed upon
+      # the test value by the test method.
+      # @return [Any]
+      #   the current expected value, or `nil` if none is set.
+      # @overload expected=(val)
+      #   Set the expected value.  Ordinarily this is done by the
+      #   constructor, but the expected value for an existing instance
+      #   may be subsequently modified.
+      #   @param [Any] val
+      #     New value for the expectation.
+      attr_accessor(:expected)
+
+      # Default `Proc` used to render a test value into a string
+      # representation.
       Default_Render_Proc = Proc.new { |testval|
         format('%s_%s', testval.class.name, testval.inspect)
       }
@@ -352,13 +394,12 @@ module RoUS
       #     `:call`).
       #   @return [Proc,Method]
       #     the newly-installed rendering procedure.
+      #   @see Default_Render_Proc for an example.
       def render_proc=(val)
         unless (val.respond_to?(:call))
-          raise(TypeError,
-                format('invalid render_proc: ' +
-                       '%s:%s is not a callable object',
-                       val.class.name,
-                       val.inspect))
+          raise(UncallableObject,
+                object:	val,
+                prefix: 'invalid render_proc')
         end
         @render_proc	= val
         return @render_proc
@@ -391,7 +432,7 @@ module RoUS
       # @!attribute [rw] attrscope
       # Where to define dynamic attributes — for the instance, or
       # class-wide?
-      # @override attrscope
+      # @overload attrscope
       #   Return the current scope of dynamic attributes.
       #   @return [Symbol]
       #     `:instance` or `:class`.
@@ -401,7 +442,7 @@ module RoUS
         end
         return @attrscope
       end
-      # @override attrscope=(val)
+      # @overload attrscope=(val)
       #   Set the scope of new dynamic attributes.  Default is
       #  `:instance`.
       #   @param [Any] val
@@ -440,7 +481,7 @@ module RoUS
       # @param [Array] 		args
       #   The order-dependent list of actuals passed as part of the
       #   original method invocation.
-      # @param [Hash<Symbol=>Any] kwargs
+      # @param [Hash<Symbol=>Any>] kwargs
       #   Hash of any keyword arguments passed as part of the original
       #   method invocation.
       # @return [Any]
@@ -448,12 +489,14 @@ module RoUS
       #   if the method being invoked is anything other than an
       #   attribute setter ("<em>name</em>=").
       def method_missing(meth_sym, *args, **kwargs)
+=begin
         warn(format('%s#%s(%s, %s, %s)',
                     self.class.name,
                     __callee__.to_s,
                     meth_sym.inspect,
                     args.inspect,
                     kwargs.inspect))
+=end
         if (@defining_attribute)
           begin
             raise(RuntimeError,
@@ -512,14 +555,33 @@ module RoUS
         return result
       end                       # def method_missing
 
-      # Constructor.
-      # @params [Hash<Symbol=>Any>]	kwargs
+      # Constructor for TestElement instances.
+      #
+      # @param  [Any]			value		nil
+      #   Value for the test element.  If the `kwargs` option `:value`
+      #   is specified, it overrides this.
+      #   @note The test value may only be set <strong>once</strong>.
+      #     Trying to change the test value after it has already been
+      #     set will raise an exception (see #value=).
+      # @param  [Hash<Symbol=>Any>]	kwargs
       # @option kwargs [Any]		:value
       # @option kwargs [String]		:suffix
       # @option kwargs [String]		:render
       # @option kwargs [Any]		any
       # @return [void]
-      def initialize(**kwargs)
+      def initialize(value=nil, **kwargs)
+        #
+        # If we were given both `value` and a keyword argument
+        # `:value`, the latter dominates.  If `value` is specifed with
+        # no `:value` keyword, the former gets loaded into `kwargs`.
+        #
+        # This allows the simplest syntax of `TestElement.new("val")`.
+        #
+        unless (kwargs.has_key?(:value))
+          kwargs[:value]	= value
+        end
+        #
+        # Now everything is in the `kwargs` hash.  Moving on..
         #
         # Set up things so we can track dynamic attribute changes.
         #
@@ -527,6 +589,7 @@ module RoUS
         unless (self.class.respond_to?(:klass_attributes))
           self.class.singleton_class.send(:attr_accessor,
                                           :klass_attributes)
+          self.class.instance_eval('protected(:klass_attributes)')
         end
         unless (self.respond_to?(:klass_attributes))
           self.class.send(:def_delegator,

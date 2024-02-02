@@ -470,8 +470,15 @@ module TAGF
       # @return [Boolean]
       #   the result of the evaluation.
       #
+      # @raise [UncallableObject]
+      #   if the `:truthiness_proc` argument doesn't respond to the
+      #   `:call` method.
       def truthify(testvalue, **kwargs)
         if (testproc = kwargs[:truthiness_proc])
+          unless (testproc.respond_to?(:call))
+            raise(UncallableObject.new(object: testproc,
+                                       prefix: 'invalid render_proc'))
+          end
           return testproc.call(testvalue)
         end
         unless (kwargs.has_key?(:true_values))
