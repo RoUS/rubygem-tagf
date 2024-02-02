@@ -1,0 +1,37 @@
+#! /usr/bin/env ruby
+require('bundler')
+Bundler.setup
+require('yard')
+require('byebug')
+
+alltags		= YARD::Registry.load!.all
+
+tagnames	= ARGV.map { |e| e.to_sym }
+if (tagnames.empty?)
+  tagnames	= %i[ todo note ]
+end
+tagnames	= tagnames.sort
+taglists	= {}
+tagnames.each do |tagsym|
+  taglists[tagsym]	= alltags.select { |o| o.tag(tagsym) }
+  taglists[tagsym].each do |tagelt|
+    puts(format("@%s %s\n  %s#%i",
+                tagelt.tag(tagsym).tag_name,
+                tagelt.path,
+                tagelt.file,
+                tagelt.line))
+    text	= tagelt.tag(tagsym).text
+    if (text.kind_of?(String))
+      text	= text.split(%r!\n!)
+      text	= '  ' + text.join("\n  ")
+      puts(text)
+    end
+  end
+end
+
+# Local Variables:
+# mode: ruby
+# indent-tabs-mode: nil
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
+# End:
