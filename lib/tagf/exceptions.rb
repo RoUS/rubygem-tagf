@@ -213,6 +213,10 @@ module TAGF
           return sevlevel
         end                     # def validate_severity(sevlevel)
 
+        def errorcode
+          return (self.exception_id << 4) | self.severity
+        end                     # def errorcode
+
         nil
       end                       # ErrorBase eigenclass
 
@@ -243,6 +247,10 @@ module TAGF
         sevlevel	= self.singleton_class.validate_severity(sevlevel)
         self.instance_variable_set(msyms.ivar, sevlevel)
       end                       # def severity=(level)
+
+      def errorcode
+        return (self.class.exception_id << 4) | self.severity
+      end                       # def errorcode
 
       #
       def _set_message(text)
@@ -280,7 +288,13 @@ module TAGF
         if ((args.count > 0) && args[0].kind_of?(String))
           @msg		||= args[0]
         end
-        self.severity	||= kwargs[:severity] || SEVERITY.severe
+        #
+        # Set the instance severity according to the arguments, the
+        # class default severity, or a final resort of 'severe.'
+        #
+        self.severity	= kwargs[:severity] \
+                          || self.class.severity \
+                          || SEVERITY.severe
       end                       # def initialize(*args, **kwargs)
 
       nil
