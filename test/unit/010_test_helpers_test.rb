@@ -62,6 +62,21 @@ class Test_Helpers_TestElement < Test::Unit::TestCase
                 )
   end                           # def test_012_default_render_string
 
+  def test_013_default_render_string_tracks
+    te			= TestElement.new(value: 'Lorem ipsum')
+    assert_equal('String_"Lorem ipsum"',
+                 te.render,
+                 'te.render correct default (String)'
+                )
+    te.send(:value_set=, false)
+    newval		= 'E Power Biggs'
+    te.value		= newval
+    assert_equal(format('String_%s', newval.inspect),
+                 te.render,
+                 'te.render value change tracked (String)'
+                )
+  end                           # def test_013_default_render_string
+
   def test_020_exception_on_change_constructor
     te			= TestElement.new(value: 1)
     assert_raise_with_message(RuntimeError,
