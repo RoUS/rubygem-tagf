@@ -697,7 +697,7 @@ module TAGF
 
       # Names (as symbols) of all the attributes defined by this
       # class.  Used to collect all the names/values into a hash.
-      HereDoc_Fields	= %i[
+      HEREDOC_FIELDS	= %i[
         intro_line
         prefix
         delimiter
@@ -716,7 +716,7 @@ module TAGF
       # @option kwargs [String]         :raw
       # @option kwargs [Array<String>]  :lines
       def initialize(**kwargs)
-        HereDoc_Fields.each do |kw|
+        HEREDOC_FIELDS.each do |kw|
           if (kwargs.has_key?(kw))
             setter	= format('%s=', kw.to_s).to_sym
             self.send(setter, kwargs[kw])

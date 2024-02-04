@@ -59,9 +59,13 @@
   hallways, stairs, and other labyrinthinic structures.
 * Build `describe` method that can do as deep a dive as requested for
   nested `Container`s with inventories.
+* Event processing: think about objects registering 'event listeners'.
 
 ## Testing
 
+* Continue writing unit tests for underlying support attributes and
+  methods.
+* Write tests for individual objects (`Item`, `Location`, *&c.*
 * Finish converting ADVENT flat datafile to YAML.
 * Build test adventure based on ADVENT.
   * Describe fully in YAML

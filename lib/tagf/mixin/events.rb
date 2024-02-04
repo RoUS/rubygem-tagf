@@ -33,6 +33,10 @@ module TAGF
       extend(Mixin::DTypes)
       include(Mixin::UniversalMethods)
 
+      #
+      # List of all supported events and when objects are notified of
+      # them.
+      #
       EventList			= {
         EventTurnBegin:		:turn_begin,
         EventTurnEnd:		:turn_end,

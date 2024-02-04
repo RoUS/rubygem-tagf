@@ -90,6 +90,10 @@ module TAGF
 			     EnforceCapacities
 			    ]
 
+      #
+      # Related options that can enabled/disabled collectively as well
+      # as individually.  These are called option 'clumps.'
+      #
       GAME_OPTION_CLUMPS= {
 	EnforceCapacities: %i[
 			      EnforceMass
