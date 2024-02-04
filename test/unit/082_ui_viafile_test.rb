@@ -6,18 +6,29 @@ require('test/unit')
 
 class Test_InputMethod_ViaFile_Base < Test::Unit::TestCase
 
-  include TAGF::UI
-  include TAGF::Exceptions
+  include(TAGF::UI)
+  include(TAGF::Exceptions)
 
+  #
+  # Executed before each test is invoked.
+  #
   def setup
     @fixtures		= Dir[File.join(FixturesDir, 'viafile-*.txt')]
                             .sort
     @iface		= Interface.new(inputmethod:	'ViaFile',
                                         record:		false,
                                         transcribe:	false)
-    nil
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
   end                           # def setup
 
+  #
+  # Called after each test method completes.
+  #
   def teardown
     #
     # Make sure any input stream is closed.
@@ -26,7 +37,12 @@ class Test_InputMethod_ViaFile_Base < Test::Unit::TestCase
       @iface.context.input.close
 #    rescue StandardError
 #    end
-    nil
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
   end                           # def teardown
 
   def access_file(base)

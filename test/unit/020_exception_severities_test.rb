@@ -5,6 +5,11 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   include TAGF::Exceptions
 
+  #
+  # Manually maintained, unfortunately.  List of all the exception
+  # classed and the default severities we <em>thing</em> we've
+  # assigned to them.
+  #
   ExceptionClasses	= {
     InvalidSeverity:		SEVERITY.warning,
     BadHistoryFile:		SEVERITY.warning,
@@ -34,13 +39,29 @@ class Test_Exception_Severities < Test::Unit::TestCase
     UncallableObject:		SEVERITY.fatal,
   }
 
+  #
+  # Executed before each test is invoked.
+  #
   def setup
     @imessage		= 'testing message'
-    nil
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
   end                           # def setup
 
+  #
+  # Called after each test method completes.
+  #
   def teardown
-    nil
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
   end                           # def teardown
 
   # * Test that default class runtime severities match the hardcoded

@@ -10,16 +10,40 @@ class Test_Helpers_TestElement < Test::Unit::TestCase
 
   include(RoUS::TestHelpers)
 
+  #
+  # Executed before each test is invoked.
+  #
   def setup
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
+  end                           # def setup
 
-    nil
-  end				# def setup
-
+  #
+  # Called after each test method completes.
+  #
   def teardown
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
+  end                           # def teardown
 
-    nil
-  end				# def teardown
-
+  # Things to test:
+  # * value
+  # * value_set[=?!]?
+  # * render
+  # * render_proc
+  # * attrscope
+  # * local_attributes
+  # * klass_attributes
+  # * suffix
+  #
   def test_001_value_recorded
     te			= TestElement.new(value: 1)
     assert_equal(1,
@@ -104,6 +128,8 @@ class Test_Helpers_TestElement < Test::Unit::TestCase
     assert_equal('te1.test_attr',
                  te1.test_attr,
                  'setting dynamic instance variable')
+    assert_true(te1.local_attributes.include?(:test_attr),
+                'Verify addition of instance attribute to local_attributes')
   end                           # def test_040_instance_attribute
 
   def test_041_instance_attribute_only
@@ -133,13 +159,15 @@ class Test_Helpers_TestElement < Test::Unit::TestCase
     assert_equal('te1.test_attr',
                  te1.test_attr,
                  'accessing dynamic klass variable from 1st instance')
-    te2			= TestElement.new(value:	1)
+    te2			= TestElement.new(value: 1)
     assert_equal('te1.test_attr',
                  te2.test_attr,
                  'accessing dynamic klass variable from 2nd instance')
     assert_equal('te1.test_attr',
                  TestElement.test_attr,
                  'accessing dynamic klass variable from class')
+    assert_true(te1.klass_attributes.include?(:test_attr),
+                'Verify addition of attribute to klass_attributes')
   end                           # def test_050_klass_attribute
 
   nil

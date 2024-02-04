@@ -5,9 +5,12 @@ require('test/unit')
 
 class Test_Game < Test::Unit::TestCase
 
-  include TAGF::Exceptions
-  include TAGF::Mixin::UniversalMethods
+  include(TAGF::Exceptions)
+  include(TAGF::Mixin::UniversalMethods)
 
+  #
+  # Executed before each test is invoked.
+  #
   def setup
     @fixtures		= Dir[File.join(FixturesDir, 'game-*.yaml')]
                             .sort
@@ -19,16 +22,28 @@ class Test_Game < Test::Unit::TestCase
       licence:		'Apache 2.0',
       version:		'0.0.1',
       date:		'2024-01')
-
-    nil
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
   end                           # def setup
 
+  #
+  # Called after each test method completes.
+  #
   def teardown
     #
     # Try to trigger the garbage collector between test cases.
     #
     @game		= nil
-    nil
+    begin
+      super
+    rescue NoMethodError
+      # No-op
+    end
+    return nil
   end                           # def teardown
 
   def access_file(base)
@@ -36,6 +51,39 @@ class Test_Game < Test::Unit::TestCase
     data		= YAML.load(File.read(fspec))
     return data
   end                           # def access_file
+
+  #
+  # Things to test:
+  # * author
+  # * copyright
+  # * licence, license
+  # * version
+  # * date
+  # * inventory (stub?)
+  # * loaded (flag)
+  # * loadfile
+  # * savefile
+  #
+  # The following probably need to be in integration tests, but
+  # stubbed here:
+  #
+  # * creation_overrides [r] private
+  # * keys, actors, containers, inventories, items, locations, npcs
+  # * [], each, find, map, select
+  # * validate_container
+  # * create_inventory_on
+  # * create_item
+  # * create_item_on
+  # * create_container
+  # * create_container_on
+  # * create_feature
+  # * create_feature_on
+  # * create_location
+  # * create_location_on
+  # * inspect
+  # * change_eid
+  # * load
+  #
 
   # * Test that the setup gave us a TAGF::Game object.
   def test_game_object
