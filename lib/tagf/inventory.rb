@@ -18,6 +18,8 @@
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
+require('tagf/mixin/universal')
+require('tagf/exceptions')
 require('tagf/mixin/element')
 require('byebug')
 
@@ -31,6 +33,8 @@ module TAGF
     extend(Mixin::DTypes)
     include(Mixin::Element)
     extend(Mixin::Element)
+    include(Mixin::UniversalMethods)
+    include(Exceptions)
 
     #
     include(Enumerable)

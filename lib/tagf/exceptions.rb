@@ -477,7 +477,7 @@ module TAGF
       end                       # def _set_message(text)
       protected(:_set_message)
 
-      # @protected
+      # @private
       # @!method _dbg_exception_start(msym)
       # Portected internal method for logging & debugging exception
       # processing.
@@ -839,11 +839,11 @@ module TAGF
         _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
-          objtype	= arg[0].class.name
+          objtype	= args[0].class.name
           @msg		= format('no owner specified ' \
                                  + 'on creation of: %s:%s',
                                  objtype,
-                                 arg[0].to_s)
+                                 args[0].to_s)
         end
         self._set_message(@msg)
       end                       # def initialize

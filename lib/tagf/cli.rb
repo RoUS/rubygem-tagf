@@ -36,7 +36,7 @@ module TAGF
 
     #
     include(Mixin::Element)
-    include(Mixin::Universal)
+    include(Mixin::UniversalMethods)
     extend(Mixin::DTypes)
 
     #

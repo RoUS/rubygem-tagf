@@ -83,7 +83,7 @@ module TAGF
 
     #
     attr_reader(:creation_overrides)
-    private(:creation_overrides)
+    protected(:creation_overrides)
 
     #
     # Constructor for the main element of this entire project -- the
@@ -160,6 +160,8 @@ module TAGF
       self.allow_containers!
     end                         # def initialize
 
+    # @todo
+    #   See about doing this with Forwardable instead?
     inventory_niladics	= %i[
       keys
       actors
@@ -175,27 +177,32 @@ module TAGF
       }
     end
 
-    #
+    # @todo
+    #   See about replacing this with Forwardable.
     def [](*args)
       return @inventory.send(__method__, *args)
     end                         # def []
 
-    #
+    # @todo
+    #   See about replacing this with Forwardable.
     def each(*args, **kwargs, &block)
       return @inventory.send(__method__, *args, **kwargs, &block)
     end                         # def each(*args, **kwargs, &block)
 
-    #
+    # @todo
+    #   See about replacing this with Forwardable.
     def find(*args, **kwargs, &block)
       return @inventory.send(__method__, *args, **kwargs, &block)
     end                         # def find(*args, **kwargs, &block)
 
-    #
+    # @todo
+    #   See about replacing this with Forwardable.
     def map(*args, **kwargs, &block)
       return @inventory.send(__method__, *args, **kwargs, &block)
     end                         # def map(*args, **kwargs, &block)
 
-    #
+    # @todo
+    #   See about replacing this with Forwardable.
     def select(*args, **kwargs, &block)
       return @inventory.send(__method__, *args, **kwargs, &block)
     end                         # def select(*args, **kwargs, &block)
@@ -235,7 +242,7 @@ module TAGF
       end
       return nil
     end                         # def validate_container(target, newcontent, **kwargs)
-    private(:validate_container)
+    protected(:validate_container)
 
     #
     def create_inventory_on(target, **kwargs)
