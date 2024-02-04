@@ -21,6 +21,10 @@ require('tagf')
 require('test/unit')
 require('mocha/test_unit')
 
+#
+# Deduce the absolute path to the `fixtures/` directory so that none
+# of the tests or test classes needs to do it.  DRY.
+#
 FixturesDir		= File.join(Pathname(__FILE__).dirname,
                                     'fixtures')
 
@@ -49,6 +53,42 @@ module RoUS
 
       nil
     end                         # module RoUS::TestHelpers eigenclass
+
+    # @!method setup
+    # Global setup method called before each test method is invoked.
+    # Individual test classes that override this should invoke `super`
+    # to make sure this gets executed.
+    #
+    # @return [void]
+    def setup
+      begin
+        super
+      rescue NoMethodError
+        #
+        # There's nothing there to `super` so we're done
+        #
+      end
+
+      nil
+    end                         # def setup
+
+    # @!method setup
+    # Global setup method called after each test method completes.
+    # Individual test classes that override this should invoke `super`
+    # to make sure this gets executed.
+    #
+    # @return [void]
+    def teardown
+      begin
+        super
+      rescue NoMethodError
+        #
+        # There's nothing there to `super` so we're done
+        #
+      end
+
+      nil
+    end                         # def teardown
 
     # Coerce a String into another class.  Helper designed to allow us
     # to display a value in a canonical form rather than the one to
@@ -139,7 +179,7 @@ module RoUS
     #```
     #    testval: '(0.0-1.1i)', coerce: Complex
     #```
-    # @option kwargs [Boolean]      :expect       (true)
+    # @option kwargs [Boolean]      :expected     (true)
     #   The result expectation for the test being named.
     # @option kwargs [String]       :prefix       ("for")
     #   Any additional explanatory text between the prefix and the
@@ -151,7 +191,7 @@ module RoUS
     # @return [Symbol]
     #   A symbol suitable for use as a `Test::Unit` test method name,
     #   built from
-    #   "`test_`<em>`prefix`</em>`_`<em>`expect`</em>`_`<em>`suffix`</em>" 
+    #   "`test_`<em>`prefix`</em>`_`<em>`expected`</em>`_`<em>`suffix`</em>" 
     def mktestname(**kwargs)
       unless (kwargs.has_key?(:testval))
         raise(ArgumentError,
@@ -162,7 +202,7 @@ module RoUS
       coercer		= kwargs[:coerce]
       testval		= coerce_to(coercer, testval)
       suffix		||= coercer ? elt : testval.inspect
-      expect		= kwargs[:expect] ? true : false
+      expected		= kwargs[:expected] ? true : false
       prefix		= kwargs[:prefix] || 'for'
       if (suffix = kwargs[:suffix])
         unless (suffix[0,1] == '_')
@@ -177,7 +217,7 @@ module RoUS
       end
       testname		= format('test_%s_%s_%s',
 				 prefix,
-				 expect.to_s,
+				 expected.to_s,
 				 suffix)
       return testname.to_sym
     end                         # def mktestname(**kwargs)
@@ -187,11 +227,11 @@ module RoUS
     # attributes include:
     #
     # * `:value` — the actual value to be tested
-    # * `:suffix` — for use in assertion messages and potentially
-    #   generated test method names
     # * `:render` — how the test value should be rendered as a string.
     #   By default, this is built from `:value`'s class name and
     #   `#inspect` result.
+    # * `:suffix` — for use in assertion messages and potentially
+    #   generated test method names
     #   @see #value
     #   @see #update_rendition
     #   @see #render=
@@ -339,7 +379,7 @@ module RoUS
       # current instance.
       # @return [Array<Symbol>
       attr_accessor(:local_attributes)
-      protected(:local_attributes, :local_attributes=)
+      protected(:local_attributes=)
 
       # @!attribute [rw] suffix
       # Optional string intended to be appended to assertion messages
@@ -353,19 +393,6 @@ module RoUS
       #   @param [String] val
       #     New value for the suffix string.
       attr_accessor(:suffix)
-
-      # @!attribute [rw] expected
-      # Optional expectation from whatever action is performed upon
-      # the test value by the test method.
-      # @return [Any]
-      #   the current expected value, or `nil` if none is set.
-      # @overload expected=(val)
-      #   Set the expected value.  Ordinarily this is done by the
-      #   constructor, but the expected value for an existing instance
-      #   may be subsequently modified.
-      #   @param [Any] val
-      #     New value for the expectation.
-      attr_accessor(:expected)
 
       # Default `Proc` used to render a test value into a string
       # representation.
@@ -557,31 +584,37 @@ module RoUS
 
       # Constructor for TestElement instances.
       #
-      # @param  [Any]			value		nil
-      #   Value for the test element.  If the `kwargs` option `:value`
-      #   is specified, it overrides this.
-      #   @note The test value may only be set <strong>once</strong>.
-      #     Trying to change the test value after it has already been
-      #     set will raise an exception (see #value=).
+      # @note The test value may only be set <strong>once</strong>.
+      #   Trying to change the test value after it has already been
+      #   set will raise an exception (see #value=).
+      # @param  [Array]			args		[]
+      #   Order-dependent arguments.  Only the first element is used,
+      #   and then only if `kwargs[:value]` is omitted.  In that case,
+      #   <strong>and</strong> `args` is not an empty array, `args[0]`
+      #   is inserted as the value of `kwargs[:value]`.
       # @param  [Hash<Symbol=>Any>]	kwargs
       # @option kwargs [Any]		:value
       # @option kwargs [String]		:suffix
       # @option kwargs [String]		:render
       # @option kwargs [Any]		any
       # @return [void]
-      def initialize(value=nil, **kwargs)
+      def initialize(*args, **kwargs)
         #
-        # If we were given both `value` and a keyword argument
-        # `:value`, the latter dominates.  If `value` is specifed with
-        # no `:value` keyword, the former gets loaded into `kwargs`.
+        # If we were given both something in `args` and a keyword
+        # argument `:value`, the latter dominates.  If `args` is
+        # specifed with no `:value` keyword, the first element of the
+        # former gets loaded into `kwargs`.  When we're done, `kwargs`
+        # will contain any testvalue however specified, and that's
+        # where we'll look for it henceforth.
         #
         # This allows the simplest syntax of `TestElement.new("val")`.
         #
-        unless (kwargs.has_key?(:value))
-          kwargs[:value]	= value
+        if ((! kwargs.has_key?(:value)) && (! args.empty?))
+          kwargs[:value]	= args[0]
         end
         #
-        # Now everything is in the `kwargs` hash.  Moving on..
+        # Now everything specified is in the `kwargs` hash.  Moving
+        # on..
         #
         # Set up things so we can track dynamic attribute changes.
         #
