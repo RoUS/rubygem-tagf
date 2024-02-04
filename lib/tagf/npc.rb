@@ -26,6 +26,10 @@ require('byebug')
 module TAGF
 
   #
+  # An NPC is a 'non-player character.'  NPCs are game-controlled
+  # actors; examples include things like merchants, or the threatening
+  # dwarves in the Adventure/Colossal Cave text game.
+  #
   class NPC
 
     #

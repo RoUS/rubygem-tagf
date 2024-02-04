@@ -26,6 +26,13 @@ require('byebug')
 module TAGF
 
   #
+  # Every actor is a member of a Faction, even if it's the
+  # <strong>only</strong> member.  Factions are how 'reputation' and
+  # inter-actor compatibility are managed in large; any racial
+  # attitude between elves and humans, for instance, would be
+  # represented at the faction level.  Individual actor objects can
+  # have more fine-tuned attitudes.
+  #
   class Faction
 
     #

@@ -27,12 +27,17 @@ require('byebug')
 module TAGF
 
   #
+  # Prototype command-line interface class for development
+  # (creating/modifying games, listing interconnexions, <em>&c.</em>
+  #
   class CLI < ::Thor
 
     package_name('TAGF')
 
     #
     include(Mixin::Element)
+    include(Mixin::Universal)
+    extend(Mixin::DTypes)
 
     #
     desc('list', 'List game definitions')

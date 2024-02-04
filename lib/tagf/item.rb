@@ -26,6 +26,13 @@ require('byebug')
 module TAGF
 
   #
+  # Items are portable objects.  They may or may not be containers,
+  # but they're intended to represent things that actors can put in
+  # <em>their</em> inventories can carry around with them.  In the
+  # Adventure/Colossal Cave game, both the bird and the birdcage would
+  # be considered items, but only the birdcage is a container (since
+  # it can contain the bird).
+  #
   class Item
     
     #

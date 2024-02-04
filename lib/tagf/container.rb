@@ -25,6 +25,15 @@ require('byebug')
 module TAGF
 
   #
+  # Class for actual container objects.  A container is something with
+  # an inventory.
+  #
+  # @todo
+  #   This class may actually be obviated, because there really aren't
+  #   any standalone containers.  Locations, features, and items can
+  #   have inventories, so what's the use of/need for a Container
+  #   object?
+  #
   class Container
 
     #

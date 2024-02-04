@@ -81,9 +81,14 @@ module TAGF
       #
       attr_accessor(:attitude)
 
+      # @!attribute [r] breadcrumbs
+      # A list of the locations in which the actor has been located.
+      # Each time an actor moves, other than to its previous location,
+      # the new location is pushed on the end of this array.  (If it
+      # moves to its previous location, the current location is popped
+      # off the list.)
       #
       # @return [Array<Location>]
-      #
       attr_reader(:breadcrumbs)
 
       #
