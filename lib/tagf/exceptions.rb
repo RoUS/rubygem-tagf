@@ -98,6 +98,12 @@ module TAGF
     ]
 
     #
+    # Array of all acceptable severity values, integers and
+    # symbols.
+    #
+    VALID_SEVERITIES	= (SEVERITY_NAMES + SEVERITY_LEVELS)
+
+    #
     # Hash mapping exceptions in the TAGF::Exceptions module to unique
     # integer identifiers.  The exception names (keys in the hash) are
     # represented as symbols, and the values are determined and stored
@@ -164,46 +170,80 @@ module TAGF
         # @return [Integer]
         #   integer identifier unique to this class.
         def assign_ID(idnum=nil)
-          idhash	= Exceptions::EXCEPTION_IDS
-          our_name	= self.name.sub(%r!^.*::!, '')
-          our_id	= idhash[our_name]
-          if ([ idnum, our_id ].none? { |v| v.nil? } \
-              && (idnum != our_id))
-            raise_exception(ArgumentError,
-                            format('exception %s has already ' +
-                                   'been assigned ID %i',
-                                   our_name,
-                                   our_id))
-          end
-          nums_assigned	= idhash.values
-          exceptions_by_id = idhash.inject({}) { |memo,(k,v)|
-            memo[v]	= k
+          exc_by_name	= Exceptions::EXCEPTION_IDS
+          exc_by_id	= exc_by_name.inject({}) { |memo,(exc,id)|
+            memo[id]	= exc
             memo
           }
-          unless (idnum.nil?)
-            unless (idnum.kind_of?(Integer) \
-                    && (idnum > 0))
-              raise_exception(TypeError,
-                              format('exception IDs must ' +
-                                     'be positive integers: %s:%s',
-                                     idnum.class.name,
-                                     idnum.inspect))
-            end
-            if (nums_assigned.include?(idnum))
-              raise_exception(IndexError,
-                              format('exception ID %i ' +
-                                     'already assigned to %s',
-                                     idnum,
-                                     exceptions_by_id[idnum]))
-            end
+          next_id	= exc_by_name.values.max || 1
+          our_name	= self.name.sub(%r!^.*::!, '')
+          our_id	= exc_by_name[our_name]
+          #
+          # At the end of this catch block, `our_id` has the ID number
+          # assigned to this exception class.
+          #
+          catch(:assigned) do
+            #
+            # Background info gathered; find out if we're a new
+            # exception, an existing one being assigned our own ID, or
+            # a an existing one being assigned an already-assigned ID.
+            # The last is a failure condition.
+            #
+            if (idnum.nil?)
+              #
+              # Either return our existing ID assignment, or make a
+              # new one.
+              #
+              if (our_id.nil?)
+                our_id	= next_id
+                Exceptions::EXCEPTION_IDS[our_name] = our_id
+              end
+              throw(:assigned)
+            else
+              #
+              # We were given an explicit identifier.  Vet it and then
+              # see if it's useable.
+              #
+              unless (idnum.kind_of?(Integer))
+                raise_exception(TypeError,
+                                format('exception IDs must ' +
+                                       'be positive integers: %s:%s',
+                                       idnum.class.name,
+                                       idnum.inspect))
+              end
+              #
+              # If we don't have an ID yet, this is it.
+              #
+              if (our_id.nil?)
+                our_id	= idnum
+                Exceptions::EXCEPTION_IDS[our_name] = our_id
+                throw(:assigned)
+              end
+              #
+              # See if we're being [re]assigned our own ID.
+              #
+              if (idnum == our_id)
+                #
+                # Yup.  Woo-hoo.
+                #
+                throw(:assigned)
+              end
+              #
+              # Now to more problematic alternatives.  See if it's
+              # already been assigned to a different exception.
+              #
+              if (exc_name = exc_by_id[idnum])
+                #
+                # Yup, complain.
+                #
+                raise_exception(ArgumentError,
+                                format('ID %i has already been ' +
+                                       'assigned to exception %s',
+                                       idnum,
+                                       exc_name))
+              end
+            end              
           end
-          unless ((our_id = Exceptions::EXCEPTION_IDS[our_name]).nil?)
-            return our_id
-          end
-
-          last_id	= exceptions_by_id.keys.max || 0
-          our_id	= last_id + 1
-          Exceptions::EXCEPTION_IDS[our_name] = our_id
           #
           # Don't know why 'self.define_method(:exception_id)' isn't
           # working..
@@ -215,12 +255,6 @@ module TAGF
           EOMETH
           return our_id
         end                     # def assign_id
-
-        #
-        # Array of all acceptable severity values, integers and
-        # symbols.
-        #
-        VALID_SEVERITIES = (SEVERITY_NAMES + SEVERITY_LEVELS)
 
         # Given a method name symbol (<em>e.g.</em>, `:severity`),
         # return the symbol for an instance variable with the same
@@ -565,7 +599,7 @@ module TAGF
         #
         # Assign this exception class a unique ID number
         #
-        self.assign_ID
+        self.assign_ID(0x101)
 
         self.severity	= :warning
 
@@ -632,7 +666,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x001)
 
       self.severity	= :warning
 
@@ -667,7 +701,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x002)
 
       self.severity	= :warning
 
@@ -701,7 +735,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x002)
 
       self.severity	= :error
 
@@ -728,7 +762,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number.
       #
-      self.assign_ID
+      self.assign_ID(0x003)
 
       self.severity	= :severe
 
@@ -766,7 +800,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x014)
 
       self.severity	= :error
 
@@ -796,7 +830,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x005)
 
       self.severity	= :severe
 
@@ -826,7 +860,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x006)
 
       self.severity	= :severe
 
@@ -857,7 +891,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x007)
 
       self.severity	= :severe
 
@@ -895,7 +929,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x008)
 
       self.severity	= :severe
 
@@ -923,7 +957,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x009)
 
       self.severity	= :warning
 
@@ -957,7 +991,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x00a)
 
       self.severity	= :error
 
@@ -996,7 +1030,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x00b)
 
       self.severity	= :error
 
@@ -1031,7 +1065,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x00c)
 
       self.severity	= :warning
 
@@ -1062,7 +1096,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x00d)
 
       self.severity	= :error
 
@@ -1111,7 +1145,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x00e)
 
       self.severity	= :error
 
@@ -1150,7 +1184,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x00f)
 
       self.severity	= :error
 
@@ -1191,7 +1225,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x010)
 
       self.severity	= :warning
 
@@ -1233,7 +1267,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x011)
 
       self.severity	= :warning
 
@@ -1282,7 +1316,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x012)
 
       self.severity	= :error
 
@@ -1321,7 +1355,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x013)
 
       self.severity	= :warning
 
@@ -1358,7 +1392,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x014)
 
       self.severity	= :warning
 
@@ -1370,7 +1404,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x015)
 
       self.severity	= :warning
 
@@ -1381,7 +1415,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x016)
 
       self.severity	= :error
 
@@ -1413,7 +1447,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x017)
 
       self.severity	= :fatal
 
@@ -1449,7 +1483,7 @@ module TAGF
       #
       # Assign this exception class a unique ID number
       #
-      self.assign_ID
+      self.assign_ID(0x018)
 
       self.severity	= :severe
 
