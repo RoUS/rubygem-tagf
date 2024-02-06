@@ -11,7 +11,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
   # classes and declaration details we <em>think</em> we've
   # assigned to them.
   #
-  ExceptionClasses	= [
+  ExceptionClassElements = [
     TestElement.new(
       value:		InvalidSeverity,
       severity:		SEVERITY.warning,
@@ -145,6 +145,56 @@ class Test_Exception_Severities < Test::Unit::TestCase
   ]
 
   #
+  # Array of all the exception classes, derived from the list of test
+  # elements for them.  Used in instance-test iterations.
+  #
+  ExceptionClasses	= ExceptionClassElements.map { |te| te.value }
+
+  #
+  # Array of exception instances.
+  #
+  ExceptionElements	= [
+    TestElement.new(
+      klass:		InvalidSeverity,
+      args:		[ false ],
+      xmessage:		'invalid severity level: FalseClass:false'
+    ),
+    TestElement.new(
+      klass:		BadHistoryFile,
+      args:		[],
+      xmessage:		'cannot open/read command history file'
+    ),
+    TestElement.new(
+      klass:		BadHistoryFile,
+      args:		[],
+      kwargs:		{
+        file:		'/dev/null',
+      },
+      xmessage:		"cannot restore history from /dev/null\n" +
+			"\tunknown reason"
+    ),
+    TestElement.new(
+      klass:		BadHistoryFile,
+      args:		[],
+      kwargs:		{
+        exception:	'ENOENT',
+      },
+      xmessage:		"cannot restore history from <not specified>\n" +
+			"\tENOENT"
+    ),
+    TestElement.new(
+      klass:		BadHistoryFile,
+      args:		[],
+      kwargs:		{
+        file:		'/dev/null',
+        exception:	'ENOENT',
+      },
+      xmessage:		"cannot restore history from /dev/null\n" +
+			"\tENOENT"
+    ),
+  ]
+
+  #
   # Executed before each test is invoked.
   #
   def setup
@@ -170,9 +220,9 @@ class Test_Exception_Severities < Test::Unit::TestCase
   end                           # def teardown
 
   # * Test that default class runtime severities match the hardcoded
-  #   values 
+  #   values
   def test_class_default_severity
-    ExceptionClasses.each do |te|
+    ExceptionClassElements.each do |te|
       klass_o		= te.value
       klass_i		= nil
       kdefsev		= klass_o.severity
@@ -188,7 +238,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   # * Test that changes to the default class severity persist
   def test_class_changed_class_severity_persists
-    ExceptionClasses.each do |te|
+    ExceptionClassElements.each do |te|
       klass_o		= te.value
       klass_i		= nil
       kdefsev		= te.severity
@@ -219,7 +269,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   # * Test that new instances inherit the class severity
   def test_instance_inherits_class_default_severity
-    ExceptionClasses.each do |te|
+    ExceptionClassElements.each do |te|
       klass_o		= te.value
       klass_i		= nil
       msg		= format('Instantiating ' \
@@ -240,7 +290,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   # * Test that new instances inherit the changed class severity
   def test_instances_inherit_changed_class_severity
-    ExceptionClasses.each do |te|
+    ExceptionClassElements.each do |te|
       klass_o		= te.value
       klass_i		= nil
       kdefsev		= te.severity
@@ -277,7 +327,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   # * Test that new instances can have their severity changed
   def test_changing_instance_severity
-    ExceptionClasses.each do |te|
+    ExceptionClassElements.each do |te|
       debugger if (te.value.nil?)
       klass_o		= te.value
       klass_i		= nil
@@ -315,7 +365,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
   # * Test that new instances can have their severity changed w/o
   #   affecting class severity
   def test_changing_instance_severity_leaves_class_severity
-    ExceptionClasses.each do |te|
+    ExceptionClassElements.each do |te|
       klass_o		= te.value
       klass_i0		= nil
       klass_i1		= nil
@@ -354,7 +404,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
 
   # * Test that passing a string makes that the message
   def test_instances_use_message_from_args
-    ExceptionClasses.each do |te|
+    ExceptionClassElements.each do |te|
       klass_o		= te.value
       klass_i		= nil
       msg		= format('Instantiating ' \
@@ -375,6 +425,26 @@ class Test_Exception_Severities < Test::Unit::TestCase
   end                           # def test_instances_use_message_from_args
 
   # * Test that properly-formatted actuals produce the correct message
+  def test_instances_as_intended
+    ExceptionElements.each do |te|
+      args		= te.respond_to?(:args)   ? te.args   : []
+      kwargs		= te.respond_to?(:kwargs) ? te.kwargs : {}
+      instance		= te.klass.new(*args, **kwargs)
+      msg		= format('%s(%s%s)',
+                                 te.klass.to_s,
+                                 args.empty? \
+                                 ? '' \
+                                 : format('*%s,',
+                                          args.inspect),
+                                 kwargs.empty? \
+                                 ? '{}' \
+                                 : format('**%s,',
+                                          kwargs.inspect))
+      assert_equal(instance.message,
+                   te.xmessage,
+                   msg)
+    end
+  end                           # def test_instances_as_intended
 
   nil
 end                             # class Test_Exception_Severities
