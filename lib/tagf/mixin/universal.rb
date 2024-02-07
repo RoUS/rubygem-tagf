@@ -20,6 +20,8 @@
 
 #require('contracts')
 
+#require('tagf/exceptions')
+
 #
 # Require the master file unless some of its key definitions have been
 # declared.
@@ -188,17 +190,36 @@ module TAGF
 	return requested.all? { |opt| active.include?(opt) }
       end			# def game_options?(*args)
 
+      # @!method raise_exception(exc_object, *args, **kwargs)
+      # Either uses a passed exception or creates a new exception
+      # object according to the `exc_object` parameter, edits the
+      # backtrace to remove the appropriate number of stack frames,
+      # and raises it.
       #
-      # Creates a new exception object of the specified class, edits
-      # the backtrace to remove the appropriate number of stack
-      # frames, and raises it.
+      # Acceptable values for `exc_object` are any of the following:
       #
-      # @param [Exception] exc_class
-      #	  Exception to raise, as a class object (<em>e.g.</em>,
-      #	  `StandardError`, `DuplicateObject`, <em>etc.</em>
-      #	  <em>Not</em> a string nor an instance.
+      # 1. a string
+      #    — a new `RuntimeError` exception is created from the
+      #    string.  `args` is ignored.
+      # 1. an exception object
+      #    — the object is raised as is.  `args` is ignored.
+      # 1. an exception class
+      #    — a new exception object is created from this constructor.
+      #    `args` is passed to the constructor, and `kwargs` as well
+      #    if `exc_object` is a descendant of
+      #    `TAGF::Exceptions::ErrorBase`.
+      # 1. a callable object that returns one of the above
+      #    — anything that responds to the `:call` method falls into
+      #    this category.  It will be invoked with `.call(*args)`.
+      #    `kwargs` isn't passed.
+      #
+      # @param [String,Class,Exception,Proc] exc_object
+      #	  A string (converted to a `RuntimeError` exception), an
+      #   exception class, an actual exception, or a `Proc` that
+      #   returns one of the above.  See the method description.
       # @param [Array] args
-      #	  List of arguments to pass to the exception constructor.
+      #	  List of arguments to pass to any exception constructor
+      #	  invoked.
       # @param [Hash] kwargs
       #	  Hash of keyword arguments to pass to the constructor,
       #	  possibly with the `:levels` keyword which will be consumed
@@ -207,40 +228,124 @@ module TAGF
       #	  The number of stack frames to pop off the backtrace.	The
       #	  default is 1, meaning that the caller's caller will appear
       #	  to be the location raising the exception.
-      # @raise [NotExceptionClass,Exception]
-      #	  either the requested exception, or a `NotExceptionClass`
-      #	  exception if the argument wasn't actually an exception
-      #	  class.
+      # @raise [TAGF::Exceptions::NotExceptional]
+      #   a `NotExceptional` exception is if the argument wasn't a
+      #	  string, an exception instance, an exception class, or a proc
+      #	  that (eventually) returns an exception class or instance.
+      # @raise [Any]
+      #	  whatever valid exception was derived from the arguments.
       # @return [void]
       #
-      def raise_exception(exc_class, *args, **kwargs)
+      def raise_exception(exc_object, *args, **kwargs)
 	kwargs[:levels] ||= 1
 	bt		= caller
+
+        warn(format("\n%s entry backtrace:" +
+                    "\n  levels: %i" +
+                    "\n  exc_object=%s:%s" +
+                    "\n  %s",
+                    __callee__.to_s,
+                    kwargs[:levels].to_i,
+                    exc_object.class.name,
+                    exc_object.inspect,
+                    PP.pp(bt[0,10],
+                          String.new).gsub(%r!\n!, "\n  ")))
+
+        loop do
+          #
+          # `exc_object` possibilities:
+          # * an exception instance
+          #   — used as-is
+          # * an exception class (.ancestors.include?(:Exception))
+          #   — an instance will be created from it and `args`
+          # * something callable
+          #   — exc_object.call(*args), then repeat
+          # * a string
+          #   — a `RuntimeError` instance is created from exc_object;
+          #   `args` is ignored
+          # * anything else
+          #   — raise a Exceptions::NotExceptional exception
+          #
+          if (exc_object.kind_of?(Exception))
+            #
+            # We were passed an actual exception instance, not a
+            # class.
+            #
+            break
+          elsif (exc_object.kind_of?(String))
+            #
+            # It's a string!  Turn it into a `RuntimeError` the way a
+            # simple `raise("string")` does.
+            #
+            exc_object	= RuntimeError.new(exc_object)
+            break
+          elsif (exc_object.respond_to?(:call))
+            #
+            # Something callable, which *might* return a valid
+            # exception instance or class.  Try it, and loop through
+            # again.
+            #
+            exc_object	= exc_object.call(*args)
+            next
+          elsif ((! exc_object.kind_of?(Class)) \
+                 || (! exc_object.ancestors.include?(Exception)))
+            #
+            # Not a class at all, or at least not one descended from
+            # `Exception`.  Raise an exception using ourself,
+            # incrementing the level count to take our recursive call
+            # and loop out of the backtrace.
+            #
+            self.send(__callee__,
+                      Exceptions::NotExceptional.new(offender: exc_object),
+                      levels: kwargs[:levels].to_i + 2)
+          else
+            #
+            # This appears to be an actual exception class, so create
+            # an instance from it.  If it's one of ours, pass the
+            # `kwargs` hash too (minus our `:levels` keyword),
+            # otherwise just pass the `args` array.
+            #
+            if (exc_object.kind_of?(TAGF::Exceptions::ErrorBase))
+              debugger
+              nkwargs	= kwargs.dup
+              nkwargs.delete(:levels)
+              exc_object = exc_object.new(*args, **nkwargs)
+            else              
+              exc_object = exc_object.new(*args)
+            end
+            #
+            # Break out of the loop.
+            #
+            break
+          end                   # exception-deduction if-tree
+	end                     # loop do
 	#
-	# Verify that we were given an actual exception class.
+	# `exc_object` is an actual exception instance.  Let's edit
+        # the backtrace and raise the sucker.
 	#
-	unless (exc_class.ancestors.include?(Exception))
-	  bt.pop
-	  exc		= NotExceptionClass.new(exc_class)
-	  exc.set_backtrace(bt)
-	  raise(exc)
-	end
+	# By default we add ourself to what's being elided; this can
+        # be overridden by passing `:levels` with a value <= 0.
 	#
-	# Add ourself to what's being elided, and remove the depth
-	# field.
-	#
-	(kwargs[:levels] + 1).times { bt.pop }
-	kwargs.delete(:levels)
+	(kwargs[:levels] + 1).times { bt.shift }
+        warn(format("%s edited backtrace:" +
+                    "\n  levels: %i" +
+                    "\n  exc_object=%s:%s" +
+                    "\n  %s",
+                    __callee__.to_s,
+                    kwargs[:levels].to_i,
+                    exc_object.class.name,
+                    exc_object.inspect,
+                    PP.pp(bt[0,10],
+                          String.new).gsub(%r!\n!, "\n  ")))
 	#
 	# Pass any arguments to the exception constructor, set the new
 	# exception object's backtrace to our caller (or whatever
 	# stack frame was made current), and raise it.
 	#
-	exc		= exc_class.new(*args, **kwargs)
-	exc.set_backtrace(bt)
-	raise(exc)
+	exc_object.set_backtrace(bt)
+	raise(exc_object)
       end			# def raise_exception
-      private(:raise_exception)
+#      protected(:raise_exception)
 
       # Return `true` if the given object is a game element — that is,
       # its eigenclass has included (or been extended by) the
@@ -251,7 +356,7 @@ module TAGF
       def is_game_element?(target)
 	result	= target.singleton_class.ancestors.include?(Mixin::Element)
 	return result ? true : false
-      end			# is_game_element?(target)
+      end			# def is_game_element?(target)
       module_function(:is_game_element?)
       public(:is_game_element?)
 
