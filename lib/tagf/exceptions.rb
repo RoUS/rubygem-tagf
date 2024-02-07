@@ -714,7 +714,8 @@ module TAGF
         _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
-          if (args[0].nil?)
+          if ((! kwargs.has_key?(:file)) \
+              && (! kwargs.has_key?(:exception)))
             @msg	= 'cannot open/read command history file'
           else
             @msg	= format("cannot restore history from %s\n" \
@@ -795,7 +796,7 @@ module TAGF
     end                         # class BadLoadFile
 
     #
-    class NotExceptionClass < ErrorBase
+    class NotExceptional < ErrorBase
 
       #
       # Assign this exception class a unique ID number
@@ -807,22 +808,24 @@ module TAGF
       #
       # @!macro doc.TAGF.formal.kwargs
       # @!macro ErrorBase.initialize
-      # @return [NotExceptionClass] self
+      # @option kwargs [Any]		:offender
+      #   offending object; use this for strings
+      # @return [NotExceptional]	self
       #
       def initialize(*args, **kwargs)
         _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
-          objtype	= args[0].class.name
+          offender	= kwargs[:offender] || args[0]
           @msg		= format('not an exception class: %s:%s',
-                                 objtype,
-                                 arg[0].to_s)
+                                 offender.class.name,
+                                 offender.inspect)
         end
         self._set_message(@msg)
       end                       # def initialize
 
       nil
-    end                         # class NotExceptionClass
+    end                         # class NotExceptional
 
     #
     class NotGameElement < ErrorBase
