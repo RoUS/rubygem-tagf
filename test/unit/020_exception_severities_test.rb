@@ -38,7 +38,7 @@ class Test_Exception_Severities < Test::Unit::TestCase
       exception_id:	0x003
     ),
     TestElement.new(
-      value:		NotExceptionClass,
+      value:		NotExceptional,
       severity:		SEVERITY.error,
       exception_id:	0x004
     ),
