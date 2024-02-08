@@ -242,7 +242,7 @@ module TAGF
                                        idnum,
                                        exc_name))
               end
-            end              
+            end
           end
           #
           # Don't know why 'self.define_method(:exception_id)' isn't
@@ -496,20 +496,17 @@ module TAGF
       end                     # def unpack_errorcode
 
       # @private
-      # @!method _set_message(text)
+      # @!method set_message(text)
       # Internal method to allow our classes to set their message text
       # at runtime, since the `Exception` superclass doesn't.
       # @return [void]
-      def _set_message(text)
+      def set_message(text)
         self.define_singleton_method(:message) {
           return %Q[#{text}]
         }
-        self.define_singleton_method(:inspect) {
-          return %Q[#<#{self.class.name}: #{self.message}>]
-        }
         return nil
-      end                       # def _set_message(text)
-      protected(:_set_message)
+      end                       # def set_message(text)
+      protected(:set_message)
 
       # @private
       # @!method _dbg_exception_start(msym)
@@ -545,6 +542,17 @@ module TAGF
                                  self.message)
         return result
       end                       # def render
+
+      # @!method inspect
+      # Returns a string representaion of the exception in standar
+      # format.
+      # @return [String]
+      #   "<em>exception-class</em>: <em>exception-message</em>"
+      def inspect
+        return format('%s: %s',
+                      self.class.name,
+                      self.message)
+      end                       # def inspect
 
       # @!macro doc.TAGF.formal.kwargs
       # @!macro [new] ErrorBase.initialize
@@ -641,7 +649,7 @@ module TAGF
                                                    owner.capacity_items),
                                          (newitem.name || newitem.eid).to_s)
           end
-          self._set_message(@msg)
+          self.set_message(@msg)
         end                     # def initialize
 
         nil
@@ -689,7 +697,7 @@ module TAGF
                                  args[0].class.name,
                                  args[0].inspect)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -724,7 +732,7 @@ module TAGF
                                  kwargs[:exception] || 'unknown reason')
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -751,7 +759,7 @@ module TAGF
         if (@msg.nil?)
           @msg		= 'no "file" keyword specified for game load'
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -789,7 +797,7 @@ module TAGF
             end
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -817,11 +825,12 @@ module TAGF
         super
         if (@msg.nil?)
           offender	= kwargs[:offender] || args[0]
-          @msg		= format('not an exception class: %s:%s',
+          @msg		= format('not an exception or ' +
+                                 'exception class: %s:%s',
                                  offender.class.name,
                                  offender.inspect)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -851,7 +860,7 @@ module TAGF
                                  objtype,
                                  arg[0].to_s)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -882,7 +891,7 @@ module TAGF
                                  objtype,
                                  args[0].to_s)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -920,7 +929,7 @@ module TAGF
                                  (ckobj.name || ckobj.eid).to_s,
                                  (obj.name || obj.eid).to_s)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -948,7 +957,7 @@ module TAGF
           @msg		= 'attempt to create in-game object ' \
                           + 'failed (#game not set)'
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -982,7 +991,7 @@ module TAGF
                                   + 'once set'
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1021,7 +1030,7 @@ module TAGF
                                          objtype)
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1052,7 +1061,7 @@ module TAGF
           @msg		= format('element %s is not a container',
                                  name ? name : objtype)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1087,7 +1096,7 @@ module TAGF
           @msg		= format('element %s is not a container',
                                  name ? name : objtype)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1136,7 +1145,7 @@ module TAGF
                                  + 'if <%s>[%s].%s is %s',
                                  *msgargs)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1175,7 +1184,7 @@ module TAGF
                                          objtype)
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1216,7 +1225,7 @@ module TAGF
             end                 # case(args.count)
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1258,7 +1267,7 @@ module TAGF
                                  target.class.name,
                                  target.eid.to_s)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1307,7 +1316,7 @@ module TAGF
             end                 # case(args.count)
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1346,7 +1355,7 @@ module TAGF
                                  target,
                                  newcontent)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1383,7 +1392,7 @@ module TAGF
                                          type)
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1439,7 +1448,7 @@ module TAGF
                                          args[0].intro_line)
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1473,7 +1482,7 @@ module TAGF
                                          obj.inspect)
           end
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil
@@ -1532,7 +1541,7 @@ module TAGF
                                  offender.class.name,
                                  offender.inspect)
         end
-        self._set_message(@msg)
+        self.set_message(@msg)
       end                       # def initialize
 
       nil

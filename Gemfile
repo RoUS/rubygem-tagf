@@ -36,6 +36,8 @@ require('versionomy')
 RUBY_ENGINE     = 'ruby' unless (defined?(RUBY_ENGINE))
 ruby('>= 2.7')
 
+plugin('bundler-graph')
+
 # Add dependencies required to use your gem here.
 # Example:
 #   gem "activesupport", ">= 2.3.5"
@@ -86,7 +88,6 @@ group(:development, :test) do
   gem('mocha')
   gem('pp')
   gem('rake',		'~> 13.0')
-  gem('redcarpet')
   gem('rdoc')
   gem('rspec',		'~> 3.0')
   gem('rubocop',	'~> 1.21')

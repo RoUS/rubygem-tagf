@@ -82,9 +82,9 @@ class Test_Raise_Exception < Test::Unit::TestCase
     rescue RuntimeError => exc
       bt_base		= exc.backtrace
     end
-    exc_object		= RuntimeError.new(Exception_Text)
-    exc = assert_raise_with_message(RuntimeError,
-                                    Exception_Text,
+    exc_object		= IOError.new(Exception_Text)
+    exc = assert_raise_with_message(IOError,
+                                    %r!#{Exception_Text}!,
                                     'raise_exception(exc_object)') do
       raise_exception(exc_object)
     end
@@ -102,10 +102,10 @@ class Test_Raise_Exception < Test::Unit::TestCase
     rescue RuntimeError => exc
       bt_base		= exc.backtrace
     end
-    exc_klass		= RuntimeError
+    exc_klass		= Errno::ENOENT
     args		= [ Exception_Text ]
-    exc = assert_raise_with_message(RuntimeError,
-                                    Exception_Text,
+    exc = assert_raise_with_message(Errno::ENOENT,
+                                    %r!#{Exception_Text}!,
                                     'raise_exception(exc_klass,text)') do
       raise_exception(exc_klass, *args)
     end
@@ -124,11 +124,11 @@ class Test_Raise_Exception < Test::Unit::TestCase
       bt_base		= exc.backtrace
     end
     exc_proc		= Proc.new { |*args|
-      RuntimeError.new(*args)
+      FiberError.new(*args)
     }
     args		= [ Exception_Text ]
-    exc = assert_raise_with_message(RuntimeError,
-                                    Exception_Text,
+    exc = assert_raise_with_message(FiberError,
+                                    %r!#{Exception_Text}!,
                                     'raise_exception(exc_proc,text)') do
       raise_exception(exc_proc, *args)
     end
