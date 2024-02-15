@@ -20,6 +20,7 @@
 
 require('tagf/mixin/dtypes')
 require('tagf/mixin/universal')
+require('ostruct')
 require('byebug')
 
 # @!macro doc.TAGF.module

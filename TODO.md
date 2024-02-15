@@ -60,6 +60,7 @@
 * Build `describe` method that can do as deep a dive as requested for
   nested `Container`s with inventories.
 * Event processing: think about objects registering 'event listeners'.
+* Build a visual graph from `Location` paths (`Connexions`)
 
 ## Testing
 
