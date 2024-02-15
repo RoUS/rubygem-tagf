@@ -112,6 +112,11 @@
 #   Refine the `String` class to add methods for variable width and
 #   formatted display.
 
+# @!macro [new] TAGF.constant.Loadable_Fields
+#   Fields specific to this class or module that are loadable from
+#   YAML.  Facets which are calculated at runtime or otherwise derived
+#   do not appear in this constant.
+
 # @!macro [new] doc.TAGF.UI.module
 #   User interface module, for command processing &c.
 

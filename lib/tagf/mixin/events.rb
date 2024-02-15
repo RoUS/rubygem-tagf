@@ -55,11 +55,35 @@ module TAGF
         EventDropped:		:turn_begin,
       }
 
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        'events_heard',
+        'event_queue',
+      ]
+
       #
       attr_accessor(:events_heard)
 
       #
       attr_reader(:event_queue)
+
+      #
+      # @param [Array]			args
+      #   Arguments to pass to the listener in addition to the event
+      #   in question.
+      # @param [Hash<Symbol=>Any>]	kwargs
+      # @option kwargs [Array<Symbol>]	:events
+      #   List of events for which this listener is being registered.
+      #
+      def register_evlistener(*args, **kwargs)
+        evlist		= kwargs[:events]
+        if (evlist.nil?)
+          raise_exception(ArgumentError,
+                          format('%s() requires an :events ' +
+                                 'keyword argument',
+                                 __callee__.to_s))
+        end
+      end                       # def register_evlistener
 
       # @abstract
       def onTurnBegin(*args, **kwargs)

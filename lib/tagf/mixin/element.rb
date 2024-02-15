@@ -72,6 +72,46 @@ module TAGF
       end
       extend(Mixin::DTypes)
 
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        #
+        # Unique fields tying an element record to a particular game
+        # instance.  When stored in YAML, what's actually stored is
+        # the EID of any relevant object rather than the object
+        # itself.
+        #
+        'eid',
+        'game',
+        'owned_by',
+        #
+        # Attributes describing the element (description,
+        # singular/plural article, &c.).
+        #
+        'name',
+        'desc',
+        'shortdesc',
+        'article',
+        'preposition',
+        #
+        # If this element has any lighting attributes, what are they?
+        #
+        'illumination',
+        'pct_dim_per_turn',
+        'only_dim_near_player',
+        #
+        # Attributes controlling how the element affects appearance in
+        # an inventory.
+        #
+        'mass',
+        'volume',
+        #
+        # Mostly for game features, like rooms, furniture, invisible
+        # walls, &c.
+        #
+        'is_static',
+        'is_visible',
+      ]
+
       #
       # The <em>`eid`</em> is the unique game-wide identifier for each
       # object.  As such, it only has a reader/getter defined so it
@@ -311,9 +351,9 @@ module TAGF
       #
       # @param [Array] args
       # @!macro doc.TAGF.formal.kwargs
-      # @option kwargs [Symbol] :eid (nil)
-      # @option kwargs [Symbol] :owned_by (nil)
-      # @option kwargs [Symbol] :game (nil)
+      # @option kwargs [Symbol]	:eid		(nil)
+      # @option kwargs [Symbol] :owned_by	(nil)
+      # @option kwargs [Symbol] :game		(nil)
       # @raise [NoObjectOwner]
       # @raise [SettingLocked]
       # @raise [RuntimeError]
@@ -322,9 +362,9 @@ module TAGF
       #
       def initialize_element(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
-        @eid		||= kwargs[:eid] || self.object_id
+        @eid		||= kwargs[:eid] || self.object_id.to_s
         if (self.owned_by.nil? \
-            && ((! kwargs.key?(:owned_by)) \
+            && ((! kwargs.has_key?(:owned_by)) \
                 || kwargs[:owned_by].nil?))
           raise_exception(NoObjectOwner, self)
         end

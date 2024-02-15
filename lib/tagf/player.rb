@@ -36,6 +36,12 @@ module TAGF
     extend(Mixin::DTypes)
     include(Mixin::Actor)
 
+    # @!macro TAGF.constant.Loadable_Fields
+    Loadable_Fields		= [
+      'locations',
+      'facing',
+    ]
+
     #
     # Hash of locations to which the player has been.  The key for
     # each tuple is the location object, and the value is the integer

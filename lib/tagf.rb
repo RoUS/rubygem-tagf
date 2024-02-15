@@ -95,6 +95,7 @@ require('tagf/mixin/universal')
 # Now the 'top-level' modules.
 #
 require('tagf/cli')
+require('tagf/connexion')
 require('tagf/container')
 #require_relative('tagf/debugging')
 require('tagf/exceptions')

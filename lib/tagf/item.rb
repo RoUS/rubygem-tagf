@@ -59,6 +59,11 @@ module TAGF
            m.instance_methods
          }.flatten.uniq)
 
+    # @!macro TAGF.constant.Loadable_Fields
+    Loadable_Fields		= [
+      'is_living',
+    ]
+
     #
     # Is this item alive, like a bird or lizard?  If so, it may leave
     # loot or a corpse behind if it dies.  Whatever remains might be

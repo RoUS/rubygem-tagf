@@ -59,6 +59,15 @@ module TAGF
         nil
       end                         # module TAGF::Mixin::Actors eigenclass
 
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        'maxhp',
+        'hp',
+        'faction',
+        'attitude',
+        'breadcrumbs',
+      ]
+
       #
       # @!macro doc.TAGF.classmethod.int_accessor.invoke
       int_accessor(:maxhp)

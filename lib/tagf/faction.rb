@@ -39,6 +39,11 @@ module TAGF
     extend(Mixin::DTypes)
     include(Mixin::Element)
 
+    # @!macro TAGF.constant.Loadable_Fields
+    Loadable_Fields		= [
+      'attitude',
+    ]
+
     # @!attribute [rw] attitude
     # Provides a default attitude for all members of a faction.
     # Changing this will change all members' attitudes.

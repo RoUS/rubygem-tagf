@@ -26,28 +26,38 @@ require('byebug')
 module TAGF
 
   #
-  class Location
+  class Connexion
 
     #
     include(Mixin::UniversalMethods)
     extend(Mixin::DTypes)
-    include(Mixin::Location)
+    include(Mixin::Element)
+
+    # @!macro TAGF.constant.Loadable_Fields
+    Loadable_Fields		= [
+      'reversible',
+      'source',
+      'destination',
+    ]
 
     #
-    # @!macro doc.TAGF.formal.kwargs
-    # @return [Location] self
+    # @!macro doc.TAGF.classmethod.flag.invoke
+    flag(:reversible)
+
+    #
+    attr_accessor(:source)
+
+    #
+    attr_accessor(:destination)
+
     #
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
-      @paths		||= {}
       self.initialize_element(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
-      self.initialize_location(*args, **kwargs)
-      self.game.add(self)
-    end                         # def initialize
+    end                         # def initialize(*args, **kwargs)
 
     nil
-  end                           # class Location
+  end                           # class Connexion
 
   nil
 end                             # module TAGF

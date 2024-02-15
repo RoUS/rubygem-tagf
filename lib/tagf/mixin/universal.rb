@@ -2,7 +2,7 @@
 # Copyright © 2022 Ken Coar
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
-# may not use this file except in compliance with the License.	You
+# may not use this file except in compliance with the License.  You
 # may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
@@ -19,6 +19,7 @@
 #warn(__FILE__) if (TAGF.debugging?(:file))
 
 #require('contracts')
+require('ostruct')
 
 #require('tagf/exceptions')
 
@@ -66,7 +67,8 @@ module TAGF
           # also extend it with our UniversalMethods module.
           #
           if (klass.kind_of?(Module) \
-              || (! klass.name.to_s.empty?))
+              || (klass.kind_of?(Class) \
+                  && (! klass.name.to_s.empty?)))
             klass.extend(UniversalMethods)
           end
           return nil
@@ -74,7 +76,7 @@ module TAGF
 
         nil
       end                       # class UniversalMethods eigenclass
-      
+
       #
 #      include(Contracts::Core)
 
@@ -82,36 +84,65 @@ module TAGF
       # List of game-wide option flags to impose (or relax) certain
       # restrictions.
       #
-      GAME_OPTIONS	= %i[
-			     RaiseOnInvalidValues
-			     EnableHitpoints
-			     EnforceLighting
-			     EnforceMass
-			     EnforceVolume
-			     EnforceItemCounts
-			     EnforceCapacities
-			    ]
+      GAME_OPTIONS      = %i[
+                             RaiseOnInvalidValues
+                             EnableHitpoints
+                             EnforceLighting
+                             EnforceMass
+                             EnforceVolume
+                             EnforceItemCounts
+                             EnforceCapacities
+                            ]
 
       #
       # Related options that can enabled/disabled collectively as well
       # as individually.  These are called option 'clumps.'
       #
       GAME_OPTION_CLUMPS= {
-	EnforceCapacities: %i[
-			      EnforceMass
-			      EnforceVolume
-			      EnforceItemCounts
-			     ],
+        EnforceCapacities: %i[
+                              EnforceMass
+                              EnforceVolume
+                              EnforceItemCounts
+                             ],
       }
 
       #
       # Symbols describing possible attitudes available to an actor.
       #
-      C_Attitudes	= %i[
-			     friendly
-			     neutral
-			     hostile
-			    ]
+      C_Attitudes       = %i[
+                             friendly
+                             neutral
+                             hostile
+                            ]
+
+
+      # Look at the constant `Loadable_Fields` for the receiver and
+      # all of its ancestors, and return an array of all unique values
+      # therein.
+      #
+      # @param [Class]          rcvr            (self)
+      #   Class for which the list of loadable fields should be
+      #   derived.
+      # @return [Array<String>]
+      #   a list of field names built from concatenating values of
+      #   `Loadable_Fields` from the receiver class and all of its
+      #   ancestors.
+      #
+      def loadable_fields(rcvr=nil)
+        if (rcvr.nil?)
+          rcvr          = self.kind_of?(Class) ? self : self.class
+        end
+        fieldlist       = rcvr.ancestors.select { |k|
+          k.const_defined?('Loadable_Fields', false)
+        }.map { |k|
+          k.const_get('Loadable_Fields', false)
+        }.reduce(&:|)
+        #
+        # If there are none, the result of the above will be `nil`.
+        # We're supposed to return an array, so convert it.
+        #
+        return fieldlist || []
+      end                       # def loadable_fields
 
       # @private
       #
@@ -142,16 +173,16 @@ module TAGF
           # Turn any bare attributes into hashes with the appropriate
           # default setting.
           #
-          defaults	= [default] * argc
-          nmargs	= args.map { |o| o.to_sym }
-          nmargs	= nmargs.zip(defaults).map { |ary| Hash[*ary] }
-          nmargs	= nmargs.reduce(&:merge)
+          defaults      = [default] * argc
+          nmargs        = args.map { |o| o.to_sym }
+          nmargs        = nmargs.zip(defaults).map { |ary| Hash[*ary] }
+          nmargs        = nmargs.reduce(&:merge)
           #
           # Do it in the `nmargs.merge(kwargs)` order so any
           # attributes that <em>were</em> given initial values override
           # bare ones of the same name picking up the default.
           #
-          kwargs	= nmargs.merge(kwargs)
+          kwargs        = nmargs.merge(kwargs)
         end
         #
         # Allow refinement of the initial values by a block supplied
@@ -159,7 +190,7 @@ module TAGF
         #
         if (block_given?)
           kwargs.keys.each do |k|
-            kwargs[k]	= yield(kwargs[k])
+            kwargs[k]   = yield(kwargs[k])
           end
         end
         return kwargs
@@ -174,21 +205,21 @@ module TAGF
       # @param [Symbol] option
       # @param [Array<Symbol>] args
       # @return [Boolean]
-      #	  `true` if **all** of the requested options are currently
-      #	  enabled.
+      #   `true` if **all** of the requested options are currently
+      #   enabled.
       def game_options?(option, *args)
-	requested	= Set.new([option, *args].map { |o| o.to_sym })
-	unknown		= requested - GAME_OPTIONS
-	unknown.each do |opt|
-	  warn(format('%s.%s: unknown game option: %s',
-	              'TAGF',
+        requested       = Set.new([option, *args].map { |o| o.to_sym })
+        unknown         = requested - GAME_OPTIONS
+        unknown.each do |opt|
+          warn(format('%s.%s: unknown game option: %s',
+                      'TAGF',
                       __method__.to_s,
                       opt.to_s))
-	  requested.delete(opt)
-	end
-	active		= TAGF.game_options
-	return requested.all? { |opt| active.include?(opt) }
-      end			# def game_options?(*args)
+          requested.delete(opt)
+        end
+        active          = TAGF.game_options
+        return requested.all? { |opt| active.include?(opt) }
+      end                       # def game_options?(*args)
 
       # @!method raise_exception(exc_object, *args, **kwargs)
       # Either uses a passed exception or creates a new exception
@@ -214,31 +245,31 @@ module TAGF
       #    `kwargs` isn't passed.
       #
       # @param [String,Class,Exception,Proc] exc_object
-      #	  A string (converted to a `RuntimeError` exception), an
+      #   A string (converted to a `RuntimeError` exception), an
       #   exception class, an actual exception, or a `Proc` that
       #   returns one of the above.  See the method description.
       # @param [Array] args
-      #	  List of arguments to pass to any exception constructor
-      #	  invoked.
+      #   List of arguments to pass to any exception constructor
+      #   invoked.
       # @param [Hash] kwargs
-      #	  Hash of keyword arguments to pass to the constructor,
-      #	  possibly with the `:levels` keyword which will be consumed
-      #	  by this method.
+      #   Hash of keyword arguments to pass to the constructor,
+      #   possibly with the `:levels` keyword which will be consumed
+      #   by this method.
       # @option kwargs [Integer] :levels (1)
-      #	  The number of stack frames to pop off the backtrace.	The
-      #	  default is 1, meaning that the caller's caller will appear
-      #	  to be the location raising the exception.
+      #   The number of stack frames to pop off the backtrace.  The
+      #   default is 1, meaning that the caller's caller will appear
+      #   to be the location raising the exception.
       # @raise [TAGF::Exceptions::NotExceptional]
       #   a `NotExceptional` exception is if the argument wasn't a
-      #	  string, an exception instance, an exception class, or a proc
-      #	  that (eventually) returns an exception class or instance.
+      #   string, an exception instance, an exception class, or a proc
+      #   that (eventually) returns an exception class or instance.
       # @raise [Any]
-      #	  whatever valid exception was derived from the arguments.
+      #   whatever valid exception was derived from the arguments.
       # @return [void]
       #
       def raise_exception(exc_object, *args, **kwargs)
-	kwargs[:levels] ||= 1
-	bt		= caller
+        kwargs[:levels] ||= 1
+        bt              = caller
 
         warn(format("\n%s entry backtrace:" +
                     "\n  levels: %i" +
@@ -277,7 +308,7 @@ module TAGF
             # It's a string!  Turn it into a `RuntimeError` the way a
             # simple `raise("string")` does.
             #
-            exc_object	= RuntimeError.new(exc_object)
+            exc_object  = RuntimeError.new(exc_object)
             break
           elsif (exc_object.respond_to?(:call))
             #
@@ -285,7 +316,7 @@ module TAGF
             # exception instance or class.  Try it, and loop through
             # again.
             #
-            exc_object	= exc_object.call(*args)
+            exc_object  = exc_object.call(*args)
             next
           elsif ((! exc_object.kind_of?(Class)) \
                  || (! exc_object.ancestors.include?(Exception)))
@@ -307,10 +338,10 @@ module TAGF
             #
             if (exc_object.kind_of?(TAGF::Exceptions::ErrorBase))
               debugger
-              nkwargs	= kwargs.dup
+              nkwargs   = kwargs.dup
               nkwargs.delete(:levels)
               exc_object = exc_object.new(*args, **nkwargs)
-            else              
+            else
               exc_object = exc_object.new(*args)
             end
             #
@@ -318,15 +349,15 @@ module TAGF
             #
             break
           end                   # exception-deduction if-tree
-	end                     # loop do
-	#
-	# `exc_object` is an actual exception instance.  Let's edit
+        end                     # loop do
+        #
+        # `exc_object` is an actual exception instance.  Let's edit
         # the backtrace and raise the sucker.
-	#
-	# By default we add ourself to what's being elided; this can
+        #
+        # By default we add ourself to what's being elided; this can
         # be overridden by passing `:levels` with a value <= 0.
-	#
-	(kwargs[:levels] + 1).times { bt.shift }
+        #
+        (kwargs[:levels] + 1).times { bt.shift }
         warn(format("%s edited backtrace:" +
                     "\n  levels: %i" +
                     "\n  exc_object=%s:%s" +
@@ -337,26 +368,26 @@ module TAGF
                     exc_object.inspect,
                     PP.pp(bt[0,10],
                           String.new).gsub(%r!\n!, "\n  ")))
-	#
-	# Pass any arguments to the exception constructor, set the new
-	# exception object's backtrace to our caller (or whatever
-	# stack frame was made current), and raise it.
-	#
-	exc_object.set_backtrace(bt)
-	raise(exc_object)
-      end			# def raise_exception
+        #
+        # Pass any arguments to the exception constructor, set the new
+        # exception object's backtrace to our caller (or whatever
+        # stack frame was made current), and raise it.
+        #
+        exc_object.set_backtrace(bt)
+        raise(exc_object)
+      end                       # def raise_exception
 #      protected(:raise_exception)
 
       # Return `true` if the given object is a game element — that is,
       # its eigenclass has included (or been extended by) the
       # TAGF::Mixin::Element module.
       #
-      # @param [Object]		target
+      # @param [Object]         target
       # @return [Boolean]
       def is_game_element?(target)
-	result	= target.singleton_class.ancestors.include?(Mixin::Element)
-	return result ? true : false
-      end			# def is_game_element?(target)
+        result  = target.singleton_class.ancestors.include?(Mixin::Element)
+        return result ? true : false
+      end                       # def is_game_element?(target)
       module_function(:is_game_element?)
       public(:is_game_element?)
 
@@ -365,19 +396,19 @@ module TAGF
       # the plural of the word if the count justifies it.
       #
       # @note
-      #	  At the moment, only English (`en`) words are supported.
+      #   At the moment, only English (`en`) words are supported.
       #
-      # @param [String]		word
-      # @param [Integer]	number
+      # @param [String]         word
+      # @param [Integer]        number
       # @return [String]
-      #	  either the original word, or the deduced plural if the
-      #	  `number` argument was an integer 1.  (Floats <em>always</em>
-      #	  use plurals, even if they're `1.000`.)
+      #   either the original word, or the deduced plural if the
+      #   `number` argument was an integer 1.  (Floats <em>always</em>
+      #   use plurals, even if they're `1.000`.)
       #
       def pluralise(word, number=1)
-	result		= word
+        result          = word
         unless (number.kind_of?(Integer) && (number == 1))
-          result	= word.en.plural
+          result        = word.en.plural
         end
         return result
       end                       # def pluralise
@@ -386,34 +417,34 @@ module TAGF
       # List of (case-insensitive) strings that evaluate to a Boolean
       # `true` value.
       #
-      Truthy_Strings	= %w[ y yes t true on ]
+      Truthy_Strings    = %w[ y yes t true on ]
 
       #
       # List of (case-insensitive) strings that explicitly evaluate to
       # a Boolean `false` value.
       #
-      UnTruthy_Strings	= %w[ n no f false off nil null ]
+      UnTruthy_Strings  = %w[ n no f false off nil null ]
 
       #
       # Regular expression pattern matching an integer or bignum
       # string.  Used by itself, and also by {Float_String} and
       # {Complex_String}.
       #
-      Digit_String	= '\d+'
+      Digit_String      = '\d+'
 
       #
       # Regular expression pattern matching a floating point string.
       # Also used by {Complex_String}.  Modern Ruby requires digits on
       # both sides of the decimal point.
       #
-      Float_String	= format('%s\.%s',
+      Float_String      = format('%s\.%s',
                                  Digit_String,
                                  Digit_String)
 
       #
       # Regular expression matching a Ruby complex number string.
       #
-      Complex_String	= format('\(?(?:%s|%s)[-+](?:%s|%s)i\)?',
+      Complex_String    = format('\(?(?:%s|%s)[-+](?:%s|%s)i\)?',
                                  Digit_String,
                                  Float_String,
                                  Digit_String,
@@ -423,18 +454,18 @@ module TAGF
       # Compiled regular expression matching a string of digits (an
       # integer or bignum).
       #
-      Integer_String_RE	= %r!^#{Digit_String}$!
+      Integer_String_RE = %r!^#{Digit_String}$!
 
       #
       # Compiled regular expression matching a Ruby Float as a string.
       #
-      Float_String_RE	= %r!^#{Float_String}$!
+      Float_String_RE   = %r!^#{Float_String}$!
 
       #
       # Compiled regular expression matching Ruby's representation of
       # a complex numeric value.
       #
-      Complex_String_RE	= %r!^#{Complex_String}$!
+      Complex_String_RE = %r!^#{Complex_String}$!
 
       #
       # Default proc used to test for truthyness of any value of any
@@ -442,13 +473,13 @@ module TAGF
       # custom truthiness test procs.
       #
       #
-      Truthy_TestProc	= Proc.new { |testvalue|
+      Truthy_TestProc   = Proc.new { |testvalue|
         #
         # Symbols we don't handle directly, so convert them into
         # Strings for evaluation.  This is perhaps a cop-out.
         #
         if (testvalue.kind_of?(Symbol))
-          testvalue	= testvalue.to_s
+          testvalue     = testvalue.to_s
         end
         #
         # This is a messy tree of if/elsif/else/end checks.  Each
@@ -467,9 +498,9 @@ module TAGF
         #
         if ((testvalue == false) ||
             testvalue.nil?)
-          result	= false
+          result        = false
         elsif (testvalue == true)
-          result	= true
+          result        = true
         elsif (testvalue.kind_of?(Numeric))
           #
           # If it's a numeric value (of any kind), anything that
@@ -479,7 +510,7 @@ module TAGF
           # heavily on regular expression matching, which is
           # consumptive.
           #
-          result	= (! testvalue.zero?)
+          result        = (! testvalue.zero?)
         elsif (testvalue.kind_of?(String))
           #
           # Now comes the complex part: checking to see if this string
@@ -493,23 +524,23 @@ module TAGF
             # But first, is it one of our explicitly truthy strings?
             # (Easy first test.)
             #
-            result	= true
+            result      = true
           elsif (UnTruthy_Strings.include?(testvalue.downcase))
             #
             # How about one of our explicitly UNtruthy strings?
             #
-            result	= false
+            result      = false
           elsif (testvalue =~ Integer_String_RE)
             #
             # It'a string of just decimal digits, but not evaluating
             # to zero.
             #
-            result	= (! Integer(testvalue).zero?)
+            result      = (! Integer(testvalue).zero?)
           elsif (testvalue =~ Float_String_RE)
             #
             # Non-zero floating-point string?
             #
-            result	= (! Float(testvalue).zero?)
+            result      = (! Float(testvalue).zero?)
           elsif (testvalue =~ Complex_String_RE)
             #
             # Non-zero complex number?  The Complex coercion doesn't
@@ -517,25 +548,25 @@ module TAGF
             # converting.  We could do it with a regex substitution,
             # but slicing is faster.
             #
-            temp	= testvalue
+            temp        = testvalue
             if ((testvalue[0,1] == '(') && (testvalue[-1,1] == ')'))
-              temp	= testvalue[1,testvalue.length - 2]
+              temp      = testvalue[1,testvalue.length - 2]
             end
-            result	= (! Complex(temp).zero?)
+            result      = (! Complex(temp).zero?)
           else
             #
             # None of our string cases matched, so it isn't explicitly
             # truthy and isn't explicitly untruthy.  So it's false by
             # default.
             #
-            result	= false
+            result      = false
           end
         else
           #
           # Sorry, didn't meet any of our conditions; not explicitly
           # truthy.  Fall back on Ruby's interpretation.
           #
-          result	= testvalue ? true : false
+          result        = testvalue ? true : false
         end
         result
       }
@@ -564,17 +595,17 @@ module TAGF
       # @see Float_String_RE
       # @see Complex_String_RE
       #
-      # @param [Object]			testvalue
+      # @param [Object]                 testvalue
       #   value to evaluate for truthiness.
-      # @param [Hash<Symbol=>Object>]	kwargs
-      # @option kwargs [Array]		:true_values
+      # @param [Hash<Symbol=>Object>]   kwargs
+      # @option kwargs [Array]          :true_values
       #   An array of objects that are the only ones that will be
       #   considered truthy.  <em>Any more involved checking than 'is
       #   it one of these?' should be handled with a truthiness
-      #   proc.</em> 
+      #   proc.</em>
       #
       #   This is only meaningful if `:truthiness_proc` isn't used.
-      # @option kwargs [Proc]		:truthiness_proc
+      # @option kwargs [Proc]           :truthiness_proc
       #   Proc to be called
       # @return [Boolean]
       #   the result of the evaluation.
@@ -611,7 +642,7 @@ module TAGF
       #
       # See the return value for details of the returned structure.
       #
-      # @param [String,Symbol]		attrib_p
+      # @param [String,Symbol]          attrib_p
       # @param [Any] default
       # @return [OpenStruct] Fields in the structure are:
       #```
@@ -627,16 +658,16 @@ module TAGF
       #                 instance variable (_e.g._, `:@<attrib_p>`)
       #```
       def decompose_attrib(attrib_p, default=nil)
-        strval		= attrib_p.to_s.sub(%r![^_[:alnum:]]*$!, '')
-        pieces		= OpenStruct.new(
-          default:	default,
-          str:		strval,
-          attrib:	strval.to_sym,
-          getter:	strval.to_sym,
-          setter:	"#{strval}=".to_sym,
-          query:	"#{strval}?".to_sym,
-          bang:		"#{strval}!".to_sym,
-          ivar:		"@#{strval}".to_sym
+        strval          = attrib_p.to_s.sub(%r![^_[:alnum:]]*$!, '')
+        pieces          = OpenStruct.new(
+          default:      default,
+          str:          strval,
+          attrib:       strval.to_sym,
+          getter:       strval.to_sym,
+          setter:       "#{strval}=".to_sym,
+          query:        "#{strval}?".to_sym,
+          bang:         "#{strval}!".to_sym,
+          ivar:         "@#{strval}".to_sym
         )
         return pieces
       end                # def decompose_attrib(attrib_p, default=nil)
@@ -644,13 +675,13 @@ module TAGF
       module_function(:decompose_attrib)
 
       nil
-    end				# module TAGF::Mixin::UniversalMethods
+    end                         # module TAGF::Mixin::UniversalMethods
 
     nil
-  end				# module TAGF::Mixin
+  end                           # module TAGF::Mixin
 
   nil
-end				# module TAGF
+end                             # module TAGF
 
 #require('tagf/mixin/classmethods')
 

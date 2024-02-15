@@ -58,6 +58,23 @@ module TAGF
                                      @pending_inventory
 				    ]
 
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        'allow_containers',
+        'is_surface',
+        'is_openable',
+        'is_open',
+        'is_transparent',
+        'inventory',
+        'capacity_items',
+        'current_items',
+        'capacity_mass',
+        'current_mass',
+        'capacity_volume',
+        'current_volume',
+        'pending_inventory',
+      ]
+
       #
       # Whether or not this container is permitted to have others
       # nested inside it.

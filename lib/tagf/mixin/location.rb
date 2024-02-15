@@ -55,8 +55,24 @@ module TAGF
       #
       include(Mixin::Container)
 
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        'paths',
+        'light_level',
+      ]
+
+      # @!attribute [r] paths
+      # Connexions between Locations are called paths and are
+      # described by `Connexion` objects in the `#paths` hash.  A path
+      # hash key is a direction keyword, such as `se` or `down`; the
+      # value is the `Connexion` object that marks where the path
+      # leads (the destination), whence it originates (the origin),
+      # and whether the player can 'back up.'  (If the destination is
+      # at the bottom of a cliff, it's probably not reversible.)
       #
-      attr_accessor(:paths)
+      # @see TAGF::Connexion
+      # @see TAGF::Location
+      attr_reader(:paths)
 
       #
       # @!macro doc.TAGF.classmethod.float_accessor.invoke
@@ -65,7 +81,7 @@ module TAGF
       #
       def initialize_location(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
-        self.paths	= {}
+        @paths			= {}
         #      self.initialize_container(*args, **kwargs)
         #      self.inventory	= ::TAGF::Inventory.new(game:	self,
         #                                              owned_by: self)
