@@ -1,0 +1,50 @@
+%YAML 1.2
+---
+game:
+  eid:		'gameloctest01'
+  name:		'LocTest01'
+  desc: |-
+    Test 01 of game location connexions.
+
+locations:
+  - eid:	'Loc1'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'Location 1'
+    desc: |-
+      The starting (?) location, #1
+    paths:
+      'se':	'loc1-se-loc2'
+  - eid:	'Loc2'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'Location 2'
+    desc: |-
+      The ending (?) location, #2
+    paths:
+      'nw':	'loc2-nw-loc1'
+
+connexions:
+  - eid:	'loc1-se'
+    game:	'gameloctest01'
+    owned_by:	'Loc1'
+    name:	'loc1-se-loc2'
+    desc: |-
+      going from Loc1 to Loc2 via se
+    origin:	'Loc1'
+    destination:'Loc2'
+    reversible:	true
+  - eid:	'loc2-nw'
+    game:	'gameloctest01'
+    owned_by:	'Loc2'
+    name:	'loc2-nw-loc1'
+    desc: |-
+      going from Loc2 to Loc1 via nw
+    origin:	'Loc2'
+    destination:'Loc1'
+    reversible:	true
+
+# Local Variables:
+# mode: yaml
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:
