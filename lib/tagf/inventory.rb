@@ -80,6 +80,10 @@ module TAGF
     end                         # def name
 
     #
+    # @param [Hash<Symbol=>Any>]	kwargs
+    # @option kwargs [String]		:inventory_eid
+    #   Override the calculated EID for the inventory object created
+    #   (used to create the master inventory).
     def initialize(**kwargs)
       TAGF::Mixin::Debugging.invocation
       @contents		= {}
@@ -91,23 +95,23 @@ module TAGF
       # Use the inventory key of the owner to make navigation
       # simpler.
       #
-      @eid		= format('<%s>[%s].inventory',
-                                 owned_by.class.name,
-                                 owned_by.eid.to_s)
+      @eid		= kwargs[:inventory_eid] \
+                          || format('<%s>[%s].inventory',
+                                    owned_by.class.name,
+                                    owned_by.eid.to_s)
       self.initialize_element([], **kwargs)
       self.game.add(self)
     end                         # def initialize
 
     #
     def inspect
-      result		= format('#<%s:"%s" ' \
+      result		= format('#<%s:' \
                                  + ' game="%s"' \
                                  + ', name="%s"' \
                                  + ', %i %s' \
                                  + ', %i %s' \
                                  + '>',
-                                 self.class.name,
-                                 self.eid.to_s,
+                                 self.to_key,
                                  self.game.eid.to_s,
                                  self.name.to_s,
                                  @contents.count,

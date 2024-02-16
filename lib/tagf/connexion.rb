@@ -51,6 +51,9 @@ module TAGF
     attr_accessor(:destination)
 
     #
+    attr_accessor(:via)
+
+    #
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
       self.initialize_element(*args, **kwargs)

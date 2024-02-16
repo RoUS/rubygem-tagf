@@ -371,7 +371,8 @@ module TAGF
       def initialize_container(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
         @pending_inventory	||= []
-        self.game.create_inventory_on(self, owned_by: self)
+        kwargs[:owned_by]	= self
+        self.game.create_inventory_on(self, **kwargs)
         return self
       end                       # def initialize_container
 

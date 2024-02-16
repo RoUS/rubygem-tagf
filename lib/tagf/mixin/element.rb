@@ -72,6 +72,12 @@ module TAGF
       end
       extend(Mixin::DTypes)
 
+      # @!macro TAGF.constant.Abstracted_Fields
+      Abstracted_Fields		= [
+        'game',
+        'owned_by',
+      ]
+
       # @!macro TAGF.constant.Loadable_Fields
       Loadable_Fields		= [
         #
@@ -111,6 +117,24 @@ module TAGF
         'is_static',
         'is_visible',
       ]
+
+      # @!attribute [r] abstractions
+      # This attribute is a hash used during load or import.
+      # Attributes which reference actual complex objects (such as
+      # `#game` or `#owned_by`) have only their EIDs stored in
+      # `YAML`.  As the dataset is loaded, all objects are created
+      # with the EIDs that are part of their stored definition; after
+      # they have all been created, all of them are processed to store
+      # the actual object references, rather than just the EIDs, in
+      # the attribute fields.
+      #
+      # @see TAGF::Loader
+      #
+      # @return [Hash<String=>String>]
+      #   each element in the returned hash consists of an attribute
+      #   name and the EID of the object that should be stored in that
+      #   attributed as part of final [re]construction.
+      attr_reader(:abstractions)
 
       #
       # The <em>`eid`</em> is the unique game-wide identifier for each
@@ -319,9 +343,13 @@ module TAGF
       #
       def move_to(*args, **kwargs)
         if (self.owned_by.inventory.master?)
-          raise_exception(MasterInventory, self, kwargs)
+          raise_exception(TAGF::Exceptions::MasterInventory,
+                          self,
+                          **kwargs)
         elsif (self.is_static?)
-          raise_exception(ImmovableObject, self, kwargs)
+          raise_exception(TAGF::Exceptions::ImmovableObject,
+                          self,
+                          **kwargs)
         end
         begin
           if (args[0].inventory.can_add?(self))
@@ -348,6 +376,24 @@ module TAGF
         return inlist
       end                       # def contained_in
 
+      # @!method to_key
+      # Similar to `#inspect`, #to_key returns a human-readable
+      # reference for the receiver.  By default it is formed from the
+      # name of the receiver's class and its EID, but overriding is
+      # encouraged.
+      #
+      # @return [String]
+      #   by default, <tt><em>classname</em>[<em>EID</em>]</tt>
+      #   (<em>e.g.</em>, `"Game[Advent]"` or
+      #   `"Connexion[Loc1-Loc2-via-SW]"`.
+      def to_key
+        klass		= self.class.name || self.class.to_s
+        result		= format('%s[%s]',
+                                 klass.sub(%r!^.*::!, ''),
+                                 self.eid.to_s)
+        return result
+      end                       # def to_key
+
       #
       # @param [Array] args
       # @!macro doc.TAGF.formal.kwargs
@@ -366,7 +412,7 @@ module TAGF
         if (self.owned_by.nil? \
             && ((! kwargs.has_key?(:owned_by)) \
                 || kwargs[:owned_by].nil?))
-          raise_exception(NoObjectOwner, self)
+          raise_exception(TAGF::Exceptions::NoObjectOwner, self)
         end
         #
         # Default to things being visible; it takes an explicit change
@@ -387,7 +433,8 @@ module TAGF
           if (ONCE_AND_DONE.include?(attr_f.attrib) \
               && (! curval.nil?) \
               && (newval != curval))
-            raise_exception(SettingLocked, attr_f.attrib)
+            raise_exception(TAGF::Exceptions::SettingLocked,
+                            attr_f.attrib)
           end
           if (self.respond_to?(attr_f.setter))
             self.send(attr_f.setter, newval)
@@ -405,7 +452,7 @@ module TAGF
         # Now check for validity..
         #
         unless (self.respond_to?(:game) && (! self.game.nil?))
-          raise_exception(NoGameContext)
+          raise_exception(TAGF::Exceptions::NoGameContext)
         end
         if (self.article.nil? && (! self.desc.nil?))
           self.article	= ('aeiou'.include?(self.desc.downcase[0]) \

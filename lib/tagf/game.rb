@@ -155,7 +155,9 @@ module TAGF
       self.name		||= ''
       self.is_static!
       self.initialize_element(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
+      self.initialize_container(*args,
+                                **kwargs,
+                                inventory_eid: 'master_inventory')
       self.add(self)
       self.allow_containers!
     end                         # def initialize

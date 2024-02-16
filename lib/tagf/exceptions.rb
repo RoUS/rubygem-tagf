@@ -982,10 +982,10 @@ module TAGF
         _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
-          if (arg[0].kind_of?(Symbol))
+          if (args[0].kind_of?(Symbol))
             @msg		= format("attribute '%s' is already set " \
                                          + 'and cannot be changed',
-                                         arg.to_s)
+                                         args[0].to_s)
           else
             @msg		= 'specific attribute cannot be changed ' \
                                   + 'once set'

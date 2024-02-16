@@ -3,6 +3,8 @@
 game:
   eid:		'gameloctest01'
   name:		'LocTest01'
+  author:	'theRoUS'
+  licence:	'Apache 2.0'
   desc: |-
     Test 01 of game location connexions.
 
@@ -24,6 +26,20 @@ locations:
     paths:
       'nw':	'loc2-nw-loc1'
 
+item:
+  eid:		'bird'
+  game:		'gameloctest01'
+  owned_by:	'gameloctest01'
+  desc:		'A little songbird.'
+
+connexion:
+  eid:		'null-a'
+  game:		'gameloctest01'
+  origin:	'Loc1'
+  destination:	'Loc1'
+  via:		'up'
+  reversible:	true
+
 connexions:
   - eid:	'loc1-se'
     game:	'gameloctest01'
@@ -32,7 +48,7 @@ connexions:
     desc: |-
       going from Loc1 to Loc2 via se
     origin:	'Loc1'
-    destination:'Loc2'
+    destination: 'Loc2'
     reversible:	true
   - eid:	'loc2-nw'
     game:	'gameloctest01'
@@ -41,7 +57,7 @@ connexions:
     desc: |-
       going from Loc2 to Loc1 via nw
     origin:	'Loc2'
-    destination:'Loc1'
+    destination: 'Loc1'
     reversible:	true
 
 # Local Variables:

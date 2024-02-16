@@ -112,6 +112,13 @@
 #   Refine the `String` class to add methods for variable width and
 #   formatted display.
 
+# @!macro [new] TAGF.constant.Abstracted_Fields
+#   Names of attributes that are stored in `YAML` form only by EID.
+#   When an object is instantiated using `YAML` data, field names in
+#   this list are added as keys to the object's `#abstractions` hash
+#   with the associated EIDs as the values.
+#   @see #abstractions
+
 # @!macro [new] TAGF.constant.Loadable_Fields
 #   Fields specific to this class or module that are loadable from
 #   YAML.  Facets which are calculated at runtime or otherwise derived

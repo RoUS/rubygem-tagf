@@ -144,6 +144,33 @@ module TAGF
         return fieldlist || []
       end                       # def loadable_fields
 
+      # @!method symbolise_kwargs(kwargs)
+      # Translate a hash into one with all-symbolic keys, according to
+      # standard `**kwargs` semantics.
+      # @param [Hash<Symbol,String=>Any>]	kwargs
+      # @raise [RuntimeError]
+      #   <tt>"symbolise_kwargs kwargs keys must be Symbols or
+      #   Strings: <em>classname</em>:<em>key</em>"</tt>
+      # @return [Hash<Symbol=>Any>]
+      #   a copy of the `kwargs` argument with all keys converted to
+      #   symbols.
+      #
+      def symbolise_kwargs(kwargs={})
+        result		= {}
+        kwargs.each do |k,v|
+          unless (k.kind_of?(Symbol) || k.kind_of?(String))
+            raise_exception(RuntimeError,
+                            format('%s kwargs keys must be ' \
+                                   + 'Symbols or Strings: %s:%s',
+                                   __callee__.to_s,
+                                   k.class.name.to_s,
+                                   k.inspect))
+          end
+          result[k.to_sym]= v
+        end
+        return result
+      end                       # def symbolise_kwargs
+
       # @private
       #
       # @param [Any] default (nil)
@@ -271,6 +298,7 @@ module TAGF
         kwargs[:levels] ||= 1
         bt              = caller
 
+=begin
         warn(format("\n%s entry backtrace:" +
                     "\n  levels: %i" +
                     "\n  exc_object=%s:%s" +
@@ -281,7 +309,7 @@ module TAGF
                     exc_object.inspect,
                     PP.pp(bt[0,10],
                           String.new).gsub(%r!\n!, "\n  ")))
-
+=end
         loop do
           #
           # `exc_object` possibilities:
@@ -358,6 +386,7 @@ module TAGF
         # be overridden by passing `:levels` with a value <= 0.
         #
         (kwargs[:levels] + 1).times { bt.shift }
+=begin
         warn(format("%s edited backtrace:" +
                     "\n  levels: %i" +
                     "\n  exc_object=%s:%s" +
@@ -368,6 +397,7 @@ module TAGF
                     exc_object.inspect,
                     PP.pp(bt[0,10],
                           String.new).gsub(%r!\n!, "\n  ")))
+=end
         #
         # Pass any arguments to the exception constructor, set the new
         # exception object's backtrace to our caller (or whatever
