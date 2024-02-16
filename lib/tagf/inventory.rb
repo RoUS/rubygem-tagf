@@ -72,10 +72,8 @@ module TAGF
     # Adaptive name for an object's inventory.
     #
     def name
-      text		= format("Inventory for %s '%s'",
-                                 self.owned_by.class.name,
-                                 (self.owned_by.name \
-                                  || self.owned_by.eid).to_s)
+      text		= format('Inventory for %s',
+                                 self.owned_by.to_key)
       return text
     end                         # def name
 
@@ -95,11 +93,17 @@ module TAGF
       # Use the inventory key of the owner to make navigation
       # simpler.
       #
+      #
+      # For some unknown reason, `self.class.name` for an Inventory
+      # instance is coming up `nil`, so we need to work around it.
+      #
+      klassname		= self.class.name || self.class.to_s
+      klassname		= klassname.sub(%r!^.*::!, '')
       @eid		= kwargs[:inventory_eid] \
-                          || format('<%s>[%s].inventory',
-                                    owned_by.class.name,
-                                    owned_by.eid.to_s)
-      self.initialize_element([], **kwargs)
+                          || format('%s[%s]',
+                                    klassname,
+                                    owned_by.to_key)
+      self.initialize_element(**kwargs, eid: @eid)
       self.game.add(self)
     end                         # def initialize
 

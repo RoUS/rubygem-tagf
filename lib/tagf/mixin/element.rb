@@ -463,7 +463,15 @@ module TAGF
           @pending_inventory ||= []
         end
         self.game.add(self)
-        self.owned_by.add(self)
+        #
+        # If we're loading in a non-serial order from a `YAML` file,
+        # some fields will contain string EIDs rather than the objects
+        # having those EIDs (since the objects won't have been created
+        # yet).  So don't treat them as element yet.
+        #
+        if (self.owned_by.kind_of?(TAGF::Mixin::Element))
+          self.owned_by.add(self)
+        end
         return self
       end                       # def initialize_element
 
