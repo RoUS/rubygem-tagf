@@ -1547,6 +1547,71 @@ module TAGF
       nil
     end                         # class UncallableObject
 
+    #
+    class NoElementID < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID(0x019)
+
+      self.severity	= :severe
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @!macro ErrorBase.initialize
+      # @return [NoElementID] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__callee__)
+        super
+        if (@msg.nil?)
+          @msg		= 'missing required :eid keyword argument ' \
+                          + 'for element creation'
+        end
+        self.set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class NoElementID
+
+    #
+    class DataError < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID(0x01a)
+
+      self.severity	= :severe
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @!macro ErrorBase.initialize
+      # @option kwargs [String]	:source
+      #   filesystem path of the file which had the problem
+      # @option kwargs [String] :error
+      #   the message from the parsing exception that was raised
+      # @return [DataError] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__callee__)
+        super
+        if (@msg.nil?)
+          @msg		= 'error processing input data'
+          if (source = kwargs[:source])
+            @msg	+= format("\n  file:      %s", source)
+          end
+          if (error = kwargs[:error])
+            @msg	+= format("\n  exception: %s", error)
+          end
+        end
+        self.set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class DataError
+
     nil
   end                           # module TAGF::Exceptions
 

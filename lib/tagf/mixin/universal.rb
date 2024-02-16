@@ -344,7 +344,7 @@ module TAGF
             # exception instance or class.  Try it, and loop through
             # again.
             #
-            exc_object  = exc_object.call(*args)
+            exc_object  = exc_object.call(*args, **kwargs)
             next
           elsif ((! exc_object.kind_of?(Class)) \
                  || (! exc_object.ancestors.include?(Exception)))
@@ -364,8 +364,8 @@ module TAGF
             # `kwargs` hash too (minus our `:levels` keyword),
             # otherwise just pass the `args` array.
             #
-            if (exc_object.kind_of?(TAGF::Exceptions::ErrorBase))
-              debugger
+            if (exc_object.kind_of?(Class) \
+                && exc_object.ancestors.include?(TAGF::Exceptions::ErrorBase))
               nkwargs   = kwargs.dup
               nkwargs.delete(:levels)
               exc_object = exc_object.new(*args, **nkwargs)
