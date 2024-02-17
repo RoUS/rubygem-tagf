@@ -75,6 +75,11 @@ module TAGF
         'pending_inventory',
       ]
 
+      # @!macro TAGF.constant.Abstracted_Fields
+      Abstracted_Fields	= [
+        'inventory',
+      ]
+
       #
       # Whether or not this container is permitted to have others
       # nested inside it.
@@ -306,7 +311,7 @@ module TAGF
       # @!macro doc.TAGF.formal.kwargs
       # @option kwargs [Symbol] :duh (nil)
       #   No options defined at this time.
-      # @raise [HasNoInventory]
+      # @raise [TAGF::Exceptions::HasNoInventory]
       # @return [@todo]
       def add(arg, **kwargs)
         result		= nil

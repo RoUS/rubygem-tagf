@@ -42,6 +42,12 @@ module TAGF
       'facing',
     ]
 
+    # @!macro TAGF.constant.Abstracted_Fields
+    Abstracted_Fields	= [
+      'locations',
+      'destination',
+    ]
+
     #
     # Hash of locations to which the player has been.  The key for
     # each tuple is the location object, and the value is the integer

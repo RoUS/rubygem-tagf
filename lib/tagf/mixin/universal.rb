@@ -116,26 +116,36 @@ module TAGF
                             ]
 
 
-      # Look at the constant `Loadable_Fields` for the receiver and
-      # all of its ancestors, and return an array of all unique values
-      # therein.
-      #
       # @param [Class]          rcvr            (self)
-      #   Class for which the list of loadable fields should be
-      #   derived.
+      #   Class (or object whose class should be used) for which the
+      #   list of fields should be derived.
       # @return [Array<String>]
       #   a list of field names built from concatenating values of
-      #   `Loadable_Fields` from the receiver class and all of its
+      #   the constant from the receiver class and all of its
       #   ancestors.
       #
+      # @overload loadable_fields(rcvr=nil)
+      #   Look at the constant `Loadable_Fields` for the receiver
+      #   class and all of its ancestors, and return an array of all
+      #   unique values therein.
+      #
+      # @overload abstracted_fields(rcvr=nil)
+      #   Same as #loadable_fields save that it uses the
+      #   `Abstracted_Fields` constants instead.
       def loadable_fields(rcvr=nil)
+        #
+        # Figure out how we were invoked, because it controls which
+        # constants we check.
+        #
+        ftype		= __callee__.to_s.capitalize
+        ftype		= ftype.sub(%r!_fields!, '_Fields')
         if (rcvr.nil?)
           rcvr          = self.kind_of?(Class) ? self : self.class
         end
         fieldlist       = rcvr.ancestors.select { |k|
-          k.const_defined?('Loadable_Fields', false)
+          k.const_defined?(ftype, false)
         }.map { |k|
-          k.const_get('Loadable_Fields', false)
+          k.const_get(ftype, false)
         }.reduce(&:|)
         #
         # If there are none, the result of the above will be `nil`.
@@ -143,6 +153,7 @@ module TAGF
         #
         return fieldlist || []
       end                       # def loadable_fields
+      alias_method(:abstracted_fields, :loadable_fields)
 
       # @!method symbolise_kwargs(kwargs)
       # Translate a hash into one with all-symbolic keys, according to
@@ -265,7 +276,7 @@ module TAGF
       #    — a new exception object is created from this constructor.
       #    `args` is passed to the constructor, and `kwargs` as well
       #    if `exc_object` is a descendant of
-      #    `TAGF::Exceptions::ErrorBase`.
+      #    {TAGF::Exceptions::ErrorBase}.
       # 1. a callable object that returns one of the above
       #    — anything that responds to the `:call` method falls into
       #    this category.  It will be invoked with `.call(*args)`.
@@ -640,7 +651,7 @@ module TAGF
       # @return [Boolean]
       #   the result of the evaluation.
       #
-      # @raise [UncallableObject]
+      # @raise [TAGF::Exceptions::UncallableObject]
       #   if the `:truthiness_proc` argument doesn't respond to the
       #   `:call` method.
       def truthify(testvalue, **kwargs)

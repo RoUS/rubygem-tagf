@@ -211,11 +211,11 @@ module TAGF
 
     # @param [Object] target
     #   the game element being tested for containerness.
-    # @raise [NotAContainer]
+    # @raise [TAGF::Exceptions::NotAContainer]
     #   if <em>target</em> isn't a container but something
     #   containerish is being attempted on it.
-    # @raise [AlreadyHasInventory]
-    # @raise [ImmovableElementDestinationError]
+    # @raise [TAGF::Exceptions::AlreadyHasInventory]
+    # @raise [TAGF::Exceptions::ImmovableElementDestinationError]
     # @return [void]
     def validate_container(target, newcontent, **kwargs)
       debugger

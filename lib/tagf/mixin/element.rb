@@ -400,10 +400,10 @@ module TAGF
       # @option kwargs [Symbol]	:eid		(nil)
       # @option kwargs [Symbol] :owned_by	(nil)
       # @option kwargs [Symbol] :game		(nil)
-      # @raise [NoObjectOwner]
-      # @raise [SettingLocked]
+      # @raise [TAGF::Exceptions::NoObjectOwner]
+      # @raise [TAGF::Exceptions::SettingLocked]
       # @raise [RuntimeError]
-      # @raise [NoGameContext]
+      # @raise [TAGF::Exceptions::NoGameContext]
       # @return [Element] self
       #
       def initialize_element(*args, **kwargs)

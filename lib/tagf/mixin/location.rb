@@ -61,9 +61,14 @@ module TAGF
         'light_level',
       ]
 
+      # @!macro TAGF.constant.Abstracted_Fields
+      Abstracted_Fields	= [
+        'paths',
+      ]
+
       # @!attribute [r] paths
       # Connexions between Locations are called paths and are
-      # described by `Connexion` objects in the `#paths` hash.  A path
+      # described by {Connexion} objects in the `#paths` hash.  A path
       # hash key is a direction keyword, such as `se` or `down`; the
       # value is the `Connexion` object that marks where the path
       # leads (the destination), whence it originates (the origin),

@@ -34,26 +34,48 @@ module TAGF
     include(Mixin::Element)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
+    Loadable_Fields	= [
       'reversible',
-      'source',
+      'origin',
+      'destination',
+      'via',
+    ]
+
+    # @!macro TAGF.constant.Abstracted_Fields
+    Abstracted_Fields	= [
+      'origin',
       'destination',
     ]
 
-    #
+    # @!attribute [rw] reversible
     # @!macro doc.TAGF.classmethod.flag.invoke
+    # @return [Boolean]
+    #   whether or not the path can be followed in reverse.
     flag(:reversible)
 
-    #
-    attr_accessor(:source)
+    # @!attribute [rw] origin
+    # @see #destination
+    # @see #via
+    # @return [TAGF::Location]
+    #   The Location at which the path originates.
+    attr_accessor(:origin)
 
-    #
+    # @!attribute [rw] destination
+    # @see #origin
+    # @see #via
+    # @return [TAGF::Location]
+    #   The Location at which the path terminates.
     attr_accessor(:destination)
 
-    #
+    # @!attribute [rw] via
+    # @see #origin
+    # @see #destination
+    # @return [String]
+    #   The direction keyword (such as `"se"`) that leaves the origin
+    #   and follows the path.
     attr_accessor(:via)
 
-    #
+    # @!method initialize(*args, **kwargs)
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
       self.initialize_element(*args, **kwargs)

@@ -182,9 +182,9 @@ module TAGF
     end                         # def delete
 
     #
-    # @raise [LimitMass]
-    # @raise [LimitItems]
-    # @raise [LimitVolume]
+    # @raise [TAGF::Exceptions::LimitMass]
+    # @raise [TAGF::Exceptions::LimitItems]
+    # @raise [TAGF::Exceptions::LimitVolume]
     # @return [Object] self
     def can_add?(newobj, **kwargs)
       return true if (kwargs[:ignorelimits])
@@ -215,8 +215,8 @@ module TAGF
     #    inventory for the game.
     #
     # @param [Mixin::Element] arg
-    # @raise [NotGameElement]
-    # @raise [AlreadyInInventory]
+    # @raise [TAGF::Exceptions::NotGameElement]
+    # @raise [TAGF::Exceptions::AlreadyInInventory]
     #
     def add(arg, **kwargs)
       unless (arg.class.ancestors.include?(Mixin::Element))

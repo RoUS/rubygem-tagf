@@ -68,6 +68,11 @@ module TAGF
         'breadcrumbs',
       ]
 
+      # @!macro TAGF.constant.Abstracted_Fields
+      Abstracted_Fields	= [
+        'breadcrumbs',
+      ]
+
       #
       # @!macro doc.TAGF.classmethod.int_accessor.invoke
       int_accessor(:maxhp)
