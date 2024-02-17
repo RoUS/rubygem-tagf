@@ -50,6 +50,7 @@ group(:default, :development, :test) do
   gem('cri')
   gem('gettext')
   gem('linguistics')
+  gem('logger')
   gem('ostruct',	'>= 0.5.5')
   gem('pathname',	'>= 0.2.0')
   gem('psych')
