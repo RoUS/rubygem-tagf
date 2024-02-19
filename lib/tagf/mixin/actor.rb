@@ -20,6 +20,7 @@ warn(__FILE__) if (TAGF.debugging?(:file))
 #require('tagf')
 require('tagf/mixin/container')
 require('tagf/mixin/dtypes')
+require('tagf/location')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -32,7 +33,7 @@ module TAGF
     module Actor
 
       #
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
       include(Mixin::Container)
 
       #
@@ -69,9 +70,9 @@ module TAGF
       ]
 
       # @!macro TAGF.constant.Abstracted_Fields
-      Abstracted_Fields	= [
-        'breadcrumbs',
-      ]
+      Abstracted_Fields		= {
+        breadcrumbs:		Array[TAGF::Location],
+      }
 
       #
       # @!macro doc.TAGF.classmethod.int_accessor.invoke

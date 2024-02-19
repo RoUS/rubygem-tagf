@@ -43,7 +43,8 @@ module TAGF
   class Reality
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
+    include(Mixin::UniversalMethods)
     include(Mixin::Element)
 
     #

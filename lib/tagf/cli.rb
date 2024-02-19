@@ -37,7 +37,7 @@ module TAGF
     #
     include(Mixin::Element)
     include(Mixin::UniversalMethods)
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
 
     #
     desc('list', 'List game definitions')

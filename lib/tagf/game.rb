@@ -32,7 +32,7 @@ module TAGF
   class Game
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     #
     include(Mixin::Container)
 
@@ -84,6 +84,31 @@ module TAGF
     #
     attr_reader(:creation_overrides)
     protected(:creation_overrides)
+
+    # @!method export_game
+    # @return [Hash<String=>Any>]
+    def export_game
+      result		= {
+        'game'		=> self.export,
+      }
+      elements		= {}
+      TAGF::Filer::Loadables.each do |k,v|
+        if (v.kind_of?(Array))
+          elements[v[0]] = k
+          result[k]	= []
+        end
+      end
+      #
+      # Now go through the master inventory and export all exportable
+      # elements to the result hash.
+      #
+      self.inventory.each(only: :objects) do |obj|
+        etype		= elements[obj.class]
+        next if (etype.nil?)
+        result[etype].push(obj.export)
+      end
+      return result
+    end                         # def export_game
 
     #
     # Constructor for the main element of this entire project -- the
@@ -139,7 +164,6 @@ module TAGF
     # @return [Game]
     #   self
     def initialize(*args, **kwargs)
-      debugger
       TAGF::Mixin::Debugging.invocation
       @creation_overrides = {
         game:		self,
@@ -218,7 +242,6 @@ module TAGF
     # @raise [TAGF::Exceptions::ImmovableElementDestinationError]
     # @return [void]
     def validate_container(target, newcontent, **kwargs)
-      debugger
       unless (TAGF.is_game_element?(target))
         raise_exception(NotGameElement, target)
       end
@@ -248,10 +271,17 @@ module TAGF
 
     #
     def create_inventory_on(target, **kwargs)
+      warn(format("%s#%s(%s,\n  %s)",
+                  self.klassname,
+                  __callee__.to_s,
+                  target.to_key,
+                  PP.pp(kwargs, String.new).gsub(%r!\n!, "\n  ")))
       self.validate_container(target, Inventory)
       kwargs		= kwargs.merge(self.creation_overrides)
       kwargs[:owned_by]	= target
-      target.inventory	= Inventory.new(**kwargs)
+      inventory_eid	= format('Inventory[%s]', target.to_key)
+      target.inventory	= Inventory.new(**kwargs,
+                                        inventory_eid: inventory_eid)
       self.add(target.inventory)
       return target.inventory
     end                         # def create_inventory_on

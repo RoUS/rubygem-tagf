@@ -142,11 +142,20 @@ module TAGF
         if (rcvr.nil?)
           rcvr          = self.kind_of?(Class) ? self : self.class
         end
-        fieldlist       = rcvr.ancestors.select { |k|
-          k.const_defined?(ftype, false)
-        }.map { |k|
-          k.const_get(ftype, false)
-        }.reduce(&:|)
+        fieldlist	= nil
+        if (__callee__ == :loadable_fields)
+          fieldlist       = rcvr.ancestors.select { |k|
+            k.const_defined?(ftype, false)
+          }.map { |k|
+            k.const_get(ftype, false)
+          }.reduce(&:|)
+        elsif (__callee__ == :abstracted_fields)
+          fieldlist       = rcvr.ancestors.select { |k|
+            k.const_defined?(ftype, false)
+          }.map { |k|
+            k.const_get(ftype, false)
+          }.reduce(&:merge)
+        end
         #
         # If there are none, the result of the above will be `nil`.
         # We're supposed to return an array, so convert it.
@@ -181,6 +190,21 @@ module TAGF
         end
         return result
       end                       # def symbolise_kwargs
+
+      # @!attribute [r] klassname
+      # Return the receiver's classname as a string, with all
+      # namespacing elements removed so it's just the unqualified
+      # portion.  <em>E.g.</em>, an invocation by an object of class
+      # `TAGF::Exceptions::DummyError` would return `DummyError`.
+      # @return [String]
+      def klassname(rcvr=nil)
+        rcvr		= self if (rcvr.nil?)
+        if (! rcvr.kind_of?(Class))
+          rcvr		= rcvr.class
+        end
+        result		= rcvr.to_s.sub(%r!^.*::!, '')
+        return result
+      end                       # def klassname
 
       # @private
       #

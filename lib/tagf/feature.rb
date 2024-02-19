@@ -28,7 +28,7 @@ module TAGF
   class Feature
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Container)
 
     #

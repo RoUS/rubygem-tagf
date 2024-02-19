@@ -33,7 +33,7 @@ module TAGF
   class Player
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Actor)
 
     # @!macro TAGF.constant.Loadable_Fields
@@ -43,10 +43,9 @@ module TAGF
     ]
 
     # @!macro TAGF.constant.Abstracted_Fields
-    Abstracted_Fields	= [
-      'locations',
-      'destination',
-    ]
+    Abstracted_Fields		= {
+      locations:		Hash[TAGF::Location,Integer],
+    }
 
     #
     # Hash of locations to which the player has been.  The key for

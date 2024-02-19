@@ -30,7 +30,7 @@ module TAGF
 
     #
     include(Mixin::UniversalMethods)
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Location)
 
     #

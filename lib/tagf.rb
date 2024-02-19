@@ -121,7 +121,7 @@ module TAGF
   #
 #  include(Contracts::Core)
   include(Mixin::UniversalMethods)
-  extend(Mixin::DTypes)
+  include(Mixin::DTypes)
   #
   # ..and the mostly-universal ancillary modules.
   #

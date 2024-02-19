@@ -30,7 +30,7 @@ module TAGF
   class Inventory
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Element)
     extend(Mixin::Element)
     include(Mixin::UniversalMethods)
@@ -77,6 +77,24 @@ module TAGF
       return text
     end                         # def name
 
+    # @!method to_key
+    # Overrides Element#to_key.
+    # Similar to `#inspect`, #to_key returns a human-readable
+    # reference for the receiver.  By default it is formed from the
+    # name of the receiver's class and its EID, but overriding is
+    # encouraged.
+    #
+    # @return [String]
+    #   by default, <tt><em>classname</em>[<em>EID</em>]</tt>
+    #   (<em>e.g.</em>, `"Game[Advent]"` or
+    #   `"Connexion[Loc1-Loc2-via-SW]"`.
+    def to_key
+      result		= format('%s[%s]',
+                                 self.klassname,
+                                 self.owned_by.to_key)
+      return result
+    end                       # def to_key
+
     #
     # @param [Hash<Symbol=>Any>]	kwargs
     # @option kwargs [String]		:inventory_eid
@@ -85,7 +103,7 @@ module TAGF
     def initialize(**kwargs)
       TAGF::Mixin::Debugging.invocation
       @contents		= {}
-      unless (owned_by = kwargs[:owned_by])
+      unless (owner = kwargs[:owned_by])
         raise_exception(NoObjectOwner, self)
       end
       self.is_static!
@@ -97,12 +115,10 @@ module TAGF
       # For some unknown reason, `self.class.name` for an Inventory
       # instance is coming up `nil`, so we need to work around it.
       #
-      klassname		= self.class.name || self.class.to_s
-      klassname		= klassname.sub(%r!^.*::!, '')
       @eid		= kwargs[:inventory_eid] \
                           || format('%s[%s]',
-                                    klassname,
-                                    owned_by.to_key)
+                                    self.klassname,
+                                    owner.to_key)
       self.initialize_element(**kwargs, eid: @eid)
       self.game.add(self)
     end                         # def initialize
@@ -219,6 +235,7 @@ module TAGF
     # @raise [TAGF::Exceptions::AlreadyInInventory]
     #
     def add(arg, **kwargs)
+      return self if (arg == self)
       unless (arg.class.ancestors.include?(Mixin::Element))
         raise_exception(NotGameElement, arg)
       end

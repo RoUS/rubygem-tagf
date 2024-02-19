@@ -50,26 +50,28 @@ module TAGF
   #
   class Filer
 
-    extend(TAGF::Mixin::DTypes)
+    include(TAGF::Mixin::DTypes)
     include(TAGF::Mixin::UniversalMethods)
 
-    Loadables		= {
-      'faction'		=> Faction,
-      'factions'	=> Array[Faction],
-      'feature'		=> Feature,
-      'features'	=> Array[Feature],
-      'game'		=> Game,
-      'item'		=> Item,
-      'items'		=> Array[Item],
-      'location'	=> Location,
-      'locations'	=> Array[Location],
-      'connexion'	=> Connexion,
-      'connexions'	=> Array[Connexion],
-      'path'		=> Hash[String,Connexion],
-      'paths'		=> Array[Hash[String,Connexion]],
-      'npc'		=> NPC,
-      'npcs'		=> Array[NPC],
-      'player'		=> Player,
+    Loadables           = {
+      'faction'         => Faction,
+      'factions'        => Array[Faction],
+      'feature'         => Feature,
+      'features'        => Array[Feature],
+      'game'            => Game,
+      'item'            => Item,
+      'items'           => Array[Item],
+      'location'        => Location,
+      'locations'       => Array[Location],
+      'connexion'       => Connexion,
+      'connexions'      => Array[Connexion],
+      'container'       => Container,
+      'containers'      => Array[Container],
+      'path'            => Hash[String,Connexion],
+      'paths'           => Array[Hash[String,Connexion]],
+      'npc'             => NPC,
+      'npcs'            => Array[NPC],
+      'player'          => Player,
     }
 
     # @!attribute [r] game
@@ -128,6 +130,11 @@ module TAGF
     #   the constructed object of class `klass`.
     def load_generic(klass, ekwargs)
       kwargs		= symbolise_kwargs(ekwargs)
+      warn(format("%s: %s(%s,\n  %s",
+                  __callee__.to_s,
+                  __callee__.to_s,
+                  klass.klassname,
+                  PP.pp(kwargs, String.new).gsub(%r!\n!, "\n  ")))
       eid		= kwargs[:eid]
       if (self.elements.has_key?(eid))
         raise_exception(TAGF::Exceptions::DuplicateObject,
@@ -155,11 +162,47 @@ module TAGF
         kwargs[:owned_by]= self.game
       end
       #
-      # Okey, call Emmet to do the construction.
+      # Okey, call Emmett to do the construction.
       #
       result		= klass.new(**kwargs)
       return result
     end                         # def load_generic
+
+    # @!method load_Location(klass, ekwargs)
+    # Create a Location object from a set of keyword arguments.  This
+    # type of object requires additional special handling for
+    # abstracted fields which aren't simply EID strings.
+    #
+    # @param [Class]	klass
+    #   The Class used to construct the object.  Ignored.
+    # @param [Hash]	ekwargs
+    #   Hash of keyword arguments appropriate to the `klass`
+    #   constructor.  Keys may be either Symbols (as is usual kwargs
+    #   semantics) or Strings.  It is converted to having all-Symbol
+    #   keys in order to pass it to the constructor.
+    # @return [Object]
+    #   the constructed Location object.
+    def load_Location(klass, ekwargs)
+      kwargs		= symbolise_kwargs(ekwargs)
+      warn(format("%s: %s(%s,\n  %s",
+                  __callee__.to_s,
+                  __callee__.to_s,
+                  klass.klassname,
+                  PP.pp(kwargs, String.new).gsub(%r!\n!, "\n  ")))
+      #
+      # Call the generic loader to handle the normal scalar EID string
+      # abstractions.
+      #
+      obj		= load_generic(klass, ekwargs)
+      #
+      # Now do any :paths we were passed.
+      #
+      if ((paths = kwargs[:paths]) \
+          && (! paths.empty?))
+        obj.instance_variable_set(:@paths, paths)
+      end
+      return obj
+    end                         # def load_Location
 
     # @!method process_definition(klass, ekwargs)
     # Create a game element from a class identifier and a set of
@@ -228,7 +271,7 @@ module TAGF
       #
       # Figure out how to create the object.
       #
-      klassname		= klass.name.sub(%r!^.*::!, '')
+      klassname		= klass.klassname
       loader		= format('load_%s', klassname).to_sym
       if (! self.respond_to?(loader))
         loader		= :load_generic
@@ -244,6 +287,215 @@ module TAGF
       self.elements[eid]= obj
       return obj
     end                         # def process_definition
+
+    # @!method reify_generic(obj, flist)
+    # Replace abstracted fields in `obj` (<em>i.e.</em>, those
+    # containing an EID rather than an object reference) with the
+    # appropriate values.  Fields are set with `instance_variable_set`
+    # in order to avoid any unknown side-effects.
+    #
+    # This method should work for most types of game element.
+    #
+    # @param [TAGF::Mixin::Element] obj
+    #   The game element to have its abstracted attributes reified.
+    # @param [Hash<Symbol=>Symbol>] flist
+    #   A hash of abstracted field symbols and the corresponding
+    #   instance-variable symbols.
+    # @raise [TAGF::Exceptions::MemberNotFound]
+    # @return [TAGF::Mixin::Element]
+    #   the original element with all known abstractions replaced.
+    def reify_generic(obj, flist)
+      warn(format("%s: %s(%s,\n  %s)",
+                  __callee__.to_s,
+                  __callee__.to_s,
+                  obj.to_key,
+                  PP.pp(flist, String.new).gsub(%r!\n!, "\n  ")))
+      ahash		= obj.abstracted_fields
+      flist.each do |fgetter,fivar|
+        ftype		= ahash[fgetter]
+        if (ftype != EID)
+          warn(format('%s: abstract field %s of object %s ' \
+                      + 'is not an EID; needs refining',
+                      __callee__.to_s,
+                      fgetter.inspect,
+                      obj.to_key))
+          next
+        end
+        fval		= nil
+        getter_exc	= nil
+        begin
+          fval		= obj.send(fgetter)
+        rescue NoMethodError => getter_exc
+        end
+        if (! getter_exc.nil?)
+          raise_exception(TAGF::Exceptions::UnknownAttribute,
+                          field:   fgetter,
+                          element: obj)
+        end
+        if (fval.kind_of?(String))
+          reifobj	= self.elements[fval]
+          if (reifobj.nil?)
+            debugger
+            next
+          end
+          obj.instance_variable_set(fivar, reifobj)
+        end
+      end                       # flist.each
+      return obj
+    end                         # def reify_generic
+
+    # @!method reify_Connexion(obj, flist)
+    # Replace abstracted fields in `obj` (<em>i.e.</em>, those
+    # containing an EID rather than an object reference) with the
+    # appropriate values.  Fields are set with `instance_variable_set`
+    # in order to avoid any unknown side-effects.
+    #
+    # This method should work for most types of game element.
+    #
+    # @param [TAGF::Mixin::Element] obj
+    #   The game element to have its abstracted attributes reified.
+    # @param [Hash<Symbol=>Symbol>] flist
+    #   A hash of abstracted field symbols and the corresponding
+    #   instance-variable symbols.
+    # @raise [TAGF::Exceptions::MemberNotFound]
+    # @return [TAGF::Mixin::Element]
+    #   the original element with all known abstractions replaced.
+    def reify_Connexion(obj, flist)
+      warn(format("%s: %s(%s,\n  %s)",
+                  __callee__.to_s,
+                  __callee__.to_s,
+                  obj.to_key,
+                  PP.pp(flist, String.new).gsub(%r!\n!, "\n  ")))
+      flist.each do |fgetter,fivar|
+        fval		= nil
+        getter_exc	= nil
+        begin
+          fval		= obj.send(fgetter)
+        rescue NoMethodError => getter_exc
+        end
+        if (! getter_exc.nil?)
+          raise_exception(TAGF::Exceptions::UnknownAttribute,
+                          field:   fgetter,
+                          element: obj)
+        end
+        if (fval.kind_of?(String))
+          reifobj	= self.elements[fval]
+          if (reifobj.nil?)
+            raise_exception(TAGF::Exceptions::MemberNotFound,
+                            element:	obj,
+                            member:	fval,
+                            field:	getter)
+          end
+          obj.instance_variable_set(fivar, reifobj)
+        end
+      end                       # flist.each
+      #
+      # Re-own Connexion objects from the game to the origin
+      # Location.
+      #
+      if (obj.owned_by == self.game)
+        obj.owned_by	= obj.origin
+      end
+      return obj
+    end                         # def reify_Connexion
+
+    # @!method reify_Location(obj, flist)
+    # Replace abstracted fields in `obj` (<em>i.e.</em>, those
+    # containing an EID rather than an object reference) with the
+    # appropriate values.  Fields are set with `instance_variable_set`
+    # in order to avoid any unknown side-effects.
+    #
+    # This method should work for most types of game element.
+    #
+    # @param [TAGF::Mixin::Element] obj
+    #   The game element to have its abstracted attributes reified.
+    # @param [Hash<Symbol=>Symbol>] flist
+    #   A hash of abstracted field symbols and the corresponding
+    #   instance-variable symbols.
+    # @raise [TAGF::Exceptions::MemberNotFound]
+    # @return [TAGF::Mixin::Element]
+    #   the original element with all known abstractions replaced.
+    def reify_Location(obj, flist)
+      warn(format("%s: %s(%s,\n  %s)",
+                  __callee__.to_s,
+                  __callee__.to_s,
+                  obj.to_key,
+                  PP.pp(flist, String.new).gsub(%r!\n!, "\n  ")))
+      #
+      # We're reconsituting the paths; connexions to other
+      # locations.  It's a hash rather than a scalar, which is why
+      # we have this Location-specific reification method.
+      #
+      fgetter		= :paths
+      fivar		= flist[fgetter]
+      vhash		= obj.send(fgetter) || {}
+      vhash.each do |via,cxeid|
+        cxobj		= self.elements[cxeid]
+        if (cxobj.nil?)
+          raise_exception(TAGF::Exceptions::MemberNotFound,
+                          element:	obj,
+                          member:	cxeid,
+                          field:	fgetter)
+        end
+        vhash[via]	= cxobj
+      end                       # vhash.each do
+
+      #
+      # We've restored what we can of the paths, so update the
+      # location's field and move on to the next field to reify.
+      #
+      obj.instance_variable_set(:@paths, vhash)
+      return obj
+    end                         # def reify_Location
+
+    # @!method reify_elements
+    # Go through the game element objects in #elements and fill in
+    # abstracted fields containing EIDs with references to the actual
+    # objects.  If there is an element-specific reifier method, invoke
+    # that after calling the one that handles the usual EID
+    # abstractions.
+    def reify_elements
+      warn(format('%s: beginning',
+                  __callee__.to_s))
+      elist		= self.elements.values.sort { |a,b|
+        a.to_key <=> b.to_key
+      }
+      etype		= nil
+      #
+      # @todo
+      #   This section does a lot of unnecessary repetition; abstract
+      #   it out.
+      # @todo
+      #   Raise an exception if there's no object matching the EID
+      #   string in any of the abstracted fields.
+      #
+      absfields		= nil
+      reifier		= nil
+      elist.each do |obj|
+        ahash		= obj.abstracted_fields
+        if (obj.class != etype)
+          absfields	= ahash.keys.inject({}) { |memo,f|
+            memo[f.to_sym]= format('@%s', f.to_s).to_sym
+            memo
+          }
+          reifier	= format('reify_%s', obj.klassname).to_sym
+          if (! self.respond_to?(reifier))
+            reifier	= nil
+          end
+          etype		= obj.class
+        end
+        #
+        # Do the EIDs, since *we* know how.
+        #
+        self.reify_generic(obj, absfields)
+        #
+        # If there are element-specific abstractions to reify, call
+        # the appropriate method.
+        #
+        self.send(reifier, obj, absfields) if (reifier)
+      end                       # self.elements.each do
+      return self.elements
+    end                         # def reify_elements
 
     # @!method load_game(file)
     # Primary method for loading a game from its original
@@ -266,6 +518,10 @@ module TAGF
     #   the game object, which is the root of all objects comprising
     #   the game environment.
     def load_game(file)
+      warn(format('%s: %s(%s)',
+                  __callee__.to_s,
+                  __callee__.to_s,
+                  file))
       #
       # Invoking this method discards anything from any previous
       # invocation, starting a new game context.
@@ -402,36 +658,7 @@ module TAGF
       # EIDs with the objects, as described by the result from
       # #abstracted_fields for each object.
       #
-      # @todo
-      #   This section does a lot of unnecessary repetition; abstract
-      #   it out.
-      # @todo
-      #   Raise an exception if there's no object matching the EID
-      #   string in any of the abstracted fields.
-      #
-      self.elements.each do |eid,obj|
-        absfields	= obj.abstracted_fields.map { |o| o.to_sym }
-        absfields.each do |fattr|
-          fval		= obj.send(fattr)
-          if (fval.kind_of?(String))
-            reifobj	= self.elements[fval]
-            if (reifobj.nil?)
-              debugger
-              next
-            end
-            ivar	= format('@%s', fattr.to_s).to_sym
-            obj.instance_variable_set(ivar, reifobj)
-          end
-        end
-        #
-        # Re-own Connexion objects from the game to the origin
-        # Location.
-        #
-        if (obj.kind_of?(TAGF::Connexion) \
-            && (obj.owned_by == self.game))
-          obj.owned_by	= obj.origin
-        end
-      end                       # self.elements.each do
+      self.reify_elements
     end                         # load_game(file)
 
     nil

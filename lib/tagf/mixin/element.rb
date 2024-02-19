@@ -63,20 +63,21 @@ module TAGF
 
       #
       include(Mixin::UniversalMethods)
+      include(Mixin::DTypes)
 
       #
-      if (TAGF.debugging?(:extend))
+      if (TAGF.debugging?(:include))
         warn(format('%s extending itself with %s',
                     self.name,
                     Mixin::DTypes.name))
       end
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
 
       # @!macro TAGF.constant.Abstracted_Fields
-      Abstracted_Fields		= [
-        'game',
-        'owned_by',
-      ]
+      Abstracted_Fields		= {
+        game:			EID,
+        owned_by:		EID,
+      }
 
       # @!macro TAGF.constant.Loadable_Fields
       Loadable_Fields		= [
@@ -387,14 +388,98 @@ module TAGF
       #   (<em>e.g.</em>, `"Game[Advent]"` or
       #   `"Connexion[Loc1-Loc2-via-SW]"`.
       def to_key
-        klass		= self.class.name || self.class.to_s
         result		= format('%s[%s]',
-                                 klass.sub(%r!^.*::!, ''),
+                                 self.klassname,
                                  self.eid.to_s)
         return result
       end                       # def to_key
 
+      # @!method export
+      # Uses the #loadable_fields method to determine all the fields
+      # we should include in an export hash.  Fields that are simple
+      # (<em>i.e.</em>, don't appear as keys in the hash returned by
+      # #abstracted_fields) are stored directly into the result hash
+      # by this method.  Once the simple fields have been processed,
+      # #abstractify is invoked to handle any fields that require
+      # additional processing, and its return value merged into the
+      # ultimate result.  Most abstracted fields will be simple
+      # EID-instead-of-object strings which the default #abstractify
+      # method will handle simply, but anything more complex than that
+      # can be processed by overriding #abstractify on a
+      # <em>per</em>-class or -module basis and calling `super`.
       #
+      # @see {Loadable_Fields}
+      # @see {Abstracted_Fields}
+      # @see #abstractify
+      # @return [Hash<String=>Any>]
+      def export
+        result			= {}
+        flist			= self.loadable_fields
+        alist			= self.abstracted_fields.keys
+        flist.each do |fname|
+          #
+          # If this is an abstracted field, skip.
+          #
+          next if (alist.include?(fname.to_sym))
+          fivar			= format('@%s', fname).to_sym
+          fvalue		= nil
+          #
+          # Try to get the value through an attribute getter method.
+          # If that fails, fetch the instance variable directly.
+          #
+          begin
+            fvalue		= self.send(fname.to_sym)
+          rescue NoMethodError
+            fvalue		= self.instance_variable_get(fivar)
+          end
+          result[fname]		= fvalue
+        end
+        #
+        # Now call #abstractify and merge in any result.
+        #
+        ahash			= self.abstractify
+        return result.merge(ahash)
+      end                       # def export
+
+      # @!method abstractify
+      # Use the return values from #loadable_fields and
+      # #abstracted_fields to determine what attributes require
+      # special processing for exporting.  {Loadable_Fields} and {Abstracted_Fields} constants to
+      # record all of the exportable details of the receiver in a hash
+      # that can  be used to re-create it later.
+      #
+      # @see #export
+      #
+      # @return [Hash<String=>Any>]
+      def abstractify
+        #
+        # Figure out exactly what fields require abstraction, and
+        # narrow that down to just those that are EIDs.  Anything more
+        # involved should be done with an overriding #abstractify
+        # method that calls this <em>via</em> `super` and merges its
+        # result into that return value.
+        #
+        flist			= self.loadable_fields
+        ahash			= self.abstracted_fields
+        ahash			= ahash.select { |k,v|
+          (v == EID) \
+          && flist.include?(k.to_s)
+        }
+        alist			= ahash.keys
+        #
+        # Preset our return value to a hash of nil, then fill it in
+        # with the actual attribute settings.
+        #
+        alist			= alist.map { |o| o.to_s }
+        result			= {}
+        alist.each do |fname|
+          fgetter		= fname.to_sym
+          fivar			= format('@%s', fname).to_sym
+          result[fname]		= self.instance_variable_get(fivar).eid
+        end
+        return result
+      end                       # def abstractify
+
       # @param [Array] args
       # @!macro doc.TAGF.formal.kwargs
       # @option kwargs [Symbol]	:eid		(nil)

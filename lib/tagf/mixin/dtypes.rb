@@ -30,18 +30,67 @@ module TAGF
     # @!macro doc.TAGF.Mixin.DTypes.module
     module DTypes
 
+      # Eigenclass declarations for the TAGF::Mixin::DTypes module.
+      # This is where 'magic' methods like #included and #extended are
+      # declared, which are invoked when the module itself is, well,
+      # included or extended in a class or module.
+      class << self
+
+        # @!method included(klass)
+        # This method is invoked every time the `TAGF::Mixin::DTypes`
+        # module is included in a class or other module.  It makes
+        # sure that the instance-type declarations go into the
+        # including scope, and the class-type declarations go into its
+        # eigenclass.
+        # @return [void]
+        def included(klass)
+          klass.include(TAGF::Mixin::InstanceTypes)
+          klass.extend(TAGF::Mixin::ClassTypes)
+          return nil
+        end                     # def included(klass)
+        
+        # @!method included(klass)
+        # This method is invoked every time the `TAGF::Mixin::DTypes`
+        # module is included in a class or other module.  It makes
+        # sure that the instance-type declarations go into the
+        # including scope, and the class-type declarations go into its
+        # eigenclass.
+        # @return [void]
+        def extended(klass)
+          klass.include(TAGF::Mixin::InstanceTypes)
+          klass.extend(TAGF::Mixin::ClassTypes)
+          return nil
+        end                     # def extended(klass)
+
+        nil
+      end                       # module DTypes eigenclass
+
+      nil
+    end                         # module TAGF::Mixin::DTypes
+
+    # Module defining datatypes and classes that should be included
+    # and available at the instance level.
+    module InstanceTypes
+
+      # Very simple class used to identify strings used specifically
+      # as Element ID (EID) values.
+      class EID < String ; end
+
+      nil
+    end                         # module TAGF::Mixin::InstanceTypes
+
+    # Module declaring types and classes that should be declared at
+    # the eigenclass level, making them available at the class/module
+    # declaration scope but not inside instances.
+    module ClassTypes
+
+      #
       include(Mixin::UniversalMethods)
       #
       # Ensure that the definitions in this module also appear in its
       # eigenclass as 'class' methods.
       #
       extend(self)
-
-      #
-#      include(TAGF::Mixin::UniversalMethods)
-
-      #
-#      include(Contracts::Core)
 
 
       # @!macro doc.TAGF.classmethod.flag.declare
@@ -237,7 +286,7 @@ module TAGF
       alias_method(:int_writer, :int_accessor)
 
       nil
-    end                         # module TAGF::Mixin::DTypes
+    end                         # module TAGF::Mixin::ClassTypes
 
     nil
   end                           # module TAGF::Mixin

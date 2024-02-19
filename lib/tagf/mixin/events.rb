@@ -30,7 +30,7 @@ module TAGF
     module Events
 
       #
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
       include(Mixin::UniversalMethods)
 
       #

@@ -30,22 +30,22 @@ module TAGF
 
     #
     include(Mixin::UniversalMethods)
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Element)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields	= [
-      'reversible',
+    Loadable_Fields		= [
       'origin',
       'destination',
       'via',
+      'reversible',
     ]
 
     # @!macro TAGF.constant.Abstracted_Fields
-    Abstracted_Fields	= [
-      'origin',
-      'destination',
-    ]
+    Abstracted_Fields		= {
+      origin:			EID,
+      destination:		EID,
+    }
 
     # @!attribute [rw] reversible
     # @!macro doc.TAGF.classmethod.flag.invoke

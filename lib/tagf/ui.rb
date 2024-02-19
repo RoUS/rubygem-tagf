@@ -35,7 +35,7 @@ module TAGF
   module UI
 
     include(Mixin::UniversalMethods)
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
 
     # Names of fields largely used by the Interface, Context, and
     # InputMethod classes to allow defaults to bubble down.  Used to
@@ -139,7 +139,7 @@ module TAGF
     module Controls
 
       # We need our custom attribute accessor class methods.
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
 
       #
       include(Mixin::UniversalMethods)
@@ -451,7 +451,7 @@ module TAGF
     # @!macro doc.TAGF.UI.InputMethod.module
     class InputMethod
 
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
       extend(Forwardable)
 
       # @!attribute [r] context
@@ -735,7 +735,7 @@ module TAGF
     class Context
 
       # Import our app's own datatype accessor class methods.
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
 
       # @!macro CONTROLS_ADD
       #   Array of symbols identifying attributes that exist in this
@@ -1415,7 +1415,7 @@ module TAGF
     # environment should be popped back.
     class Interface
 
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
       include(Mixin::UniversalMethods)
       include(UI::Controls)
 

@@ -37,7 +37,7 @@ module TAGF
   class Container
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Container)
 
     #
@@ -65,12 +65,14 @@ module TAGF
                                     game:	self.game,
                                     owned_by:	self)
       self.add(self.inventory)
+=begin
       #
       # Add this object to our owner's inventory.
       #
       if (self.owned_by && self.owned_by.has_inventory?)
         self.owned_by.add(self)
       end
+=end
       self.game.add(self)
     end                         # def initialize
 

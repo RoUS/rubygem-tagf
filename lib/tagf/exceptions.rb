@@ -127,7 +127,7 @@ module TAGF
     class ErrorBase < StandardError
 
       #
-      extend(TAGF::Mixin::DTypes)
+      include(TAGF::Mixin::DTypes)
       include(TAGF::Mixin::UniversalMethods)
 
       # ErrorBase eigenclass, declaring class methods for ErrorBase
@@ -176,7 +176,7 @@ module TAGF
             memo
           }
           next_id	= exc_by_name.values.max || 1
-          our_name	= self.name.sub(%r!^.*::!, '')
+          our_name	= self.klassname
           our_id	= exc_by_name[our_name]
           #
           # At the end of this catch block, `our_id` has the ID number
@@ -537,7 +537,7 @@ module TAGF
       def render
         result		= format('%s-%s [%08x], %s',
                                  SEVERITY_CHAR[self.severity] || '?',
-                                 self.class.name.sub(%r!^.*::!, ''),
+                                 self.klassname,
                                  self.errorcode,
                                  self.message)
         return result
@@ -596,7 +596,7 @@ module TAGF
     module InventoryLimitExceeded
 
       #
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
 
       #
       include(Mixin::UniversalMethods)
@@ -1017,7 +1017,7 @@ module TAGF
         super
         if (@msg.nil?)
           obj		= args[0]
-          objtype	= obj.class.name.sub(%r!^.*::!, '')
+          objtype	= self.klassname(obj)
           name		= obj.name || obj.eid
           if (name)
             @msg		= format("%s object '%s' is static " \
@@ -1171,7 +1171,7 @@ module TAGF
         super
         if (@msg.nil?)
           obj		= args[0]
-          objtype	= obj.class.name.sub(%r!^.*::!, '')
+          objtype	= self.klassname(obj)
           name		= obj.name || obj.eid
           if (name)
             @msg		= format("cannot remove %s object '%s' " \
@@ -1304,11 +1304,12 @@ module TAGF
                                  (args[0].name || args[0].eid).to_s)
             when 2
               @msg	= format("%s object '%s' " \
-                                 + 'already in inventory, ' \
+                                 + 'already in inventory of %s, ' \
                                  + 'cannot add %s with same eid',
-                                 args[0].class.name,
+                                 args[0].klassname,
                                  (args[0].name || args[0].eid).to_s,
-                                 args[1].class.name)
+                                 args[0].to_key,
+                                 args[1].klassname)
             else
               @msg	= format('unforeseen arguments ' \
                                  + 'to exception: %s',
@@ -1611,6 +1612,102 @@ module TAGF
 
       nil
     end                         # class DataError
+
+    #
+    class MemberNotFound < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID(0x01b)
+
+      self.severity	= :severe
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @!macro ErrorBase.initialize
+      # @option kwargs [TAGF::Mixin::Element]	:element
+      #   Object being re-instantiated by the `YAML` loader tools.
+      # @option kwargs [String]			:member
+      #   The EID (or other string) identifying the 
+      # @option kwargs [Symbol]			:field
+      #   The attribute of the `:element` argument that is being
+      #   restored, such as `:paths` for a Connexion, or `:owned_by`
+      #   for an Item.
+      # @return [MemberNotFound] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__callee__)
+        super
+        if (@msg.nil?)
+          if (element = kwargs[:element])
+            @msg	= format('error restoring element "%s"; ' \
+                                 + 'component object not found',
+                                 element.to_key)
+            if (member_eid = kwargs[:member])
+              @msg	= format("%s\n\tEID of missing object = '%s'",
+                                 @msg,
+                                 member_eid)
+            end
+            if (fattr = kwargs[:field])
+              @msg	= format("%s\n\treferencing field    = %s",
+                                 @msg,
+                                 fattr.inspect)
+            end
+          else
+            @msg	= 'error restoring element; ' \
+                          + 'component object not found'
+          end
+        end                     # if (@msg.nil?)
+        self.set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class MemberNotFound
+
+    #
+    class UnknownAttribute < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID(0x01c)
+
+      self.severity	= :severe
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @!macro ErrorBase.initialize
+      # @option kwargs [Symbol]			:field
+      #   The attribute that <em>should</em> be part of the target
+      #   object, but apparently isn't.
+      # @option kwargs [TAGF::Mixin::Element]	:element
+      #   The game element object that should have the specified
+      #   attribute.
+      # @return [UnknownAttribute] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__callee__)
+        super
+        if (@msg.nil?)
+          if (fattr = kwargs[:field])
+            @msg	= format('unknown attribute "%s"',
+                                 fatter.to_sym.inspect)
+            if (element = kwargs[:element])
+              @msg	= format('%s for object %s:%s',
+                                 @msg,
+                                 element.klassname,
+                                 element.to_key)
+            end
+          else
+            @msg	= 'unknown attribute for object'
+          end
+        end                     # if (@msg.nil?)
+        self.set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class UnknownAttribute
 
     nil
   end                           # module TAGF::Exceptions

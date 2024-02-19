@@ -32,7 +32,7 @@ module TAGF
     module Container
 
       include(Mixin::UniversalMethods)
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
       #
       # All Containers are Elements.
       #
@@ -65,19 +65,12 @@ module TAGF
         'is_openable',
         'is_open',
         'is_transparent',
-        'inventory',
         'capacity_items',
         'current_items',
         'capacity_mass',
         'current_mass',
         'capacity_volume',
         'current_volume',
-        'pending_inventory',
-      ]
-
-      # @!macro TAGF.constant.Abstracted_Fields
-      Abstracted_Fields	= [
-        'inventory',
       ]
 
       #
@@ -164,7 +157,7 @@ module TAGF
         #
         if (self.is_openable?)
           @is_open	= value
-        elsif (game_option?(:RaiseOnInvalidValues) && value)
+        elsif (game_options?(:RaiseOnInvalidValues) && value)
           raise_exception(UnscrewingInscrutable,
                           self,
                           __method__,

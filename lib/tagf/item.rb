@@ -36,7 +36,8 @@ module TAGF
   class Item
     
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
+    include(Mixin::UniversalMethods)
 
     #
     include(Mixin::UniversalMethods)

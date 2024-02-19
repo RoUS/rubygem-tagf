@@ -19,6 +19,7 @@
 #warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
 require('tagf/mixin/universal')
+require('tagf/connexion')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -31,7 +32,7 @@ module TAGF
     module Location
 
       include(Mixin::UniversalMethods)
-      extend(Mixin::DTypes)
+      include(Mixin::DTypes)
 
       # @!macro doc.TAGF.Mixin.module.eigenclass Location
       class << self
@@ -62,9 +63,9 @@ module TAGF
       ]
 
       # @!macro TAGF.constant.Abstracted_Fields
-      Abstracted_Fields	= [
-        'paths',
-      ]
+      Abstracted_Fields		= {
+        paths:			Hash[String,TAGF::Connexion],
+      }
 
       # @!attribute [r] paths
       # Connexions between Locations are called paths and are

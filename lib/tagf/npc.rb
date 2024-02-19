@@ -33,7 +33,7 @@ module TAGF
   class NPC
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Actor)
 
     #

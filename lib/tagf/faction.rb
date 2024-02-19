@@ -36,7 +36,7 @@ module TAGF
   class Faction
 
     #
-    extend(Mixin::DTypes)
+    include(Mixin::DTypes)
     include(Mixin::Element)
 
     # @!macro TAGF.constant.Loadable_Fields
