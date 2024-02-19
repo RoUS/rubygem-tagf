@@ -8,6 +8,20 @@ game:
   desc: |-
     Test 01 of game location connexions.
 
+container:
+  eid:		'birdcage'
+  game:		'gameloctest01'
+  owned_by:	'Loc1'
+  name:		'birdcage'
+  desc: |-
+    A little brass birdcage, rather battered.
+
+item:
+  eid:		'bird'
+  game:		'gameloctest01'
+  owned_by:	'birdcage'
+  desc:		'A little songbird.'
+
 locations:
   - eid:	'Loc1'
     game:	'gameloctest01'
@@ -16,7 +30,8 @@ locations:
     desc: |-
       The starting (?) location, #1
     paths:
-      'se':	'loc1-se-loc2'
+      'se':	'loc1-se'
+      'up':	'null-a'
   - eid:	'Loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
@@ -24,17 +39,16 @@ locations:
     desc: |-
       The ending (?) location, #2
     paths:
-      'nw':	'loc2-nw-loc1'
-
-item:
-  eid:		'bird'
-  game:		'gameloctest01'
-  owned_by:	'gameloctest01'
-  desc:		'A little songbird.'
+      'nw':	'loc2-nw'
 
 connexion:
   eid:		'null-a'
   game:		'gameloctest01'
+  owned_by:	'gameloctest01'
+  name:		'loop-1'
+  desc: |-
+    A small hole up on the wall would let you crawl upwards.
+  shortdesc:	'upward-leading crawl.'
   origin:	'Loc1'
   destination:	'Loc1'
   via:		'up'
@@ -43,17 +57,23 @@ connexion:
 connexions:
   - eid:	'loc1-se'
     game:	'gameloctest01'
-    owned_by:	'Loc1'
+    owned_by:	'gameloctest01'
     name:	'loc1-se-loc2'
     desc: |-
-      going from Loc1 to Loc2 via se
+      A low rocky tunnel slopes downward to the southeast, leading
+      to Location 2.
+    shortdesc:	'low rocky tunnel'
     origin:	'Loc1'
     destination: 'Loc2'
     reversible:	true
   - eid:	'loc2-nw'
     game:	'gameloctest01'
-    owned_by:	'Loc2'
+    owned_by:	'gameloctest01'
     name:	'loc2-nw-loc1'
+    desc: |-
+      A low rocky tunnel slopes upward to the northwest, leading
+      to Location 1.
+    shortdesc:	'low rocky tunnel'
     desc: |-
       going from Loc2 to Loc1 via nw
     origin:	'Loc2'
