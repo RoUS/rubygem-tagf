@@ -34,11 +34,6 @@
 * Investigate inheritance of modules brought in with `using` method.
 * Add visibility/opacity to `Location` (for fog/darkness effects,
   *&c.*).
-* Add Thor (?) generators for building (rooms, items, connexions, and
-  so on), verifying the locations as a graph to make sure everything
-  is reachable — and escapeable.
-  * Enhance command-line tools to be able to use `here-docs` for
-    things like descriptions (started in `ui.rb`).
 * Add functionality for doors.
 * Add functionality for locks (doors, chests, padlocks) and
   keys/tokens to lock/unlock them.
@@ -60,7 +55,21 @@
 * Build `describe` method that can do as deep a dive as requested for
   nested `Container`s with inventories.
 * Event processing: think about objects registering 'event listeners'.
+
+## Tools
 * Build a visual graph from `Location` paths (`Connexions`)
+* Add Thor (?) generators for building (rooms, items, connexions, and
+  so on), verifying the locations as a graph to make sure everything
+  is reachable — and escapeable.
+  * Enhance command-line tools to be able to use `here-docs` for
+    things like descriptions (started in `ui.rb`).
+* Validate `YAML` file by loading it and then checking:
+  1. `Location` paths that are marked `reversible: true` actually have
+     a `Connexion` back from the `:destination` to the `:origin`.
+  1. `Connexion` objects' `:via` field match their key in
+     `.owned_by.paths[]`.
+  1. Everything with an `:owned_by` field should be listed in the
+     `owned_by.inventory` structure.
 
 ## Testing
 
