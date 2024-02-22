@@ -19,26 +19,22 @@ require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
 require('tagf/mixin/container')
+require('tagf/mixin/portable')
 require('byebug')
 
 # @!macro doc.TAGF.module
 module TAGF
 
   #
-  # Class for actual container objects.  A container is something with
-  # an inventory.
-  #
-  # @todo
-  #   This class may actually be obviated, because there really aren't
-  #   any standalone containers.  Locations, features, and items can
-  #   have inventories, so what's the use of/need for a Container
-  #   object?
+  # Class for actual portable container items, such as sacks or
+  # pouches. 
   #
   class Container
 
     #
     include(Mixin::DTypes)
     include(Mixin::Container)
+    include(Mixin::Portable)
 
     #
     # @!macro doc.TAGF.formal.kwargs
