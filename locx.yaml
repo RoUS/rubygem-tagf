@@ -7,45 +7,63 @@ game:
   licence:	'Apache 2.0'
   desc: |-
     Test 01 of game location connexions.
+  start:	'Loc0'
 
 container:
   eid:		'birdcage'
   game:		'gameloctest01'
   owned_by:	'Loc1'
   name:		'birdcage'
+  article:	'a'
   desc: |-
-    A little brass birdcage, rather battered.
+    rather battered little brass birdcage
 
 item:
   eid:		'bird'
   game:		'gameloctest01'
   owned_by:	'birdcage'
-  desc:		'A little songbird.'
+  is_living:	true
+  article:	'a'
+  desc:		'little songbird'
 
 locations:
+  - eid:	'Loc0'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'Location 0 - Entrance'
+    desc: |-
+      You're in Location 0, the starting location for players in new
+      games.
+    shortdesc:	'entrance room.'
+    paths:
+      'up':	'loc0-up'
+      'e':	'loc0-e'
+      'w':	'loc0-w'
   - eid:	'Loc1'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'Location 1'
     desc: |-
-      The starting (?) location, #1
+      Room 1, one of the locations accessible from the entrance.
+    shortdesc:	'Room 1.'
     paths:
+      'w':	'loc1-w'
       'se':	'loc1-se'
-      'up':	'null-a'
   - eid:	'Loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'Location 2'
     desc: |-
       The ending (?) location, #2
+    shortdesc:	'Room 2.'
     paths:
       'nw':	'loc2-nw'
 
 connexion:
-  eid:		'null-a'
+  eid:		'loc0-up'
   game:		'gameloctest01'
   owned_by:	'gameloctest01'
-  name:		'loop-1'
+  name:		'loc0-loc0'
   desc: |-
     A small hole up on the wall would let you crawl upwards.
   shortdesc:	'upward-leading crawl.'
@@ -55,6 +73,52 @@ connexion:
   reversible:	true
 
 connexions:
+  - eid:	'loc0-e'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'loc0-e-loc1'
+    desc: |-
+      A broad passage, with a flat, smooth floor and smooth walls, is
+      visible to the east.
+    shortdesc:	'broad smooth passage.'
+    origin:	'Loc0'
+    destination: 'Loc1'
+    via:	'e'
+    reversible:	true
+  - eid:	'loc0-w'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'loc0-w-loc2'
+    desc: |-
+      A narrow, cramped tunnel, with rough walls and floor, leads
+      west.
+    shortdesc:	'cramped tunnel.'
+    origin:	'Loc0'
+    destination: 'Loc2'
+    via:	'w'
+    reversible:	true
+  - eid:	'loc1-w'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'loc1-w-loc0'
+    desc: |-
+      A rough doorway-sized opening to the west
+      appears to open up after a few metres.
+    shortdesc:	'door-sized opening.'
+    origin:	'Loc1'
+    destination: 'Loc0'
+    via:	'w'
+    reversible:	true
+  - eid:	'loc2-e'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'loc2-e-loc1'
+    desc:	'A narrow crack leads east.'
+    shortdesc:	'narrow crack.'
+    origin:	'Loc2'
+    destination: 'Loc0'
+    via:	'e'
+    reversible:	true
   - eid:	'loc1-se'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
@@ -62,9 +126,10 @@ connexions:
     desc: |-
       A low rocky tunnel slopes downward to the southeast, leading
       to Location 2.
-    shortdesc:	'low rocky tunnel'
+    shortdesc:	'low rocky tunnel.'
     origin:	'Loc1'
     destination: 'Loc2'
+    via:	'se'
     reversible:	true
   - eid:	'loc2-nw'
     game:	'gameloctest01'
@@ -73,11 +138,12 @@ connexions:
     desc: |-
       A low rocky tunnel slopes upward to the northwest, leading
       to Location 1.
-    shortdesc:	'low rocky tunnel'
+    shortdesc:	'low rocky tunnel.'
     desc: |-
       going from Loc2 to Loc1 via nw
     origin:	'Loc2'
     destination: 'Loc1'
+    via:	'nw'
     reversible:	true
 
 # Local Variables:
