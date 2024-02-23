@@ -18,6 +18,7 @@
 #require('tagf/debugging')
 #warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
+require('tagf/mixin/lightsource')
 require('tagf/mixin/universal')
 require('tagf/connexion')
 require('byebug')
@@ -33,6 +34,7 @@ module TAGF
 
       include(Mixin::UniversalMethods)
       include(Mixin::DTypes)
+      include(Mixin::LightSource)
 
       # @!macro doc.TAGF.Mixin.module.eigenclass Location
       class << self
@@ -84,11 +86,72 @@ module TAGF
       # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:light_level)
 
+      # @!method add_path(*args, **kwargs)
+      # Add a path from the current location to another.  Keyword
+      # argument values override any corresponding order-dependent
+      # ones.  Any acceptable argument combination that conflicts with
+      # the value of the `via` field in the Connexion object will
+      # override it, and cause the latter to be overwritten with a
+      # warning.
+      #
+      # 1. `add_path(Connexion)` —
+      #    The `via` direction for the path is extracted from the
+      #    Connexion object.
+      # 1. `add_path("up", Connexion)` —
+      #    The `"up"` argument overrides <strong>and
+      #    overwrites</strong> any `:via` field in the Connexion
+      #    object.  If this occurs, a warning is issued.
+      #
+      # @param [Array]			args
+      #   Either a Connexion object, or a direction keyword
+      #   <em>and</em> a Connexion object.  See the description for
+      #   how they are interpreted.
+      # @param [Hash<Symbol=>Any>]	kwargs
+      #   Currently ignored.
+      # @return [Location] self
+      def add_path(*args, **kwargs)
+        via			= nil
+        cx			= nil
+        if ((args.count == 1) \
+            && args[0].kind_of?(TAGF::Connexion))
+          cx			= args[0]
+          via			= cx.via
+        elsif ((args.count == 2) \
+               && args[0].kind_of?(String) \
+               && args[1].kind_of?(Connexion))
+          via			= args[0]
+          cx			= args[1]
+        else
+          raise_exception(ArgumentError,
+                          format('%s: arguments must be ' \
+                                 + '(Connexion) or ' \
+                                 + '(String,Connexion): ' \
+                                 + '(%s)',
+                                 __callee__.to_s,
+                                 args.map { |e|
+                                   e.class.to_s.sub(%r!^.*::!, '')
+                                 }.join(',')))
+        end
+        if (via != cx.via)
+          unless (cx.via.nil?)
+            warn(format('%s: %s.via overriden from "%s" to "%s"',
+                        __callee__.to_s,
+                        cx.to_key,
+                        cx.via,
+                        via))
+          end
+          cx.via		= via
+        end
+        self.paths[via]		= cx
+        return self
+      end                       # def add_path
+
       #
       def initialize_location(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
         @paths			= {}
-        #      self.initialize_container(*args, **kwargs)
+        self.is_static!
+        self.initialize_container(*args, **kwargs)
         #      self.inventory	= ::TAGF::Inventory.new(game:	self,
         #                                              owned_by: self)
       end                       # def initialize_location

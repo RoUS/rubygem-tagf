@@ -38,6 +38,7 @@ module TAGF
       'origin',
       'destination',
       'via',
+      'must_possess',
       'reversible',
     ]
 
@@ -70,14 +71,17 @@ module TAGF
     # @!attribute [rw] via
     # @see #origin
     # @see #destination
-    # @return [String]
-    #   The direction keyword (such as `"se"`) that leaves the origin
-    #   and follows the path.
+    # @return [Array<String>]
+    #   The direction keywords (such as `"se"`) that leave the origin
+    #   and follow the path to the destination.
     attr_accessor(:via)
+
+    attr_accessor(:must_possess)
 
     # @!method initialize(*args, **kwargs)
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
+      self.is_visible!
       self.initialize_element(*args, **kwargs)
     end                         # def initialize(*args, **kwargs)
 

@@ -21,6 +21,7 @@ require('tagf/mixin/dtypes')
 require('tagf/mixin/universal')
 require('tagf/exceptions')
 require('tagf/mixin/element')
+require('forwardable')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -34,6 +35,7 @@ module TAGF
     include(Mixin::Element)
     extend(Mixin::Element)
     include(Mixin::UniversalMethods)
+    extend(Forwardable)
     include(Exceptions)
 
     #
@@ -95,6 +97,9 @@ module TAGF
       return result
     end                       # def to_key
 
+    def_delegator(:@contents, :keys)
+    def_delegator(:@contents, :values)
+
     #
     # @param [Hash<Symbol=>Any>]	kwargs
     # @option kwargs [String]		:inventory_eid
@@ -104,7 +109,7 @@ module TAGF
       TAGF::Mixin::Debugging.invocation
       @contents		= {}
       unless (owner = kwargs[:owned_by])
-        raise_exception(NoObjectOwner, self)
+        raise_exception(TAGF::Exceptions::NoObjectOwner, self)
       end
       self.is_static!
       #
@@ -141,16 +146,24 @@ module TAGF
       return result
     end                         # def inspect
 
-    #
+    # @!method subordinate_inventories
+    # @return [Array<Inventory>]
+    #   An array of the current inventory object and any owned by
+    #   objects in it, recursively.
     def subordinate_inventories
+      debugger
       results		= [ self ]
-      self.select { |o| o.has_inventory? }.each do |i|
-        results		|= i.subordinate_inventories
+      @contents.select { |k,o| o.has_inventory? }.each do |k,i|
+        results		|= i.inventory.subordinate_inventories
       end
       return results.flatten.uniq
     end                         # def subordinate_inventories
 
-    #
+    # @!method include?(arg, **kwargs)
+    # @param [Any] 			arg
+    # @param [Hash<Symbol=>Any>]	kwargs
+    # @option kwargs [Boolean]		:recurse	false
+    # @return [Boolean]
     def include?(arg, **kwargs)
       ilist		= [ self ]
       if (kwargs[:recurse])
@@ -221,7 +234,7 @@ module TAGF
       return true
     end                         # can_add?(newobj, **kwargs)
 
-    #
+    # @!method insert(arg, **kwargs)
     # Adds an object to this object's inventory.  Doesn't change the
     # object's owner (see {Mixin::Element#move_to}), and will raise an
     # exception if
@@ -234,7 +247,7 @@ module TAGF
     # @raise [TAGF::Exceptions::NotGameElement]
     # @raise [TAGF::Exceptions::AlreadyInInventory]
     #
-    def add(arg, **kwargs)
+    def insert(arg, **kwargs)
       return self if (arg == self)
       unless (arg.class.ancestors.include?(Mixin::Element))
         raise_exception(NotGameElement, arg)
@@ -259,8 +272,8 @@ module TAGF
       end
       @contents[key]	= arg
       return self
-    end                         # def add(arg, **kwargs)
-    alias_method(:+, :add)
+    end                         # def insert(arg, **kwargs)
+    alias_method(:+, :insert)
 
     #
     # @param [Array] args

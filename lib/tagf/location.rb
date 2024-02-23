@@ -33,6 +33,26 @@ module TAGF
     include(Mixin::DTypes)
     include(Mixin::Location)
 
+    # @!method export
+    # `Location`-specific export method, responsible for adding any
+    # unusual fields that need to be abstracted to the export hash.
+    # That is, things that can't be simply boiled down to a string
+    # EID.
+    #
+    # @return [Hash<String=>Any>]
+    #   the updated export hash.
+    def export
+      result			= super
+      pathhash			= {}
+      result['paths']		= pathhash
+      self.paths.each do |via,cx|
+        pathhash[via]		= cx.eid
+      end
+      return result
+    end                         # def export
+
+    InventoryItemFormat		= 'There is %<article>s %<desc>s here.'
+
     #
     # @!macro doc.TAGF.formal.kwargs
     # @return [Location] self
@@ -41,7 +61,6 @@ module TAGF
       TAGF::Mixin::Debugging.invocation
       @paths		||= {}
       self.initialize_element(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
       self.initialize_location(*args, **kwargs)
       self.game.add(self)
     end                         # def initialize

@@ -130,11 +130,13 @@ module TAGF
     #   the constructed object of class `klass`.
     def load_generic(klass, ekwargs)
       kwargs		= symbolise_kwargs(ekwargs)
+=begin
       warn(format("%s: %s(%s,\n  %s",
                   __callee__.to_s,
                   __callee__.to_s,
                   klass.klassname,
                   PP.pp(kwargs, String.new).gsub(%r!\n!, "\n  ")))
+=end
       eid		= kwargs[:eid]
       if (self.elements.has_key?(eid))
         raise_exception(TAGF::Exceptions::DuplicateObject,
@@ -184,11 +186,13 @@ module TAGF
     #   the constructed Location object.
     def load_Location(klass, ekwargs)
       kwargs		= symbolise_kwargs(ekwargs)
+=begin
       warn(format("%s: %s(%s,\n  %s",
                   __callee__.to_s,
                   __callee__.to_s,
                   klass.klassname,
                   PP.pp(kwargs, String.new).gsub(%r!\n!, "\n  ")))
+=end
       #
       # Call the generic loader to handle the normal scalar EID string
       # abstractions.
@@ -225,9 +229,11 @@ module TAGF
     # @return [Object]
     #   the constructed object of class `klass`.
     def process_definition(klass, ekwargs)
+=begin
       warn(format('%s: instantiating a %s',
                   __callee__.to_s,
                   klass.name))
+=end
       #
       # Turn a hash that might have String keys into one with Symbol
       # keys so we can use `kwargs` semantics.
@@ -305,20 +311,24 @@ module TAGF
     # @return [TAGF::Mixin::Element]
     #   the original element with all known abstractions replaced.
     def reify_generic(obj, flist)
+=begin
       warn(format("%s: %s(%s,\n  %s)",
                   __callee__.to_s,
                   __callee__.to_s,
                   obj.to_key,
                   PP.pp(flist, String.new).gsub(%r!\n!, "\n  ")))
+=end
       ahash		= obj.abstracted_fields
       flist.each do |fgetter,fivar|
         ftype		= ahash[fgetter]
         if (ftype != EID)
+=begin
           warn(format('%s: abstract field %s of object %s ' \
                       + 'is not an EID; needs refining',
                       __callee__.to_s,
                       fgetter.inspect,
                       obj.to_key))
+=end
           next
         end
         fval		= nil
@@ -361,11 +371,13 @@ module TAGF
     # @return [TAGF::Mixin::Element]
     #   the original element with all known abstractions replaced.
     def reify_Connexion(obj, flist)
+=begin
       warn(format("%s: %s(%s,\n  %s)",
                   __callee__.to_s,
                   __callee__.to_s,
                   obj.to_key,
                   PP.pp(flist, String.new).gsub(%r!\n!, "\n  ")))
+=end
       flist.each do |fgetter,fivar|
         fval		= nil
         getter_exc	= nil
@@ -416,11 +428,13 @@ module TAGF
     # @return [TAGF::Mixin::Element]
     #   the original element with all known abstractions replaced.
     def reify_Location(obj, flist)
+=begin
       warn(format("%s: %s(%s,\n  %s)",
                   __callee__.to_s,
                   __callee__.to_s,
                   obj.to_key,
                   PP.pp(flist, String.new).gsub(%r!\n!, "\n  ")))
+=end
       #
       # We're reconsituting the paths; connexions to other
       # locations.  It's a hash rather than a scalar, which is why
@@ -455,8 +469,10 @@ module TAGF
     # that after calling the one that handles the usual EID
     # abstractions.
     def reify_elements
+=begin
       warn(format('%s: beginning',
                   __callee__.to_s))
+=end
       elist		= self.elements.values.sort { |a,b|
         a.to_key <=> b.to_key
       }
@@ -518,10 +534,12 @@ module TAGF
     #   the game object, which is the root of all objects comprising
     #   the game environment.
     def load_game(file)
+=begin
       warn(format('%s: %s(%s)',
                   __callee__.to_s,
                   __callee__.to_s,
                   file))
+=end
       #
       # Invoking this method discards anything from any previous
       # invocation, starting a new game context.
@@ -587,11 +605,14 @@ module TAGF
       # what we use internally.
       #
       kwargs		= symbolise_kwargs(gamedef)
+=begin
       warn(format('%s: instantiating game [%s]<%s>',
                   __callee__.to_s,
                   kwargs[:eid].to_s,
                   kwargs[:name].to_s))
-      @game		= TAGF::Game.new(**kwargs)
+=end
+      @game		= TAGF::Game.new(**kwargs,
+                                         loadfile: @source)
       self.elements_processed.push(gamedef)
       self.elements[@game.eid]= @game
       #
@@ -599,6 +620,7 @@ module TAGF
       #
       while ((defkey,defobj) = ydata.first) do
         etype		= Loadables[defkey]
+#        debugger if (%w[ factions locations ].include?(defkey))
         if (etype.nil?)
           raise_exception(DataError,
                           source: self.source,
@@ -611,14 +633,25 @@ module TAGF
         # array should be handled.  If `etype` is a hash.. well, it
         # gets handled specially.
         #
-        if (etype.kind_of?(Class) \
-            && defobj.kind_of?(Hash))
+        if (etype.kind_of?(Array) \
+            && defobj.kind_of?(Array) \
+            && defobj.empty?)
+          #
+          # Got a keyword that takes an array, but the array of
+          # definitions is empty.  Skip by doing nothing and advancing
+          # to the next key in the `ydata` hash.
+          #
+          nil
+        elsif (etype.kind_of?(Class) \
+               && defobj.kind_of?(Hash))
           #
           # A singleton instance definition.
           #
           klass		= etype
+=begin
           warn(format('loading: element is an instance of %s',
                       klass.name))
+=end
           self.process_definition(klass, defobj)
         elsif (etype.kind_of?(Array) \
                && defobj.kind_of?(Array) \
@@ -628,8 +661,10 @@ module TAGF
           # `etype[0]`.
           #
           klass		= etype.first
+=begin
           warn(format('loading: element is an array of %s',
                       klass.to_s))
+=end
           #
           # Loop through the array of definitions, instantiating
           # each in turn.
@@ -638,10 +673,14 @@ module TAGF
             self.process_definition(klass, elt)
           end
         elsif (etype.kind_of?(Hash))
-          warn(format('skipping: element is a hash: %s',
+          warn(format('%s: skipping element "%s": Hash: %s',
+                      __callee__.to_s,
+                      defkey,
                       etype.inspect))
         else
-          warn(format('skipping: element is UNKNOWN: %s => %s',
+          warn(format('%s: skipping element "%s": UNKNOWN: %s => %s',
+                      __callee__.to_s,
+                      defkey,
                       etype.inspect,
                       defobj.class.to_s))
         end
@@ -659,6 +698,7 @@ module TAGF
       # #abstracted_fields for each object.
       #
       self.reify_elements
+      return self.game
     end                         # load_game(file)
 
     nil

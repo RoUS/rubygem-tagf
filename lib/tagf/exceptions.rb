@@ -639,15 +639,15 @@ module TAGF
             owner_klass	= owner.class.name
             owner_name	= owner.name
             owner_eid	= owner.eid
-            @msg		= format('inventory for %s:"%s" is full; ' \
-                                         + '%i/%i %s, cannot add "%s"',
-                                         owner_klass,
-                                         (owner_name || owner_eid).to_s,
-                                         owner.items_current,
-                                         owner.capacity_items,
-                                         pluralise('item',
-                                                   owner.capacity_items),
-                                         (newitem.name || newitem.eid).to_s)
+            @msg	= format('inventory for %s:"%s" is full; ' \
+                                 + '%i/%i %s, cannot add "%s"',
+                                 owner_klass,
+                                 (owner_name || owner_eid).to_s,
+                                 owner.items_current,
+                                 owner.capacity_items,
+                                 pluralise('item',
+                                           owner.capacity_items),
+                                 (newitem.name || newitem.eid).to_s)
           end
           self.set_message(@msg)
         end                     # def initialize

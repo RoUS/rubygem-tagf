@@ -240,7 +240,7 @@ module TAGF
       #
       # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:capacity_mass)
-      
+
       #
       # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:current_mass)
@@ -261,10 +261,10 @@ module TAGF
       # @return [Boolean]
       #
       def contains_item?(*args, **kwargs)
-        
+
       end                       # def contains_item?
 
-      #
+      # @!method update_inventory!
       def update_inventory!
         if (TAGF.debugging?(:inventory))
           warn(format('Updating inventory for <%s>[%s]',
@@ -291,7 +291,25 @@ module TAGF
                         self.class.name,
                         self.eid.to_s))
           end
-          self.inventory.add(invobj)
+          if (invobj.kind_of?(EID))
+            eid		= invobj
+            invobj	= self.game.inventory[eid]
+            if (invobj.nil?)
+              #
+              # The thing in the #pending_inventory was a string, but
+              # apparently it isn't in the master inventory.  Complain
+              # about that.
+              #
+              # @todo
+              #   Race condition!
+              raise_exception(NotGameElement,
+                              format('pending inventory object ' \
+                                     + '"%s" assumed an EID, ' \
+                                     + 'but not in master inventory',
+                                     eid))
+            end
+          end
+          self.inventory.insert(invobj)
         end
         return self.inventory
       end                       # def update_inventory!
@@ -326,7 +344,7 @@ module TAGF
             end
             self.pending_inventory.push(arg)
           end
-          return self.inventory
+          return arg
         else
           self.update_inventory! unless (self.pending_inventory.empty?)
         end
@@ -341,7 +359,7 @@ module TAGF
                       self.class.name,
                       self.eid.to_s))
         end
-        result		= self.inventory.add(arg)
+        result		= self.inventory.insert(arg)
         return result
       end                       # def add(arg, **kwargs)
 
@@ -369,8 +387,11 @@ module TAGF
       def initialize_container(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
         @pending_inventory	||= []
-        kwargs[:owned_by]	= self
-        self.game.create_inventory_on(self, **kwargs)
+        iveid			= format('Inventory[%s]', self.to_key)
+        self.game.create_inventory_on(self,
+                                      **kwargs,
+                                      owned_by:		self,
+                                      inventory_eid:	iveid)
         return self
       end                       # def initialize_container
 

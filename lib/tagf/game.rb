@@ -40,6 +40,21 @@ module TAGF
     include(Exceptions)
     include(Mixin::Debugging)
 
+    # @!macro TAGF.constant.Loadable_Fields
+    Loadable_Fields		= [
+      'author',
+      'copyright',
+      'licence',
+      'version',
+      'date',
+      'start',
+    ]
+
+    # @!macro TAGF.constant.Abstracted_Fields
+    Abstracted_Fields		= {
+      start:			EID,
+    }
+
     #
     attr_accessor(:author)
 
@@ -80,6 +95,11 @@ module TAGF
 
     #
     attr_accessor(:savefile)
+
+    # @!attribute start
+    # @return [TAGF::Location]
+    #   the nominal starting location for new players in a new game.
+    attr_accessor(:start)
 
     #
     attr_reader(:creation_overrides)
@@ -271,11 +291,13 @@ module TAGF
 
     #
     def create_inventory_on(target, **kwargs)
+=begin
       warn(format("%s#%s(%s,\n  %s)",
                   self.klassname,
                   __callee__.to_s,
                   target.to_key,
                   PP.pp(kwargs, String.new).gsub(%r!\n!, "\n  ")))
+=end
       self.validate_container(target, Inventory)
       kwargs		= kwargs.merge(self.creation_overrides)
       kwargs[:owned_by]	= target

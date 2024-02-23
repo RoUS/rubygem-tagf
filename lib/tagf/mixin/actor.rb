@@ -20,6 +20,7 @@ warn(__FILE__) if (TAGF.debugging?(:file))
 #require('tagf')
 require('tagf/mixin/container')
 require('tagf/mixin/dtypes')
+require('tagf/exceptions')
 require('tagf/location')
 require('byebug')
 
@@ -33,6 +34,7 @@ module TAGF
     module Actor
 
       #
+      include(TAGF::Exceptions)
       include(Mixin::DTypes)
       include(Mixin::Container)
 
@@ -72,6 +74,7 @@ module TAGF
       # @!macro TAGF.constant.Abstracted_Fields
       Abstracted_Fields		= {
         breadcrumbs:		Array[TAGF::Location],
+        whereami:		EID,
       }
 
       #
@@ -96,6 +99,10 @@ module TAGF
       #
       attr_accessor(:attitude)
 
+      # @!attribute [rw] whereami
+      # @return [Location]
+      attr_accessor(:whereami)
+        
       # @!attribute [r] breadcrumbs
       # A list of the locations in which the actor has been located.
       # Each time an actor moves, other than to its previous location,
@@ -119,6 +126,7 @@ module TAGF
           attitude:	:neutral
         }
         self.initialize_element(*args, kwargs_defaults.merge(kwargs))
+        self.initialize_container(*args, kwargs_defaults.merge(kwargs))
         return self
       end                         # def initialize_actor
 
@@ -129,7 +137,7 @@ module TAGF
       def add(*args, **kwargs)
         begin
           super if (self.inventory.can_add?(*args, **kwargs))
-        rescue InventoryLimitError => e
+        rescue InventoryLimitExceeded => e
           warn("Inventory limit exception: #{e.to_s}")
         end
         return self

@@ -189,32 +189,6 @@ module TAGF
       attr_accessor(:shortdesc)
 
       #
-      # @!macro doc.TAGF.classmethod.int_accessor.invoke
-      int_accessor(:illumination)
-
-      #
-      # @!macro doc.TAGF.classmethod.float_accessor.invoke
-      float_accessor(:pct_dim_per_turn)
-
-      #
-      # @!macro doc.TAGF.classmethod.flag.invoke
-      flag(only_dim_near_player: true)
-
-      #
-      # @!macro doc.TAGF.classmethod.float_accessor.invoke
-      float_accessor(:mass)
-
-      #
-      # The volume used by the current object, in cubic
-      # (whatever-units-are-in-use).  This is only meaningful when an
-      # attempt might be made to place the object into a container with
-      # a volume limitation.  (See #mass,
-      # {Mixin::Container#capacity_items}.)
-      #
-      # @!macro doc.TAGF.classmethod.float_accessor.invoke
-      float_accessor(:volume)
-
-      #
       # Boolean attribute indicating whether the object can be moved
       # between inventories (<em>e.g.</em>, being picked up by the
       # player).  Things like rooms (Location-class objects) never
@@ -394,6 +368,84 @@ module TAGF
         return result
       end                       # def to_key
 
+      # @param [Hash<Symbol=>Any>]	kwargs
+      # @option kwargs [Integer]	:level
+      # @option kwargs [String]		:format
+      # @option kwargs [StringIO]	:sio
+      # @return [void]
+      def look(**kwargs)
+        level			= kwargs[:level].to_i
+        indent			= ' ' * level
+        sio			= kwargs[:sio] || StringIO.new
+        #
+        # Format our own description.
+        #
+        desc			= self.desc
+        if (level > 0)
+          desc			= indent + desc
+          desc.gsub!(%r!\n!, "\n" + indent)
+        end
+        format_def		= '%<desc>s'
+        format_c		= 'InventoryItemFormat'
+        if (self.class.const_defined?(format_c, false))
+          format_def		= self.class.const_get(format_c, false)
+        end
+        format_s		= kwargs[:format] || format_def
+        #
+        header_def		= nil
+        header_c		= 'InventoryHeader'
+        if (self.class.const_defined?(header_c, false))
+          header_def		= self.class.const_get(header_c, false)
+        end
+        header_s		= kwargs[:header] || header_def
+        sio.puts(desc)
+        #
+        # If this is a Location, report on any exits.
+        #
+        if (self.kind_of?(TAGF::Location))
+          self.paths.values.each do |cxobj|
+            sio.puts(cxobj.desc)
+          end
+        end
+        #
+        # Now process any visible things in the inventory.
+        #
+        if (self.has_inventory?)
+          iheader		= nil
+          self.inventory.each do |eid,iobj|
+            if ((! iobj.is_visible?) \
+                || iobj.kind_of?(TAGF::Connexion))
+              next
+            end
+            if (header_def)
+              if (iheader.nil?)
+                iheader		= true
+                sio.puts(indent + header_s)
+              end
+            end
+=begin
+            sio.puts(format(format_s,
+                            {
+                              desc:	cxobj.desc,
+                              article:	cxobj.article,
+                              Article:	cxobj.article.capitalize,
+                            }))
+=end
+            debugger
+            iobj.look(**kwargs,
+                      sio:	sio,
+                      format:	format_s,
+                      level:	level + 1
+                     )
+          end
+        end
+        if (level.zero?)
+          sio.rewind
+          puts(sio.read)
+        end
+        return nil
+      end                         # def look
+
       # @!method export
       # Uses the #loadable_fields method to determine all the fields
       # we should include in an export hash.  Fields that are simple
@@ -555,6 +607,7 @@ module TAGF
         # yet).  So don't treat them as element yet.
         #
         if (self.owned_by.kind_of?(TAGF::Mixin::Element))
+          debugger if (self.kind_of?(Player))
           self.owned_by.add(self)
         end
         return self

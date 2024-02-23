@@ -55,12 +55,31 @@ module TAGF
     # @return [Hash{Location=>Integer}]
     attr_reader(:locations)
 
+    
     #
     # Optional feature if the player faces in a particular direction.
     # Some TAGs give hir a basically 360° panoramic perspective where
     # this doesn't matter or is even considered.
     #
     attr_accessor(:facing)
+
+    # @!method export
+    # `Player`-specific export method, responsible for adding any
+    # unusual fields that need to be abstracted to the export hash.
+    # That is, things that can't be simply boiled down to a string
+    # EID.
+    #
+    # @return [Hash<String=>Any>]
+    #   the updated export hash.
+    def export
+      result			= super
+      lochash			= {}
+      result['locations']	= lochash
+      self.locations.each do |loc,visits|
+        pathhash[loc.eid]	= visits
+      end
+      return result
+    end                         # def export
 
     #
     # Update things when the player moves to a new location.  Update
@@ -120,7 +139,6 @@ module TAGF
       @breadcrumbs	= []
       @locations	= {}
       self.initialize_element(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
       self.initialize_actor(*args, **kwargs)
       self.game.add(self)
     end                         # def initialize
@@ -135,4 +153,5 @@ end                             # module TAGF
 # mode: ruby
 # indent-tabs-mode: nil
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
 # End:

@@ -32,6 +32,10 @@
   and set up the class methods for the invoking entity.
 * See about replacing monkey patch of `String` with a refining module.
 * Investigate inheritance of modules brought in with `using` method.
+* Add ability to have 'cloned' items (like torches) that can be
+  treated the same without having to manually create each one.  Maybe
+  a `tag` or `category` field?  And a `#create_{item-or-element}`
+  method to instantiate new elements in the category?
 * Add visibility/opacity to `Location` (for fog/darkness effects,
   *&c.*).
 * Add functionality for doors.
