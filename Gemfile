@@ -93,6 +93,7 @@ group(:development, :test) do
   gem('rspec',		'~> 3.0')
   gem('rubocop',	'~> 1.21')
   gem('rubocop-rake')
+  gem('ruby-graphviz')
   gem('simplecov')
   gem('test-unit',	'~> 3.0')
   gem('yard', 		'~> 0.9.11')
