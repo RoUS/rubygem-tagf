@@ -1475,6 +1475,11 @@ module TAGF
         if (@msg.nil?)
           @msg			= 'object unsupported ' \
                                   + 'for this operation'
+          if (kwargs.has_key?(:operation))
+            @msg		= format('%s (%s)',
+                                         @msg,
+                                         kwargs[:operation].to_sym)
+          end
           if (kwargs.has_key?(:object))
             obj			= kwargs[:object]
             @msg		= format('%s: %s:%s',
@@ -1629,7 +1634,7 @@ module TAGF
       # @option kwargs [TAGF::Mixin::Element]	:element
       #   Object being re-instantiated by the `YAML` loader tools.
       # @option kwargs [String]			:member
-      #   The EID (or other string) identifying the 
+      #   The EID (or other string) identifying the
       # @option kwargs [Symbol]			:field
       #   The attribute of the `:element` argument that is being
       #   restored, such as `:paths` for a Connexion, or `:owned_by`
@@ -1644,6 +1649,9 @@ module TAGF
             @msg	= format('error restoring element "%s"; ' \
                                  + 'component object not found',
                                  element.to_key)
+            if (raiser = kwargs[:raiser])
+              @msg	= format('%s: %s', raiser.to_s, @msg)
+            end
             if (member_eid = kwargs[:member])
               @msg	= format("%s\n\tEID of missing object = '%s'",
                                  @msg,
@@ -1708,6 +1716,50 @@ module TAGF
 
       nil
     end                         # class UnknownAttribute
+
+    # Report that two different Path objects use one (or more) of the
+    # same Path#via motion keywords, raising an irreconcilable
+    # conflict.
+    class ConflictingPath < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID(0x01d)
+
+      self.severity	= :severe
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @!macro ErrorBase.initialize
+      # @option kwargs [Symbol]			:newpath
+      #   The Path object which would add a conflicting entry.
+      # @option kwargs [TAGF::Mixin::Element]	:paths
+      #   Existing linked paths with which the new one would conflict.
+      # @return [ConflictingPath] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__callee__)
+        super
+        if (@msg.nil?)
+          if ((newpath = kwargs[:newpath]) \
+              && (estpaths = kwargs[:paths]))
+            @msg	= format('new path %s conflicts with ' \
+                                 + 'existing path(s): %s',
+                                 newpath.to_key,
+                                 estpaths.map { |p|
+                                   p.to_key
+                                 }.join(', '))
+          else
+            @msg	= 'new path conflicts with ' \
+                          + 'existing path(s)'
+          end
+        end                     # if (@msg.nil?)
+        self.set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class ConflictingPath
 
     nil
   end                           # module TAGF::Exceptions

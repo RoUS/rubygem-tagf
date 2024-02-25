@@ -26,7 +26,7 @@ require('byebug')
 module TAGF
 
   #
-  class Connexion
+  class Path
 
     #
     include(Mixin::UniversalMethods)
@@ -74,9 +74,29 @@ module TAGF
     # @return [Array<String>]
     #   The direction keywords (such as `"se"`) that leave the origin
     #   and follow the path to the destination.
-    attr_accessor(:via)
+    attr_reader(:via)
+    def via=(val)
+      if (! val.kind_of?(Array))
+        val		= [ *val ]
+      end
+      @via		= val
+    end                         # def via=(val)
 
     attr_accessor(:must_possess)
+
+    # @!method conflicts(*args, **kwargs)
+    #
+    def conflicts(*args, **kwargs)
+      result		= []
+      args.each do |other|
+        other_via	= [ *other.via ]
+        unless ((self.via & other_via).empty?)
+          result.push(other)
+        end
+      end
+      result		= nil if (result.empty?)
+      return result
+    end                         # def conflicts
 
     # @!method initialize(*args, **kwargs)
     def initialize(*args, **kwargs)
@@ -86,7 +106,7 @@ module TAGF
     end                         # def initialize(*args, **kwargs)
 
     nil
-  end                           # class Connexion
+  end                           # class Path
 
   nil
 end                             # module TAGF

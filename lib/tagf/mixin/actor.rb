@@ -102,7 +102,7 @@ module TAGF
       # @!attribute [rw] whereami
       # @return [Location]
       attr_accessor(:whereami)
-        
+
       # @!attribute [r] breadcrumbs
       # A list of the locations in which the actor has been located.
       # Each time an actor moves, other than to its previous location,
@@ -136,7 +136,8 @@ module TAGF
       #
       def add(*args, **kwargs)
         begin
-          super if (self.inventory.can_add?(*args, **kwargs))
+          super if (self.inventory.nil? \
+                    || self.inventory.can_add?(*args, **kwargs))
         rescue InventoryLimitExceeded => e
           warn("Inventory limit exception: #{e.to_s}")
         end

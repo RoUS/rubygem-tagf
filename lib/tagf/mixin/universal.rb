@@ -292,19 +292,19 @@ module TAGF
       # Acceptable values for `exc_object` are any of the following:
       #
       # 1. a string
-      #    — a new `RuntimeError` exception is created from the
-      #    string.  `args` is ignored.
-      # 1. an exception object
-      #    — the object is raised as is.  `args` is ignored.
-      # 1. an exception class
-      #    — a new exception object is created from this constructor.
-      #    `args` is passed to the constructor, and `kwargs` as well
-      #    if `exc_object` is a descendant of
-      #    {TAGF::Exceptions::ErrorBase}.
-      # 1. a callable object that returns one of the above
-      #    — anything that responds to the `:call` method falls into
-      #    this category.  It will be invoked with `.call(*args)`.
-      #    `kwargs` isn't passed.
+      #    : a new `RuntimeError` exception is created from the
+      #      string.  `args` is ignored.
+      # 2. an exception object
+      #    : the object is raised as is.  `args` is ignored.
+      # 3. an exception class
+      #    : a new exception object is created from this constructor.
+      #      `args` is passed to the constructor, and `kwargs` as well
+      #      if `exc_object` is a descendant of
+      #      {TAGF::Exceptions::ErrorBase}.
+      # 4. a callable object that returns one of the above
+      #    : anything that responds to the `:call` method falls into
+      #      this category.  It will be invoked with `.call(*args)`.
+      #      `kwargs` isn't passed.
       #
       # @param [String,Class,Exception,Proc] exc_object
       #   A string (converted to a `RuntimeError` exception), an
@@ -349,16 +349,16 @@ module TAGF
           #
           # `exc_object` possibilities:
           # * an exception instance
-          #   — used as-is
+          #   : used as-is
           # * an exception class (.ancestors.include?(:Exception))
-          #   — an instance will be created from it and `args`
+          #   : an instance will be created from it and `args`
           # * something callable
-          #   — exc_object.call(*args), then repeat
+          #   : exc_object.call(*args), then repeat
           # * a string
-          #   — a `RuntimeError` instance is created from exc_object;
+          #   : a `RuntimeError` instance is created from exc_object;
           #   `args` is ignored
           # * anything else
-          #   — raise a Exceptions::NotExceptional exception
+          #   : raise a Exceptions::NotExceptional exception
           #
           if (exc_object.kind_of?(Exception))
             #

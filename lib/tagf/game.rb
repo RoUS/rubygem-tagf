@@ -37,6 +37,7 @@ module TAGF
     include(Mixin::Container)
 
     #
+    extend(Forwardable)
     include(Exceptions)
     include(Mixin::Debugging)
 
@@ -55,11 +56,57 @@ module TAGF
       start:			EID,
     }
 
+    # @!attribute [rw] author
+    # The game's author's identity, in free-form text.  Name,
+    # pseudonym, eddress, galactic coödinates, whatever — all are
+    # grist here.
     #
+    # @return [String]
+    #   the identity of the game's author.
     attr_accessor(:author)
 
+    # @!attribute [rw] copyright_year
+    # The year (or years) for which copyright has been asserted for
+    # this game content.  Can be an integer or a string; multiple
+    # years or a span can be specified with commas and brackets.
     #
+    # @return [String]
+    attr_accessor(:copyright_year)
+    def copyright_year
+      result		= @copyright_year
+      if (result.nil?)
+        result		= format('%04i', Time.new.year)
+      end
+      return result
+    end                         # def copyright_year
+    def copyright_year=(value)
+      if (value.kind_of?(Integer))
+        value		= format('%04s', value)
+      end
+      unless (value.kind_of?(String))
+        raise_exception(ArgumentError,
+                        'copyright year must be a string ' \
+                        + 'or an integer')
+      end
+      @copyright_year	= value
+    end                         # def copyright_year=(value)
+
+    # @!attribute [rw] copyright
+    # The copyright notice for this game.  If not set, attempts to
+    # read it will return a string calculated from the values of
+    # #author and #copyright_year.
+    #
+    # @return [String]
+    #   the explicit or calculated copyright notice line.
     attr_accessor(:copyright)
+    def copyright
+      return @copyright if (@copyright)
+      author		= self.author || '<unknown>'
+      result		= format('Copyright © %s by %s',
+                                 self.copyright_year,
+                                 author)
+      return result
+    end                         # def copyright
 
     #
     attr_accessor(:licence)
@@ -71,6 +118,8 @@ module TAGF
 
     #
     attr_accessor(:date)
+
+    attr_accessor(:keywords)
 
     #
     # This is the game's master inventory.  All objects (including
@@ -105,6 +154,12 @@ module TAGF
     attr_reader(:creation_overrides)
     protected(:creation_overrides)
 
+    # This is the game object; its inventory is the master registry
+    # for all elements in the game.  Make Inventory#filter available
+    # directly so we don't have to do all sorts of
+    # `game.inventory.filter` nonsense.
+    def_delegator(:@inventory, :filter)
+
     # @!method export_game
     # @return [Hash<String=>Any>]
     def export_game
@@ -135,52 +190,52 @@ module TAGF
     # <strong>Game</strong> object.  Every element, including this
     # one, <em>must</em> have the following attributes:
     #
-    # * `#game` --
-    #   a link to the main Game object (an instance of this class).
-    # * `#eid` --
-    #   a unique identifier that is used to locate the element in the
-    #   various inventories -- particularly the master, which is the
-    #   inventory of the Game object.  The <em>`eid`</em> can be any
-    #   class of object, but short strings without any whitespace are
-    #   recommended.  See Mixin::Element#eid
-    # * `#owned_by` --
-    #   the object in whose inventory the element is listed.
-    #   <em>Every</em> element is listed in the master inventory, but
-    #   each may also appear in one additional inventory -- such as
-    #   that of a pouch, or a backpack, or a Location or Feature.
+    # * `#game`
+    #   : a link to the main Game object (an instance of this class).
+    # * `#eid`
+    #   : a unique identifier that is used to locate the element in
+    #     the various inventories -- particularly the master, which is
+    #     the inventory of the Game object.  The <em>`eid`</em> can be
+    #     any class of object, but short strings without any
+    #     whitespace are recommended.  See Mixin::Element#eid
+    # * `#owned_by`
+    #   : the object in whose inventory the element is listed.
+    #     <em>Every</em> element is listed in the master inventory,
+    #     but each may also appear in one additional inventory -- such
+    #     as that of a pouch, or a backpack, or a Location or Feature.
     #
     # The arguments to Game#initialize are passed down to other
     # constructors and methods.  They may be modified slightly by each
     # callee in turn, so the order of invocation can be important.
     #
-    # @param [Array] args ([])
+    # @param [Array]			args		([])
     #   an optional array of order-dependent arguments.  Not used by
     #   Game#initialize.
-    # @param [Hash<Symbol=>Object>] kwargs ({})
+    # @param [Hash<Symbol=>Object>]	kwargs		({})
     #   a hash with symbolic keys that are either used to identify
     #   attributes to be set to the corresponding values, flags,
     #   control instructions, or other tuples intended for methods and
     #   constructors Game#initialize may invoke.
-    # @option kwargs [Symbol] :eid (nil)
+    # @option kwargs [Symbol]		:eid		(nil)
     #   This should be a simple string; it is recommended that you use
     #   a word or portmanteau that identifies the game itself (such as
     #   `adventure` or `zork`), since the eid can be used to pick the
     #   appropriate set of definitions out of a YAML file.  (See
     #   #load)
-    # @option kwargs [Symbol] :owned_by (nil)
+    # @option kwargs [Symbol]		:owned_by	(nil)
     #   For a Game object, the <em>`owned_by`</em> attribute is
     #   unequivocally set to the Game object itself.  That is, the
     #   game owns itself.  For other objects created by this
     #   constructor, this tupe may be passed through from the caller,
     #   or overridden by Game#initialize as appropriate.
-    # @option kwargs [Symbol] :loadfile (nil)
+    # @option kwargs [Symbol]		:loadfile	(nil)
     #   The filesystem path to the default YAML file from which the
     #   game's definitions will be loaded.  If this isn't set as part
     #   of the constructor invocation, it will need to be set
     #   explicitly or specified on a call to the #load method.
-    # @option kwargs [Symbol] :name (nil)
-    # @option kwargs [Symbol] :desc (nil)
-    # @option kwargs [Symbol] :shortdesc (nil)
+    # @option kwargs [Symbol]		:name		(nil)
+    # @option kwargs [Symbol]		:desc		(nil)
+    # @option kwargs [Symbol]		:shortdesc	(nil)
     # @return [Game]
     #   self
     def initialize(*args, **kwargs)
@@ -313,7 +368,7 @@ module TAGF
       kwargs		= kwargs.merge(self.creation_overrides)
       item		= Item.new([], **kwargs)
       self.add(item)
-      return item      
+      return item
     end                         # def create_item
 
     #
@@ -333,7 +388,7 @@ module TAGF
       kwargs		= override.merge(kwargs.merge(owned_by: self.game))
       item		= Container.new([], **kwargs)
       self.game.add(item)
-      return item      
+      return item
     end                         # def create_container
 
     #
@@ -370,7 +425,7 @@ module TAGF
       kwargs		= override.merge(kwargs.merge(owned_by: self.game))
       item		= Location.new([], **kwargs)
       self.game.add(item)
-      return item      
+      return item
     end                         # def create_location
 
     #

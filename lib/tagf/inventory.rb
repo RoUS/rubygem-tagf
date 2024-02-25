@@ -87,9 +87,7 @@ module TAGF
     # encouraged.
     #
     # @return [String]
-    #   by default, <tt><em>classname</em>[<em>EID</em>]</tt>
-    #   (<em>e.g.</em>, `"Game[Advent]"` or
-    #   `"Connexion[Loc1-Loc2-via-SW]"`.
+    #   <tt>"Inventory[<em>inventory-owner-key</em>]"</tt>
     def to_key
       result		= format('%s[%s]',
                                  self.klassname,
@@ -99,6 +97,58 @@ module TAGF
 
     def_delegator(:@contents, :keys)
     def_delegator(:@contents, :values)
+
+    # @!method filter(**kwargs)
+    # Apply an iterative #select to objects in this inventory.
+    # `kwargs` is a hash of attribute names and values used to refine
+    # the results.  The special key `:klass` allows narrowing the
+    # selection to object of the specified class or classes.
+    #
+    # @example
+    #   .filter(eid: 'SomeEID')
+    #   => # nil or an array of objects whose `eid` was "SomeEID"
+    #   .filter(eid: ['SomeEID', 'SomeOtherEID'])
+    #   => # nil or an array of objects whose `eid`s matched
+    #
+    # Objects which do not have the named attribute are automatically
+    # excluded.
+    #
+    # @param [Hash<Symbol=>Any>]	kwargs
+    # @option kwargs [Object]		:klass
+    #   Refines selection to object whose #class (<em>not</em> class
+    #   NAME!) is included in the comparison value.  <strong>N.B.:
+    #   This is an <em>exact</em> match, not an inheritance one.
+    #   Think `#is_a?` as opposed to `#kind_of?`.</strong>
+    # @option kwargs [Object]		symbol
+    #   Any symbol matching an attribute for objects in the selection
+    #   list.  If an object in the list doesn't have the attribute, it
+    #   is automatically excluded.
+    #
+    # @return [Array<Object>]
+    #   `nil` if no matching objects were found, or an array of the
+    #   matches otherwise.
+    def filter(**kwargs)
+      result		= self.values
+      catch(:filtered) do
+        if (klass = kwargs[:klass])
+          klasses	= [ *klass ].flatten.uniq
+          result	= result.select { |iobject|
+            klasses.include?(iobject.class)
+          }
+          throw(:filtered) if (result.nil? || result.empty?)
+          kwargs.delete(:klass)
+        end
+        kwargs.each do |fsym,testval|
+          testval	= [ *testval ].flatten.uniq
+          result	= result.select { |iobject|
+            iobject.respond_to?(fsym) \
+            && testval.include?(iobject.send(fsym))
+          }
+          throw(:filtered) if (result.nil? || result.empty?)
+        end
+      end                       # catch(:filtered) do
+      return result
+    end                         # def filter(**kwargs)
 
     #
     # @param [Hash<Symbol=>Any>]	kwargs

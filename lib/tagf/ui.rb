@@ -369,14 +369,17 @@ module TAGF
       # The list of attributes to process can be modified by two
       # constants that might be declared in the receiver's class:
       #
-      # * `CONTROLS_ADD` — an array of symbols identifying attributes
-      #   that aren't included in KWSYMS but are specific to the
-      #   declaring class, and should be included in the collection
-      # * `CONTROLS_OMIT` — an array of symbols identifying attributes
-      #   that <em>might</em> be included in KWSYMS and <em>might</em>
-      #   be valid for the receiver, which should nevertheless not be
-      #   included in the collection.
-      # @param [Object] obj (self)
+      # * `CONTROLS_ADD`
+      #   : an array of symbols identifying attributes
+      #     that aren't included in KWSYMS but are specific to the
+      #     declaring class, and should be included in the collection
+      # * `CONTROLS_OMIT`
+      #   : an array of symbols identifying attributes that
+      #     <em>might</em> be included in KWSYMS and <em>might</em> be
+      #     valid for the receiver, which should nevertheless not be
+      #     included in the collection.
+      #
+      # @param [Object]			obj		(self)
       # @return [Hash<Symbol=>Object>]
       def controls(rcvr=self)
         ckeys		= KWSYMS.keys
@@ -493,7 +496,11 @@ module TAGF
       public(:gets)
 
       # @!attribute [r] winsize
-      # @return [Array<Integer,Integer>]
+      # Determine and return the visible terminal dimensions.  Try to
+      # ask the output stream if it's a tty, or else assume a legacy
+      # default.
+      #
+      # @return [Array<(Integer,Integer)>]
       def winsize
         outstream	= self.output
         if (outstream.respond_to?(:tty?) && outstream.tty?)
@@ -558,27 +565,27 @@ module TAGF
     #        There is a small shed here.
     #        EOF
     #
-    # * <em>prefix</em> —
-    #   Everything, including whitespace, preceding the `<<`
-    #   introducer.  In the example, this would be
+    # * <em>prefix</em>
+    #   : Everything, including whitespace, preceding the `<<`
+    #     introducer.  In the example, this would be
     #
     #     "`two_liner = `"
     #
-    #   Notice the inclusion of the spaces.
-    # * Optional hyphen —
-    #   The presence of the hyphen (dash) immediately preceding the
-    #   delimiter signals that when the delimiter is encountered, it
-    #   <em>may</em> be preceded by irrelevant whitespace, which is to
-    #   be stripped and ignored.  This is intended to improve
-    #   readability by humans (not software).
-    # * <em>delimiter</em> —
-    #   A 'word' which, when read on a line by itself, signals the end
-    #   of the here-doc content.  The delimiter is at least one
-    #   character long, is case-sensitive, and may be composed of
-    #   alphanumerics and the underscore (`_`) character.  Trailing
-    #   whitespace is ignored.
-    # * <em>text-line</em> —
-    #   Lines of text comprising the actual value of the here-doc
+    #     Notice the inclusion of the spaces.
+    # * Optional hyphen
+    #   : The presence of the hyphen (dash) immediately preceding the
+    #     delimiter signals that when the delimiter is encountered, it
+    #     <em>may</em> be preceded by irrelevant whitespace, which is
+    #     to be stripped and ignored.  This is intended to improve
+    #     readability by humans (not software).
+    # * <em>delimiter</em>
+    #   : A 'word' which, when read on a line by itself, signals the
+    #     end of the here-doc content.  The delimiter is at least one
+    #     character long, is case-sensitive, and may be composed of
+    #     alphanumerics and the underscore (`_`) character.  Trailing
+    #     whitespace is ignored.
+    # * <em>text-line</em>
+    #   : Lines of text comprising the actual value of the here-doc.
     class HereDoc
 
       #
@@ -742,7 +749,7 @@ module TAGF
       #   class but not in {KWSYMS}.  When attribute values are being
       #   collected, these are added to the list
       CONTROLS_ADD	= %i[
-        interface      
+        interface
       ]
 
       # @!macro CONTROLS_OMIT
@@ -1236,7 +1243,7 @@ module TAGF
       # history lines.  Can optionally erase the Readline::HISTORY
       # buffer after making the copy, depending upon the value of
       # the `erase` argument.
-      # 
+      #
       # @param [Boolean] erase (false)
       #   Controls whether or not the Readline::HISTORY buffer is
       #   cleared after all the lines have been copied from it.
@@ -1424,7 +1431,7 @@ module TAGF
         histories
         contexts
       ]
-      
+
       # @!macro CONTROLS_OMIT
       CONTROLS_OMIT	= %i[
       ]

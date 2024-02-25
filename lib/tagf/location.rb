@@ -43,11 +43,8 @@ module TAGF
     #   the updated export hash.
     def export
       result			= super
-      pathhash			= {}
-      result['paths']		= pathhash
-      self.paths.each do |via,cx|
-        pathhash[via]		= cx.eid
-      end
+      pathlist			= [] | self.paths.map { |p| p.eid }
+      result['paths']		= pathlist
       return result
     end                         # def export
 
@@ -59,7 +56,7 @@ module TAGF
     #
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
-      @paths		||= {}
+      @paths		||= []
       self.initialize_element(*args, **kwargs)
       self.initialize_location(*args, **kwargs)
       self.game.add(self)

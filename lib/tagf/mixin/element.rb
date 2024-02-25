@@ -73,12 +73,6 @@ module TAGF
       end
       include(Mixin::DTypes)
 
-      # @!macro TAGF.constant.Abstracted_Fields
-      Abstracted_Fields		= {
-        game:			EID,
-        owned_by:		EID,
-      }
-
       # @!macro TAGF.constant.Loadable_Fields
       Loadable_Fields		= [
         #
@@ -100,17 +94,13 @@ module TAGF
         'article',
         'preposition',
         #
-        # If this element has any lighting attributes, what are they?
+        # Array of identifers for marking relationships between
+        # elements.  For example, if keyword `"xyzzy"` is supposed to
+        # teleport the player to a particular location, that
+        # location's element would include `"xyzzy"` as one of its
+        # tags so that the interpreter could find it.
         #
-        'illumination',
-        'pct_dim_per_turn',
-        'only_dim_near_player',
-        #
-        # Attributes controlling how the element affects appearance in
-        # an inventory.
-        #
-        'mass',
-        'volume',
+        'tags',
         #
         # Mostly for game features, like rooms, furniture, invisible
         # walls, &c.
@@ -118,6 +108,22 @@ module TAGF
         'is_static',
         'is_visible',
       ]
+
+      # @!macro TAGF.constant.Abstracted_Fields
+      Abstracted_Fields		= {
+        game:			EID,
+        owned_by:		EID,
+      }
+
+      # @!attribute [r] tags
+      # Array of identifers for marking relationships between
+      # elements.  For example, if keyword `"xyzzy"` is supposed to
+      # teleport the player to a particular location, that location's
+      # element would include `"xyzzy"` as one of its tags so that the
+      # interpreter could find it.
+      #
+      # @return [Array<(String,Symbol)>]
+      attr_reader(:tags)
 
       # @!attribute [r] abstractions
       # This attribute is a hash used during load or import.
@@ -231,6 +237,29 @@ module TAGF
       # @return [String]
       #   "`on`" or "`in`" as appropriate.  The default is "`in`".
       attr_accessor(:preposition)
+
+      # @!method has_tags?(*values, **kwargs)
+      # Check to see if the receiver's #tags array attribute contains
+      # <strong>all</strong> of the items in the `tagvalues` array.
+      #
+      # @param [Array<Any>]		values
+      #   List of values that must be found in the receiver's #tags
+      #   (or other if overridden by `kwargs[:field]`) field in order
+      #   for this method to return `true`.
+      # @param [Hash<Symbol=>Any>]	kwargs
+      #   Hash of keyword arguments.
+      # @option kwargs [Symbol]		field
+      #   Override the field (default `:tags`) to check for inclusion
+      #   of all items in `values`.
+      # @return [Boolean]
+      #   `true` if the element's #tags attribute (or the one
+      #   specified by `kwargs[:field]`) includes `tagvalue`.
+      def has_tags?(*values, **kwargs)
+        field		= (kwargs[:field] || :tags).to_sym
+        assigned_values	= [ *self.send(field) ]
+        result		= (assigned_values & values) == values
+        return result
+      end                       # def has_tags?(*values)
 
       #
       def describe(**kwargs)
@@ -360,7 +389,7 @@ module TAGF
       # @return [String]
       #   by default, <tt><em>classname</em>[<em>EID</em>]</tt>
       #   (<em>e.g.</em>, `"Game[Advent]"` or
-      #   `"Connexion[Loc1-Loc2-via-SW]"`.
+      #   `"Path[Loc1-Loc2-via-SW]"`.
       def to_key
         result		= format('%s[%s]',
                                  self.klassname,
@@ -403,7 +432,7 @@ module TAGF
         # If this is a Location, report on any exits.
         #
         if (self.kind_of?(TAGF::Location))
-          self.paths.values.each do |cxobj|
+          self.paths.each do |cxobj|
             sio.puts(cxobj.desc)
           end
         end
@@ -414,7 +443,7 @@ module TAGF
           iheader		= nil
           self.inventory.each do |eid,iobj|
             if ((! iobj.is_visible?) \
-                || iobj.kind_of?(TAGF::Connexion))
+                || iobj.kind_of?(TAGF::Path))
               next
             end
             if (header_def)
@@ -460,8 +489,8 @@ module TAGF
       # can be processed by overriding #abstractify on a
       # <em>per</em>-class or -module basis and calling `super`.
       #
-      # @see {Loadable_Fields}
-      # @see {Abstracted_Fields}
+      # @see Loadable_Fields
+      # @see Abstracted_Fields
       # @see #abstractify
       # @return [Hash<String=>Any>]
       def export
@@ -546,6 +575,7 @@ module TAGF
       def initialize_element(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
         @eid		||= kwargs[:eid] || self.object_id.to_s
+        @tags		||= []
         if (self.owned_by.nil? \
             && ((! kwargs.has_key?(:owned_by)) \
                 || kwargs[:owned_by].nil?))

@@ -37,6 +37,16 @@ module TAGF
       include(Mixin::DTypes)
       include(Mixin::UniversalMethods)
 
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        #
+        # If this element has any lighting attributes, what are they?
+        #
+        'illumination',
+        'pct_dim_per_turn',
+        'only_dim_near_player',
+      ]
+
       # @!attribute [rw] is_lit
       # @!macro doc.TAGF.classmethod.flag.invoke
       # Whether or not this light source is actually illuminated and

@@ -21,11 +21,13 @@ require('tagf')
 require('tagf/mixin/dtypes')
 require('tagf/mixin/element')
 require('tagf/mixin/universal')
-require('tagf/connexion')
 require('tagf/exceptions')
+require('tagf/game')
 require('tagf/item')
+require('tagf/keyword')
 require('tagf/location')
 require('tagf/npc')
+require('tagf/path')
 require('tagf/player')
 require('byebug')
 
@@ -50,6 +52,8 @@ module TAGF
   #
   class Filer
 
+    include(TAGF)
+    include(TAGF::Exceptions)
     include(TAGF::Mixin::DTypes)
     include(TAGF::Mixin::UniversalMethods)
 
@@ -61,14 +65,14 @@ module TAGF
       'game'            => Game,
       'item'            => Item,
       'items'           => Array[Item],
+      'keyword'		=> Keyword,
+      'keywords'	=> Array[Keyword],
       'location'        => Location,
       'locations'       => Array[Location],
-      'connexion'       => Connexion,
-      'connexions'      => Array[Connexion],
       'container'       => Container,
       'containers'      => Array[Container],
-      'path'            => Hash[String,Connexion],
-      'paths'           => Array[Hash[String,Connexion]],
+      'path'            => Path,
+      'paths'           => Array[Path],
       'npc'             => NPC,
       'npcs'            => Array[NPC],
       'player'          => Player,
@@ -339,14 +343,17 @@ module TAGF
         end
         if (! getter_exc.nil?)
           raise_exception(TAGF::Exceptions::UnknownAttribute,
+                          raiser:  __callee__,
                           field:   fgetter,
                           element: obj)
         end
         if (fval.kind_of?(String))
           reifobj	= self.elements[fval]
           if (reifobj.nil?)
-            debugger
-            next
+            raise_exception(TAGF::Exceptions::MemberNotFound,
+                            element:	obj,
+                            member:	fval,
+                            field:	fgetter)
           end
           obj.instance_variable_set(fivar, reifobj)
         end
@@ -354,7 +361,7 @@ module TAGF
       return obj
     end                         # def reify_generic
 
-    # @!method reify_Connexion(obj, flist)
+    # @!method reify_Path(obj, flist)
     # Replace abstracted fields in `obj` (<em>i.e.</em>, those
     # containing an EID rather than an object reference) with the
     # appropriate values.  Fields are set with `instance_variable_set`
@@ -370,7 +377,7 @@ module TAGF
     # @raise [TAGF::Exceptions::MemberNotFound]
     # @return [TAGF::Mixin::Element]
     #   the original element with all known abstractions replaced.
-    def reify_Connexion(obj, flist)
+    def reify_Path(obj, flist)
 =begin
       warn(format("%s: %s(%s,\n  %s)",
                   __callee__.to_s,
@@ -394,22 +401,23 @@ module TAGF
           reifobj	= self.elements[fval]
           if (reifobj.nil?)
             raise_exception(TAGF::Exceptions::MemberNotFound,
+                            raiser:	__callee__,
                             element:	obj,
                             member:	fval,
-                            field:	getter)
+                            field:	fgetter)
           end
           obj.instance_variable_set(fivar, reifobj)
         end
       end                       # flist.each
       #
-      # Re-own Connexion objects from the game to the origin
+      # Re-own Path objects from the game to the origin
       # Location.
       #
       if (obj.owned_by == self.game)
         obj.owned_by	= obj.origin
       end
       return obj
-    end                         # def reify_Connexion
+    end                         # def reify_Path
 
     # @!method reify_Location(obj, flist)
     # Replace abstracted fields in `obj` (<em>i.e.</em>, those
@@ -436,14 +444,15 @@ module TAGF
                   PP.pp(flist, String.new).gsub(%r!\n!, "\n  ")))
 =end
       #
-      # We're reconsituting the paths; connexions to other
-      # locations.  It's a hash rather than a scalar, which is why
-      # we have this Location-specific reification method.
+      # We're reconsituting the paths to other locations.  It's an
+      # array rather than a scalar, which is why we have this
+      # Location-specific reification method.
       #
       fgetter		= :paths
       fivar		= flist[fgetter]
-      vhash		= obj.send(fgetter) || {}
-      vhash.each do |via,cxeid|
+      vlist		= obj.send(fgetter) || []
+      varray		= []
+      vlist.each do |cxeid|
         cxobj		= self.elements[cxeid]
         if (cxobj.nil?)
           raise_exception(TAGF::Exceptions::MemberNotFound,
@@ -451,14 +460,14 @@ module TAGF
                           member:	cxeid,
                           field:	fgetter)
         end
-        vhash[via]	= cxobj
-      end                       # vhash.each do
+        varray.push(cxobj)
+      end                       # vlist.each do
 
       #
       # We've restored what we can of the paths, so update the
       # location's field and move on to the next field to reify.
       #
-      obj.instance_variable_set(:@paths, vhash)
+      obj.instance_variable_set(:@paths, varray)
       return obj
     end                         # def reify_Location
 
@@ -577,6 +586,7 @@ module TAGF
       begin
         @yamldata	= YAML.load(fdata)
       rescue StandardError => parse_exc
+        debugger
       end
       #
       # Now, if there was a parse error, report it under our own

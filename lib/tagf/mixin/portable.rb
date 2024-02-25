@@ -37,6 +37,16 @@ module TAGF
       include(Mixin::DTypes)
       include(Mixin::UniversalMethods)
 
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        #
+        # Attributes controlling how the element affects appearance in
+        # an inventory.
+        #
+        'mass',
+        'volume',
+      ]
+
       # @!attribute [rw] mass
       # @!macro doc.TAGF.classmethod.float_accessor.invoke
       # How much this element weighs by itself.  If it has an
@@ -49,7 +59,7 @@ module TAGF
       #   size) are in effect.</strong>
       #
       # @return [Float]
-      #   
+      #
       float_accessor(:mass)
 
       # @!attribute [rw] volume

@@ -20,7 +20,7 @@
 require('tagf/mixin/dtypes')
 require('tagf/mixin/lightsource')
 require('tagf/mixin/universal')
-require('tagf/connexion')
+require('tagf/path')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -66,19 +66,19 @@ module TAGF
 
       # @!macro TAGF.constant.Abstracted_Fields
       Abstracted_Fields		= {
-        paths:			Hash[String,TAGF::Connexion],
+        paths:			Array[TAGF::Path],
       }
 
       # @!attribute [r] paths
       # Connexions between Locations are called paths and are
-      # described by {Connexion} objects in the `#paths` hash.  A path
+      # described by {Path} objects in the `#paths` hash.  A path
       # hash key is a direction keyword, such as `se` or `down`; the
-      # value is the `Connexion` object that marks where the path
+      # value is the `Path` object that marks where the path
       # leads (the destination), whence it originates (the origin),
       # and whether the player can 'back up.'  (If the destination is
       # at the bottom of a cliff, it's probably not reversible.)
       #
-      # @see TAGF::Connexion
+      # @see TAGF::Path
       # @see TAGF::Location
       attr_reader(:paths)
 
@@ -90,66 +90,44 @@ module TAGF
       # Add a path from the current location to another.  Keyword
       # argument values override any corresponding order-dependent
       # ones.  Any acceptable argument combination that conflicts with
-      # the value of the `via` field in the Connexion object will
+      # the value of the `via` field in the Path object will
       # override it, and cause the latter to be overwritten with a
       # warning.
       #
-      # 1. `add_path(Connexion)` —
-      #    The `via` direction for the path is extracted from the
-      #    Connexion object.
-      # 1. `add_path("up", Connexion)` —
-      #    The `"up"` argument overrides <strong>and
-      #    overwrites</strong> any `:via` field in the Connexion
-      #    object.  If this occurs, a warning is issued.
+      # 1. `add_path(Path)`
+      #    : The `via` direction for the path is extracted from the
+      #      Path object.
+      # 2. `add_path("up", Path)`
+      #    : The `"up"` argument overrides <strong>and
+      #      overwrites</strong> any `:via` field in the Path
+      #      object.  If this occurs, a warning is issued.
       #
       # @param [Array]			args
-      #   Either a Connexion object, or a direction keyword
-      #   <em>and</em> a Connexion object.  See the description for
-      #   how they are interpreted.
+      #   One or more Path objects.
       # @param [Hash<Symbol=>Any>]	kwargs
       #   Currently ignored.
       # @return [Location] self
       def add_path(*args, **kwargs)
-        via			= nil
-        cx			= nil
-        if ((args.count == 1) \
-            && args[0].kind_of?(TAGF::Connexion))
-          cx			= args[0]
-          via			= cx.via
-        elsif ((args.count == 2) \
-               && args[0].kind_of?(String) \
-               && args[1].kind_of?(Connexion))
-          via			= args[0]
-          cx			= args[1]
-        else
-          raise_exception(ArgumentError,
-                          format('%s: arguments must be ' \
-                                 + '(Connexion) or ' \
-                                 + '(String,Connexion): ' \
-                                 + '(%s)',
-                                 __callee__.to_s,
-                                 args.map { |e|
-                                   e.class.to_s.sub(%r!^.*::!, '')
-                                 }.join(',')))
-        end
-        if (via != cx.via)
-          unless (cx.via.nil?)
-            warn(format('%s: %s.via overriden from "%s" to "%s"',
-                        __callee__.to_s,
-                        cx.to_key,
-                        cx.via,
-                        via))
+        args.each do |path|
+          if (! path.kind_of?(TAGF::Path))
+            raise_exception(UnsupportedObject,
+                            object:	path,
+                            operation:	__callee__)
           end
-          cx.via		= via
+          all_paths	= self.paths
+          if (estpaths = path.conflicts(*all_paths))
+            raise_exception(TAGF::Exceptions::ConflictingPath,
+                            newpath:	self,
+                            paths:	estpaths)
+          end
         end
-        self.paths[via]		= cx
         return self
       end                       # def add_path
 
       #
       def initialize_location(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
-        @paths			= {}
+        @paths			= []
         self.is_static!
         self.initialize_container(*args, **kwargs)
         #      self.inventory	= ::TAGF::Inventory.new(game:	self,
