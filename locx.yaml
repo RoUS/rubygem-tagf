@@ -4,10 +4,57 @@ game:
   eid:		'gameloctest01'
   name:		'LocTest01'
   author:	'theRoUS'
+  copyright_year: '2019-2024'
   licence:	'Apache 2.0'
   desc: |-
     Test 01 of game location connexions.
   start:	'Loc0'
+
+keyword:
+  eid:		'kw-up'
+  word:		'up'
+  alii:		nil
+  flags:
+    - :motion
+
+keywords:
+  - eid:	'kw-down'
+    word:	'down'
+    alii:	nil
+    flags:
+      - :motion
+
+  - eid:	'kw-east'
+    word:	'east'
+    alii:
+      - 'e'
+    flags:
+      - :motion
+      - :facing
+
+  - eid:	'kw-west'
+    word:	'west'
+    alii:
+      - 'w'
+    flags:
+      - :motion
+      - :facing
+
+  - eid:	'kw-southeast'
+    word:	'southeast'
+    alii:
+      - 'se'
+    flags:
+      - :motion
+      - :facing
+
+  - eid:	'kw-northwest'
+    word:	'northwest'
+    alii:
+      - 'nw'
+    flags:
+      - :motion
+      - :facing
 
 container:
   eid:		'birdcage'
@@ -36,9 +83,10 @@ locations:
       games.
     shortdesc:	'entrance room.'
     paths:
-      'up':	'loc0-up'
-      'e':	'loc0-e'
-      'w':	'loc0-w'
+      - 'loc0-loc0'
+      - 'loc0-loc1'
+      - 'loc0-loc2'
+
   - eid:	'Loc1'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
@@ -47,8 +95,9 @@ locations:
       Room 1, one of the locations accessible from the entrance.
     shortdesc:	'Room 1.'
     paths:
-      'w':	'loc1-w'
-      'se':	'loc1-se'
+      - 'loc1-loc0'
+      - 'loc1-loc2'
+
   - eid:	'Loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
@@ -57,94 +106,134 @@ locations:
       The ending (?) location, #2
     shortdesc:	'Room 2.'
     paths:
-      'nw':	'loc2-nw'
+      - 'loc2-loc0'
+      - 'loc2-loc3'
 
-connexion:
-  eid:		'loc0-up'
+  - eid:	'Loc3'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'Location 3 (secret room)'
+    desc: |-
+      The Secret Room!
+    shortdesc:	"It's a secret!"
+    is_visible:	false
+    paths:	[]
+
+path:
+  eid:		'loc0-loc0'
   game:		'gameloctest01'
   owned_by:	'gameloctest01'
   name:		'loc0-loc0'
   desc: |-
     A small hole up on the wall would let you crawl upwards.
   shortdesc:	'upward-leading crawl.'
-  origin:	'Loc1'
-  destination:	'Loc1'
-  via:		'up'
+  origin:	'Loc0'
+  destination:	'Loc0'
+  sealable:	true
+  seal_key:	'RFID'
+  via:
+    - 'up'
   reversible:	true
 
-connexions:
-  - eid:	'loc0-e'
+paths:
+  - eid:	'loc0-loc1'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
-    name:	'loc0-e-loc1'
+    name:	'loc0-loc1'
     desc: |-
       A broad passage, with a flat, smooth floor and smooth walls, is
       visible to the east.
     shortdesc:	'broad smooth passage.'
     origin:	'Loc0'
     destination: 'Loc1'
-    via:	'e'
+    via:
+      - 'e'
     reversible:	true
-  - eid:	'loc0-w'
+
+  - eid:	'loc0-loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
-    name:	'loc0-w-loc2'
+    name:	'loc0-loc2'
     desc: |-
       A narrow, cramped tunnel, with rough walls and floor, leads
       west.
     shortdesc:	'cramped tunnel.'
     origin:	'Loc0'
     destination: 'Loc2'
-    via:	'w'
+    via:
+      - 'w'
     reversible:	true
-  - eid:	'loc1-w'
+
+  - eid:	'loc1-loc0'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
-    name:	'loc1-w-loc0'
+    name:	'loc1-loc0'
     desc: |-
-      A rough doorway-sized opening to the west
-      appears to open up after a few metres.
+      A rough doorway-sized opening to the west appears to open up
+      after a few metres.
     shortdesc:	'door-sized opening.'
     origin:	'Loc1'
     destination: 'Loc0'
-    via:	'w'
+    via:
+      - 'w'
     reversible:	true
-  - eid:	'loc2-e'
+
+  - eid:	'loc2-loc0'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
-    name:	'loc2-e-loc1'
+    name:	'loc2-loc0'
     desc:	'A narrow crack leads east.'
     shortdesc:	'narrow crack.'
     origin:	'Loc2'
     destination: 'Loc0'
-    via:	'e'
+    via:
+      - 'e'
     reversible:	true
-  - eid:	'loc1-se'
+
+  - eid:	'loc1-loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
-    name:	'loc1-se-loc2'
+    name:	'loc1-loc2'
     desc: |-
-      A low rocky tunnel slopes downward to the southeast, leading
-      to Location 2.
+      A low rocky tunnel slopes downward to the southeast, leading to
+      Location 2.
     shortdesc:	'low rocky tunnel.'
     origin:	'Loc1'
     destination: 'Loc2'
-    via:	'se'
+    via:
+      - 'se'
     reversible:	true
-  - eid:	'loc2-nw'
+
+  - eid:	'loc2-loc1'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
-    name:	'loc2-nw-loc1'
+    name:	'loc2-loc1'
     desc: |-
-      A low rocky tunnel slopes upward to the northwest, leading
-      to Location 1.
+      A low rocky tunnel slopes upward to the northwest, leading to
+      Location 1.
     shortdesc:	'low rocky tunnel.'
-    desc: |-
-      going from Loc2 to Loc1 via nw
     origin:	'Loc2'
     destination: 'Loc1'
-    via:	'nw'
+    via:
+      - 'nw'
     reversible:	true
+
+  - eid:	'loc2-loc3'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'loc2-loc3'
+    desc: |-
+      Close examination reveals a dark, secret passage hidden behind a
+      boulder.  It appears to lead steeply down into the darkness to
+      an unknown destination.
+    shortdesc:	'dark secret passage.'
+    is_visible:	false
+    origin:	Loc2
+    destination: Loc3
+    via:
+      - 'up'
+      - 'down'
+    reversible:	false
 
 # Local Variables:
 # mode: yaml

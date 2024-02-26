@@ -86,6 +86,15 @@ module TAGF
       # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:light_level)
 
+      # @!method distance_to(loc, **kwargs)
+      # Return the smallest number of moves from this location to
+      # `loc`.
+      #
+      # @return [Integer]
+      def distance_to(loc)
+
+      end                       # def distance_to(loc, **kwargs)
+
       # @!method add_path(*args, **kwargs)
       # Add a path from the current location to another.  Keyword
       # argument values override any corresponding order-dependent

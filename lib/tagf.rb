@@ -88,7 +88,10 @@ require('tagf/mixin/container')
 require('tagf/mixin/dtypes')
 require('tagf/mixin/element')
 require('tagf/mixin/events')
+require('tagf/mixin/lightsource')
 require('tagf/mixin/location')
+require('tagf/mixin/portable')
+require('tagf/mixin/sealable')
 require('tagf/mixin/universal')
 
 #

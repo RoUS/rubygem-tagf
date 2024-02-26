@@ -19,6 +19,7 @@ require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
 require('tagf/mixin/element')
+require('tagf/mixin/sealable')
 require('tagf/mixin/universal')
 require('byebug')
 
@@ -37,6 +38,7 @@ module TAGF
       # All Containers are Elements.
       #
       include(Mixin::Element)
+      include(Mixin::Sealable)
 
       #
       # List of all the instance variables used by attributes supplied
@@ -99,78 +101,6 @@ module TAGF
       #
       # @!macro doc.TAGF.classmethod.flag.invoke
       flag(:is_surface)
-
-      #
-      # Does the container have the option of being open or closed?
-      # Think about a birdcage, which would want a door to keep any
-      # birds from escaping.
-      #
-      # @!macro doc.TAGF.classmethod.flag.invoke
-      flag(is_openable: false)
-
-      #
-      # If the container is openable, is it actually open?  We
-      # overrides some of the standard attribute accessors added by
-      # the Mixin::ClassMethods#flag method to provide correct results
-      # if the element can't even be opened.
-      #
-      # @!macro doc.TAGF.classmethod.flag.invoke
-      # @overload is_open
-      #   @return `true` or `false` if the element can be opened
-      #   (#is_openable), otherwise `false`.
-      # @overload is_open?
-      #   @return `true` or `false` if the element can be opened
-      #   (#is_openable), otherwise `false`.
-      # @overload is_open!
-      #   Sets the flag to `true` if the element is openable,
-      #   otherwise always `false`.
-      #   @return `true` or `false` if the element can be opened
-      #   (#is_openable), otherwise `false`.
-      # @overload is_open=(value)
-      #   Sets the flag to the `truthy` (see #truthify) value of the
-      #   argument, but only if the current element is openable.
-      #   Otherwise, the value is always `false`.
-      #   @param [Boolean] value
-      #     The new setting for the attribute, either `true` or
-      #     `false` according to its truthiness (see #truthify), or
-      #     unconditionally `false` if the element cannot be opened
-      #     (see #is_openable).
-      #   @return `true` or `false` if the element can be opened
-      #     (#is_openable), otherwise `false`.
-      flag(is_open: false)
-      def is_open
-        if (self.is_surface?)
-          @is_open	= true
-        elsif (! self.is_openable?)
-          @is_open	= false
-        end
-        result		= @is_open
-        return result
-      end                       # def is_open
-      alias_method(:is_open?, :is_open)
-      def is_open=(value)
-        value		= truthify(value)
-        #
-        # @todo
-        #   Need to handle trying to close an always-open surface with
-        #   an exception.
-        #
-        if (self.is_openable?)
-          @is_open	= value
-        elsif (game_options?(:RaiseOnInvalidValues) && value)
-          raise_exception(UnscrewingInscrutable,
-                          self,
-                          __method__,
-                          true,
-                          self,
-                          :is_openable,
-                          false)
-        else
-          value		= false
-        end
-        @is_open	= value
-        return @is_open
-      end                       # def is_open=(value)
 
       #
       # Can you see through the container and identify what's inside?

@@ -582,6 +582,19 @@ module TAGF
           raise_exception(TAGF::Exceptions::NoObjectOwner, self)
         end
         #
+        # If this element is supposed to be/have a seal (something
+        # openable/closable, like a door or a box), and isn't already,
+        # add the Mixin::Sealable module to its singleton class.
+        #
+        # We need to do this early so that any seal-specific fields
+        # in `kwargs` will be processed properly.
+        #
+        if (kwargs[:sealable] \
+            && (! self.class.ancestors.include?(TAGF::Mixin::Sealable)))
+          self.singleton_class.include(TAGF::Mixin::Sealable)
+          kwargs.delete(:sealable)
+        end
+        #
         # Default to things being visible; it takes an explicit change
         # or a `is_visible: false` tuple in `kwargs` to make something
         # hidden.
