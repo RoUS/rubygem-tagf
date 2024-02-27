@@ -38,7 +38,6 @@ module TAGF
         #   This needs thinking out; it may be too much work.
         #
         # @return [String]
-        #
         def wordwrap(right_margin: 72, indent: 0, bullets: %q[o * •])
           return self
         end                     # def wordwrap
@@ -158,7 +157,6 @@ module TAGF
       #
       # @return [Object,nil]
       #  the current value of the object's eid.
-      #
       attr_reader(:eid)
 
       # @!attribute [rw] game
@@ -176,22 +174,18 @@ module TAGF
 
       #
       # @return [nil,Container]
-      #
       attr_accessor(:owned_by)
 
       #
       # @return [String]
-      #
       attr_accessor(:name)
 
       #
       # @return [String]
-      #
       attr_accessor(:desc)
 
       #
       # @return [String]
-      #
       attr_accessor(:shortdesc)
 
       #
@@ -251,6 +245,7 @@ module TAGF
       # @option kwargs [Symbol]		field
       #   Override the field (default `:tags`) to check for inclusion
       #   of all items in `values`.
+      #
       # @return [Boolean]
       #   `true` if the element's #tags attribute (or the one
       #   specified by `kwargs[:field]`) includes `tagvalue`.
@@ -313,7 +308,6 @@ module TAGF
 
       #
       # @return [Boolean]
-      #
       def has_inventory?
         cond		= (self.is_container? \
                            && self.inventory.kind_of?(Inventory))
@@ -322,7 +316,6 @@ module TAGF
 
       #
       # @return [Boolean]
-      #
       def has_items?
         cond		= (self.has_inventory? \
                            && (! self.inventory.empty?))
@@ -331,7 +324,6 @@ module TAGF
 
       #
       # @return [Inventory]
-      #
       def add_inventory(**kwargs)
         return self.inventory if (self.has_inventory?)
         kwargs_new	= kwargs.merge({ game: self.game, owned_by: self })
@@ -344,7 +336,6 @@ module TAGF
       # another's.
       #
       # @return [Container] self
-      #
       def move_to(*args, **kwargs)
         if (self.owned_by.inventory.master?)
           raise_exception(TAGF::Exceptions::MasterInventory,
@@ -371,7 +362,6 @@ module TAGF
 
       #
       # @return [Array<Container>]
-      #
       def contained_in
         inventories	= self.game.inventory.select { |o|
           o.kind_of?(Inventory) && (! o.master?)
@@ -401,6 +391,7 @@ module TAGF
       # @option kwargs [Integer]	:level
       # @option kwargs [String]		:format
       # @option kwargs [StringIO]	:sio
+      #
       # @return [void]
       def look(**kwargs)
         level			= kwargs[:level].to_i
@@ -492,6 +483,7 @@ module TAGF
       # @see Loadable_Fields
       # @see Abstracted_Fields
       # @see #abstractify
+      #
       # @return [Hash<String=>Any>]
       def export
         result			= {}
@@ -561,6 +553,37 @@ module TAGF
         return result
       end                       # def abstractify
 
+      # @!method label(rcvr=nil)
+      # Provide a default stringify method for all game elements.
+      # (Or, actually, any kind of object, though non-game objects
+      # will be unimaginatively labeled.)
+      # Unless this method is overridden, the return value will
+      # include the result from the element's #to_key method; if the
+      # #name attribute is a String, then that will be appended.
+      #
+      # @param [Any] rcvr		self
+      #   Optional object for which a label should be generated.  By
+      # default, it's `self`.
+      # @return [String]
+      def label(rcvr=nil)
+        rcvr		||= self
+        result		= rcvr.to_s
+        catch(:labeled) do
+          if (! (rcvr.respond_to?(:name) \
+                 && rcvr.respond_to?(:to_key)))
+            throw(:labeled)
+          end
+          if (rcvr.name.kind_of?(String))
+            result	= format('%s - %s',
+                                 rcvr.to_key,
+                                 rcvr.name.to_s)
+          else
+            result	= rcvr.to_key
+          end
+        end                     # catch(:labeled)
+        return result
+      end                       # def label(rcvr=nil)
+
       # @param [Array] args
       # @!macro doc.TAGF.formal.kwargs
       # @option kwargs [Symbol]	:eid		(nil)
@@ -570,8 +593,8 @@ module TAGF
       # @raise [TAGF::Exceptions::SettingLocked]
       # @raise [RuntimeError]
       # @raise [TAGF::Exceptions::NoGameContext]
-      # @return [Element] self
       #
+      # @return [Element] self
       def initialize_element(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
         @eid		||= kwargs[:eid] || self.object_id.to_s

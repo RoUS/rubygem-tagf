@@ -21,9 +21,28 @@ require('tagf/exceptions')
 require('tagf/mixin/container')
 require('tagf/mixin/debugging')
 require('tagf/mixin/dtypes')
+require('ruby-graphviz')
 require('psych')
 require('yaml')
 require('byebug')
+
+#
+# Extend the GraphViz classes to add attributes we want.  They don't
+# provide for arbitrary custom user-defined attributes.
+#
+class GraphViz::Node
+  # @!attribute [rw] location
+  # @return [TAGF::Location]
+  #   The game's Location element to which this node corresponds.
+  attr_accessor(:location)
+end                             # class GraphViz::Node
+
+class GraphViz::Edge
+  # @!attribute [rw] path
+  # @return [TAGF::Path]
+  #   The game's Path element to which this edge corresponds.
+  attr_accessor(:path)
+end                             # class GraphViz::Node
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -118,6 +137,8 @@ module TAGF
 
     #
     attr_accessor(:date)
+
+    attr_reader(:graph)
 
     attr_accessor(:keywords)
 
@@ -259,6 +280,10 @@ module TAGF
                                 inventory_eid: 'master_inventory')
       self.add(self)
       self.allow_containers!
+      @graph		= GraphViz.new(:TAGF,
+                                       type:	:digraph,
+                                       label:	format('Game: %s',
+                                                       self.name))
     end                         # def initialize
 
     # @todo

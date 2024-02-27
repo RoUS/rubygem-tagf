@@ -82,6 +82,8 @@ module TAGF
       # @see TAGF::Location
       attr_reader(:paths)
 
+      attr_accessor(:graph_node)
+
       #
       # @!macro doc.TAGF.classmethod.float_accessor.invoke
       float_accessor(:light_level)

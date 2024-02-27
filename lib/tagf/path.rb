@@ -37,6 +37,8 @@ module TAGF
     Loadable_Fields		= [
       'origin',
       'destination',
+      'sealable',
+      'seal_key',
       'via',
       'must_possess',
       'reversible',
@@ -50,6 +52,7 @@ module TAGF
 
     # @!attribute [rw] reversible
     # @!macro doc.TAGF.classmethod.flag.invoke
+    #
     # @return [Boolean]
     #   whether or not the path can be followed in reverse.
     flag(:reversible)
@@ -57,6 +60,7 @@ module TAGF
     # @!attribute [rw] origin
     # @see #destination
     # @see #via
+    #
     # @return [TAGF::Location]
     #   The Location at which the path originates.
     attr_accessor(:origin)
@@ -64,6 +68,7 @@ module TAGF
     # @!attribute [rw] destination
     # @see #origin
     # @see #via
+    #
     # @return [TAGF::Location]
     #   The Location at which the path terminates.
     attr_accessor(:destination)
@@ -71,6 +76,7 @@ module TAGF
     # @!attribute [rw] via
     # @see #origin
     # @see #destination
+    #
     # @return [Array<String>]
     #   The direction keywords (such as `"se"`) that leave the origin
     #   and follow the path to the destination.
@@ -82,7 +88,26 @@ module TAGF
       @via		= val
     end                         # def via=(val)
 
-    attr_accessor(:must_possess)
+    # @!attribute [rw] graph_edge
+    # Edge object in the game graph for this path element.
+    #
+    # @return [GraphViz::Edge]
+    attr_accessor(:graph_edge)
+
+    # @!attribute [rw] graph_index
+    # The index number assigned to this path's edge in the game graph.
+    #
+    # @return [Integer]
+    attr_accessor(:graph_index)
+
+    # @!attribute [rw] must_possess
+    # If this Path is sealable, and there is a :seal_key assigned,
+    # this flag indicates whether the key must be in the actor's
+    # possession in order to open (or close) the seal and transit the
+    # path.
+    #
+    # @return [Boolean]
+    flag(:must_possess)
 
     # @!method conflicts(*args, **kwargs)
     #

@@ -199,6 +199,12 @@ module TAGF
       # @return [String]
       def klassname(rcvr=nil)
         rcvr		= self if (rcvr.nil?)
+        result		= ''
+        #
+        # We're trying to figure out the name of the class, so if the
+        # receiver isn't one itself, switch to use the class to which
+        # it belongs.
+        #
         if (! rcvr.kind_of?(Class))
           rcvr		= rcvr.class
         end
