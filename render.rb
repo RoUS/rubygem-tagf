@@ -40,6 +40,13 @@ require('byebug')
 # ones than edges.  Define the default attributes, and then the ones
 # modified by circumstance.
 #
+class GraphViz::Node
+  attr_accessor(:element)
+end
+class GraphViz::Edge
+  attr_accessor(:element)
+end
+
 grafattr		= OpenStruct.new(
   node:			OpenStruct.new(
     #
@@ -65,7 +72,7 @@ grafattr		= OpenStruct.new(
     default:		{
       color:		'slategrey',
       style:		'solid',
-      arrowhead:	'odiamond',
+      arrowhead:	'normal',
     },
     #
     # If it's invisible, its looks are modified as follows.
@@ -79,6 +86,7 @@ grafattr		= OpenStruct.new(
     #
     irreversible:		{
       arrowhead:	'normalnormal',
+      arrowtail:	'tee',
     })
 )
 
@@ -95,7 +103,15 @@ locgraf			= GraphViz.new(:TAGF,
                                        type:	:digraph,
                                        label:	format('%s locations',
                                                        game.name))
-
+#
+# Set up the default attributes for nodes and edges.
+#
+grafattr.edge.default.each do |k,v|
+  locgraf.edge_attrs[k]	= v
+end
+grafattr.node.default.each do |k,v|
+  locgraf.node_attrs[k]	= v
+end
 #
 # We keep hashes of location elements and the graph nodes keyed by the
 # location EIDs.  This will be useful later for navigating through
@@ -103,6 +119,8 @@ locgraf			= GraphViz.new(:TAGF,
 #
 lochash			= {}
 nodehash		= {}
+pathhash		= {}
+edgehash		= {}
 
 #
 # Go through the list of game elements and create a graph node for
@@ -112,12 +130,12 @@ game.inventory.each do |eid,locelt|
   next unless (locelt.kind_of?(TAGF::Location))
   attr			= {
     label:		locelt.name,
-  }.merge(grafattr.node.default)
+  }
   attr.merge!(grafattr.node.invisible) unless (locelt.is_visible?)
-  locnode		= locgraf.add_nodes(eid,
+  node			= locgraf.add_nodes(eid,
                                             **attr)
   lochash[eid]		= locelt
-  nodehash[eid]		= locnode
+  nodehash[eid]		= node
 end
 
 #
@@ -126,21 +144,26 @@ end
 #
 lochash.values.each do |locelt|
   locelt.paths.each do |cxelt|
+    eid			= cxelt.eid
     attr		= {
       #
       # Since a path may be accessed by more than one keyword, the
       # label lists all keywords that apply.
       #
       label:		cxelt.via.join(','),
-    }.merge(grafattr.edge.default)
+      id:		eid,
+    }
     attr.merge!(grafattr.edge.invisible) unless (cxelt.is_visible?)
     attr.merge!(grafattr.edge.irreversible) unless (cxelt.reversible?)
-    locgraf.add_edge(nodehash[cxelt.origin.eid],
-                     nodehash[cxelt.destination.eid],
-                     **attr)
+    edge		= locgraf.add_edge(nodehash[cxelt.origin.eid],
+                                           nodehash[cxelt.destination.eid],
+                                           **attr,
+                                           id:	cxelt.eid)
+    edgehash[eid]	= edge
+    pathhash[eid]	= cxelt
   end
 end
-
+debugger
 #
 # Doughnut batter is ready, time to pop them in the eazy bacon oven!
 #
