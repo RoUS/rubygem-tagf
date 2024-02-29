@@ -119,7 +119,7 @@ locations:
     desc: >-
       The Secret Room!
     shortdesc:	"It's a secret!"
-    is_visible:	false
+    visible:	false
     paths:	[]
 
   - eid:	'Loc4'
@@ -129,7 +129,7 @@ locations:
     desc: >-
       There is no way out.
     shortdesc:	"You're doomed for all time."
-    is_visible:	false
+    visible:	false
     paths:	[]
 
 paths:
@@ -296,7 +296,7 @@ paths:
       an unknown destination.
     shortdesc:	'dark secret passage.'
     tooltip:	'Dark secret passage'
-    is_visible:	false
+    visible:	false
     origin:	Loc2
     destination: Loc3
     via:

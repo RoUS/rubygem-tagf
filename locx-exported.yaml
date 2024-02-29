@@ -31,7 +31,7 @@ game:
   relock: false
   seal_key:
   eid: gameloctest01
-  mixins:
+  mixins: []
   name: LocTest01
   desc: Test 01 of game location connexions.
   shortdesc:
@@ -39,7 +39,7 @@ game:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   start: Loc0
   game: gameloctest01
   owned_by: gameloctest01
@@ -48,7 +48,7 @@ features: []
 items:
 - is_living: true
   eid: bird
-  mixins:
+  mixins: []
   name:
   desc: little songbird
   shortdesc:
@@ -56,7 +56,7 @@ items:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   mass: 0.0
   volume: 0.0
   game: gameloctest01
@@ -69,7 +69,7 @@ keywords:
   - :motion
   uses: 0
   eid: kw-up
-  mixins:
+  mixins: []
   name:
   desc:
   shortdesc:
@@ -77,7 +77,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 - root: down
@@ -87,7 +87,7 @@ keywords:
   - :motion
   uses: 0
   eid: kw-down
-  mixins:
+  mixins: []
   name:
   desc:
   shortdesc:
@@ -95,7 +95,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 - root: east
@@ -106,7 +106,7 @@ keywords:
   - :facing
   uses: 0
   eid: kw-east
-  mixins:
+  mixins: []
   name:
   desc:
   shortdesc:
@@ -114,7 +114,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 - root: west
@@ -125,7 +125,7 @@ keywords:
   - :facing
   uses: 0
   eid: kw-west
-  mixins:
+  mixins: []
   name:
   desc:
   shortdesc:
@@ -133,7 +133,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 - root: southeast
@@ -144,7 +144,7 @@ keywords:
   - :facing
   uses: 0
   eid: kw-southeast
-  mixins:
+  mixins: []
   name:
   desc:
   shortdesc:
@@ -152,7 +152,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 - root: northwest
@@ -163,7 +163,7 @@ keywords:
   - :facing
   uses: 0
   eid: kw-northwest
-  mixins:
+  mixins: []
   name:
   desc:
   shortdesc:
@@ -171,7 +171,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 - root: back
@@ -182,7 +182,7 @@ keywords:
   - :motion
   uses: 0
   eid: kw-back
-  mixins:
+  mixins: []
   name:
   desc:
   shortdesc:
@@ -190,7 +190,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 - root: RFID
@@ -200,7 +200,7 @@ keywords:
   - :key
   uses: 0
   eid: kw-RFID
-  mixins:
+  mixins: []
   name: RFID plot item
   desc: A small metal-and-plastic doodad of apparently no consequence, but somehow
     giving an impression of importance.
@@ -209,7 +209,7 @@ keywords:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
 locations:
@@ -238,7 +238,7 @@ locations:
   relock: false
   seal_key:
   eid: Loc0
-  mixins:
+  mixins: []
   name: Location 0 - Entrance
   desc: You're in Location 0, the starting location for players in new games.
   shortdesc: entrance room.
@@ -246,7 +246,7 @@ locations:
   preposition:
   tags: []
   is_static: true
-  is_visible: true
+  visible: true
   game: gameloctest01
   owned_by: gameloctest01
   paths:
@@ -278,7 +278,7 @@ locations:
   relock: false
   seal_key:
   eid: Loc1
-  mixins:
+  mixins: []
   name: Location 1
   desc: Room 1, one of the locations accessible from the entrance.
   shortdesc: Room 1.
@@ -286,7 +286,7 @@ locations:
   preposition:
   tags: []
   is_static: true
-  is_visible: true
+  visible: true
   game: gameloctest01
   owned_by: gameloctest01
   paths:
@@ -318,7 +318,7 @@ locations:
   relock: false
   seal_key:
   eid: Loc2
-  mixins:
+  mixins: []
   name: Location 2
   desc: 'The ending (?) location, #2'
   shortdesc: Room 2.
@@ -326,7 +326,7 @@ locations:
   preposition:
   tags: []
   is_static: true
-  is_visible: true
+  visible: true
   game: gameloctest01
   owned_by: gameloctest01
   paths:
@@ -358,7 +358,7 @@ locations:
   relock: false
   seal_key:
   eid: Loc3
-  mixins:
+  mixins: []
   name: Location 3 (secret room)
   desc: The Secret Room!
   shortdesc: It's a secret!
@@ -366,7 +366,7 @@ locations:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: true
   game: gameloctest01
   owned_by: gameloctest01
   paths: []
@@ -395,7 +395,7 @@ locations:
   relock: false
   seal_key:
   eid: Loc4
-  mixins:
+  mixins: []
   name: Location 4 (oubliette)
   desc: There is no way out.
   shortdesc: You're doomed for all time.
@@ -403,7 +403,7 @@ locations:
   preposition:
   tags: []
   is_static: true
-  is_visible: false
+  visible: true
   game: gameloctest01
   owned_by: gameloctest01
   paths: []
@@ -433,7 +433,7 @@ containers:
   relock: false
   seal_key:
   eid: birdcage
-  mixins:
+  mixins: []
   name: birdcage
   desc: rather battered little brass birdcage
   shortdesc:
@@ -441,7 +441,7 @@ containers:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   game: gameloctest01
   owned_by: Loc1
 paths:
@@ -474,7 +474,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc0
   destination: Loc0
   game: gameloctest01
@@ -507,7 +507,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc0
   destination: Loc1
   game: gameloctest01
@@ -530,7 +530,7 @@ paths:
   locked: false
   relock: false
   eid: loc0-loc2
-  mixins:
+  mixins: []
   name: loc0-loc2
   desc: A narrow, cramped tunnel, with rough walls and floor, leads west.
   shortdesc: narrow cramped tunnel.
@@ -538,7 +538,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc0
   destination: Loc2
   game: gameloctest01
@@ -561,7 +561,7 @@ paths:
   locked: false
   relock: false
   eid: loc1-loc0
-  mixins:
+  mixins: []
   name: loc1-loc0
   desc: A rough doorway-sized opening to the west appears to open up after a few metres.
   shortdesc: door-sized opening.
@@ -569,7 +569,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc1
   destination: Loc0
   game: gameloctest01
@@ -592,7 +592,7 @@ paths:
   locked: false
   relock: false
   eid: loc1-loc2
-  mixins:
+  mixins: []
   name: loc1-loc2
   desc: A low rocky tunnel slopes downward to the southeast, leading to Location 2.
   shortdesc: low rocky tunnel.
@@ -600,7 +600,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc1
   destination: Loc2
   game: gameloctest01
@@ -623,7 +623,7 @@ paths:
   locked: false
   relock: false
   eid: loc1-loc4
-  mixins:
+  mixins: []
   name: loc1-loc4
   desc: A dark pit lies at your feet, radiating menace and exuding a miasma of hopelessness.  It
     probably leads somewhere you don't want to go.
@@ -632,7 +632,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc1
   destination: Loc4
   game: gameloctest01
@@ -655,7 +655,7 @@ paths:
   locked: false
   relock: false
   eid: loc2-loc0
-  mixins:
+  mixins: []
   name: loc2-loc0
   desc: A narrow crack leads east.
   shortdesc: narrow crack.
@@ -663,7 +663,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc2
   destination: Loc0
   game: gameloctest01
@@ -686,7 +686,7 @@ paths:
   locked: false
   relock: false
   eid: loc2-loc1
-  mixins:
+  mixins: []
   name: loc2-loc1
   desc: A low rocky tunnel slopes upward to the northwest, leading to Location 1.
   shortdesc: low rocky tunnel.
@@ -694,7 +694,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: true
+  visible: true
   origin: Loc2
   destination: Loc1
   game: gameloctest01
@@ -717,7 +717,7 @@ paths:
   locked: false
   relock: false
   eid: loc2-loc3
-  mixins:
+  mixins: []
   name: loc2-loc3
   desc: Close examination reveals a dark, secret passage hidden behind a boulder.  It
     appears to lead steeply down into the darkness to an unknown destination.
@@ -726,7 +726,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  is_visible: false
+  visible: true
   origin: Loc2
   destination: Loc3
   game: gameloctest01
