@@ -152,18 +152,6 @@ module TAGF
       return self
     end                       # def add_path
 
-    #
-    def initialize_location(*args, **kwargs)
-      TAGF::Mixin::Debugging.invocation
-      @paths			= []
-      self.is_static!
-      self.visible!
-      self.initialize_sealable(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
-      #      self.inventory	= ::TAGF::Inventory.new(game:	self,
-      #                                              owned_by: self)
-    end                       # def initialize_location
-
     # @!method export
     # `Location`-specific export method, responsible for adding any
     # unusual fields that need to be abstracted to the export hash.
@@ -187,9 +175,12 @@ module TAGF
     #
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
-      @paths		||= []
+      @paths			= []
+      self.is_static!
+      self.visible!
       self.initialize_element(*args, **kwargs)
-      self.initialize_location(*args, **kwargs)
+      self.initialize_sealable(*args, **kwargs)
+      self.initialize_container(*args, **kwargs)
       self.game.add(self)
     end                         # def initialize
 
