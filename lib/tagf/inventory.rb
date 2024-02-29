@@ -98,7 +98,7 @@ module TAGF
     def_delegator(:@contents, :keys)
     def_delegator(:@contents, :values)
 
-    # @!method filter(**kwargs)
+    # @!method filter(**kwargs, &block)
     # Apply an iterative #select to objects in this inventory.
     # `kwargs` is a hash of attribute names and values used to refine
     # the results.  The special key `:klass` allows narrowing the
@@ -109,6 +109,11 @@ module TAGF
     #   => # nil or an array of objects whose `eid` was "SomeEID"
     #   .filter(eid: ['SomeEID', 'SomeOtherEID'])
     #   => # nil or an array of objects whose `eid`s matched
+    # @example
+    #   .filter(klass: TAGF::Location) { |o|
+    #     o.paths.empty?
+    #   }
+    #   => # an array of Location objects with no departing paths
     #
     # Objects which do not have the named attribute are automatically
     # excluded.
@@ -127,8 +132,11 @@ module TAGF
     # @return [Array<Object>]
     #   `nil` if no matching objects were found, or an array of the
     #   matches otherwise.
-    def filter(**kwargs)
+    def filter(**kwargs, &block)
       result		= self.values
+      if (block_given?)
+        result		= result.select(&block)
+      end
       catch(:filtered) do
         if (klass = kwargs[:klass])
           klasses	= [ *klass ].flatten.uniq
