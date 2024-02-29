@@ -97,25 +97,27 @@ module TAGF
     # A hash of
     attr_reader(:elements_processed)
 
-    # @!attribute [r] source
-    # Absolute path to the `YAML` file associated with this load
+    # @!attribute [r] sources
+    # Absolute paths to the `YAML` files associated with this load
     # sequence.
     #
-    # @return [String]
-    #   Fully-qualified (absolute) path to `YAML` file from which
-    #   definitions are read.  See #load_game.
-    attr_reader(:source)
+    # @return [Array<String>]
+    #   Array of fully-qualified (absolute) path to `YAML` files from
+    #   which definitions are read.  The first element is the main
+    #   file passed to #load_game; any subsequent entries come from
+    #   `include` or `includes` keys in the first file.
+    attr_reader(:sources)
 
     # @!attribute [r] yamldata
     # Results of parsing the `YAML`-formatted data read from
-    # `#source`.
+    # `#sources`.
     #
-    # @see #source
+    # @see #sources
     # @see #load_game
     #
     # @return [Hash]
     #   The Ruby Hash data structure representing the information
-    #   read from the source file.
+    #   read from the source files.
     attr_reader(:yamldata)
 
     # @!method load_generic(klass, ekwargs)
@@ -557,13 +559,14 @@ module TAGF
       @elements		= {}
       @elements_processed= []
       @yamldata		= nil
+      @sources		= []
       #
-      # Figure out the full path to the source file.  Makes
+      # Figure out the full path to the primary source file.  Makes
       # reporting problems less fraught with "what the hell?"
       # moments.
       #
       fname		= Pathname.new(file).expand_path
-      @source		= File.absolute_path(fname)
+      @sources.unshift(File.absolute_path(fname))
       #
       # Time to load the doughnuts..  instance variable `@yamldata`
       # will hold the parsed data.  Local variable `ydata` will hold
@@ -571,7 +574,7 @@ module TAGF
       # as we walk through it.
       #
       fdata		= nil
-      File.open(self.source, 'r') do |fio|
+      File.open(self.sources[0], 'r') do |fio|
         fdata		= fio.read
       end
       #
@@ -594,7 +597,7 @@ module TAGF
       #
       if (parse_exc)
         raise_exception(TAGF::Exceptions::DataError,
-                        source: self.source,
+                        source: self.sources[0],
                         error:  parse_exc.to_s)
       end
       #
@@ -602,12 +605,18 @@ module TAGF
       #
       ydata		= @yamldata.dup
       #
+      # Here is where we (recursively?) process any
+      # `include`/`includes` keys in the YAML files.
+      #
+      include_files	= [ ydata['include'], *ydata['includes'] ]
+      include_files	= include_files.flatten.uniq.compact
+      #
       # Find the game definition, from which all else follows.
       #
       gamedef		= ydata.delete('game')
       if (gamedef.nil?)
         raise_exception(TAGF::Exceptions::DataError,
-                        source: self.source,
+                        source: self.sources[0],
                         error:  'no "game" key found')
       end
       #
@@ -622,7 +631,7 @@ module TAGF
                   kwargs[:name].to_s))
 =end
       @game		= TAGF::Game.new(**kwargs,
-                                         loadfile: @source)
+                                         loadfile: @sources[0])
       self.elements_processed.push(gamedef)
       self.elements[@game.eid]= @game
       #
@@ -633,7 +642,7 @@ module TAGF
 #        debugger if (%w[ factions locations ].include?(defkey))
         if (etype.nil?)
           raise_exception(DataError,
-                          source: self.source,
+                          source: self.sources[0],
                           error:  format('unknown game element "%s"',
                                          defkey))
         end
