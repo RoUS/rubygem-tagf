@@ -19,6 +19,7 @@ require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
 require('tagf/mixin/location')
+require('tagf/mixin/graphable')
 require('tagf/mixin/universal')
 require('ruby-graphviz')
 require('byebug')
@@ -33,6 +34,7 @@ module TAGF
     include(Mixin::UniversalMethods)
     include(Mixin::DTypes)
     include(Mixin::Location)
+    include(Mixin::Graphable)
 
     # @!method export
     # `Location`-specific export method, responsible for adding any
