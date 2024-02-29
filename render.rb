@@ -137,7 +137,7 @@ game.inventory.each do |eid,locelt|
     label:		locelt.label,
     tooltip:		locelt.desc,
   }.merge(graph_attr.vertex.default)
-  if (! locelt.is_visible?)
+  if (! locelt.visible?)
     attr		= attr.merge(graph_attr.vertex.invisible)
   end
   if (locelt == game.start)
@@ -185,7 +185,7 @@ lochash.values.each do |locelt|
       id:		eid,
       tooltip:		tip,
     }.merge(graph_attr.edge.default)
-    if (! cxelt.is_visible?)
+    if (! cxelt.visible?)
       attr		= attr.merge(graph_attr.edge.invisible)
     end
     if (! cxelt.reversible?)

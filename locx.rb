@@ -161,7 +161,7 @@ loc3		= Location.new(
   owned_by:	g,
   name:		'Location 3 (secret room)',
   desc:		'The Secret Room!',
-  is_visible:	false,
+  visible:	false,
   shortdesc:	"It's a secret!")
 
 loc4		= Location.new(
@@ -171,7 +171,7 @@ loc4		= Location.new(
   name:		'Location 4 (oubliette)',
   desc:		'There is no way out.',
   shortdesc:	"You're doomed for all time.",
-  is_visible:	false)
+  visible:	false)
 
 container1	= Container.new(
   eid:		'birdcage',
@@ -359,7 +359,7 @@ cx2_3		= Path.new(
                  "unknown destination."),
   shortdesc:	'dark secret passage.',
   tooltip:	'Dark secret passage',
-  is_visible:	false,
+  visible:	false,
   origin:	loc2,
   destination:	loc3,
   via:		[

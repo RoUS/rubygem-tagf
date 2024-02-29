@@ -366,7 +366,7 @@ locations:
   preposition:
   tags: []
   is_static: true
-  visible: true
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
   paths: []
@@ -403,7 +403,7 @@ locations:
   preposition:
   tags: []
   is_static: true
-  visible: true
+  visible: false
   game: gameloctest01
   owned_by: gameloctest01
   paths: []
@@ -726,7 +726,7 @@ paths:
   preposition:
   tags: []
   is_static: false
-  visible: true
+  visible: false
   origin: Loc2
   destination: Loc3
   game: gameloctest01
