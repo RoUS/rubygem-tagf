@@ -18,7 +18,7 @@
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
-require('tagf/mixin/location')
+require('tagf/mixin/graphable')
 require('tagf/mixin/universal')
 require('byebug')
 
@@ -32,16 +32,18 @@ module TAGF
     include(Mixin::UniversalMethods)
     include(Mixin::DTypes)
     include(Mixin::Element)
+    include(Mixin::Graphable)
 
     # @!macro TAGF.constant.Loadable_Fields
     Loadable_Fields		= [
       'origin',
       'destination',
+      'tooltip',
+      'via',
+      'reversible',
       'sealable',
       'seal_key',
-      'via',
       'must_possess',
-      'reversible',
     ]
 
     # @!macro TAGF.constant.Abstracted_Fields
@@ -51,7 +53,9 @@ module TAGF
     }
 
     # @!attribute [rw] reversible
-    # @!macro doc.TAGF.classmethod.flag.invoke
+    # Whether the player can 'back up' after following the path.  (If
+    # the destination is at the bottom of a cliff, it's probably not
+    # reversible.)
     #
     # @return [Boolean]
     #   whether or not the path can be followed in reverse.
@@ -109,11 +113,69 @@ module TAGF
     # @return [Boolean]
     flag(:must_possess)
 
+    # @!method add_to_graph(graphobj)
+    # This method will be invoked for every Location instance in the
+    # game.  It has the responsibility of adding the Location as a
+    # vertex in the graph, and setting the rendering attributes as
+    # appropriate (see Graph_Attributes)..
+    #
+    # @return [void]
+    def add_to_graph
+      graph		= self.game.graphinfo.graph
+      #
+      # If we're already registered, don't do it again.
+      #
+      if (edge = self.graph_component.nil?)
+        graph.add_edge(self.origin, self.destination)
+        edge		= graph.edges.find { |e|
+          (e.source == self.origin) &&
+          (e.target == self.destination)
+        }
+        self.graph_component = edge
+      end
+      #
+      # However, our attributes may have changed (such as visibility)
+      # and therefore how we should be rendered.  Set the rendering
+      # bits (or reset them) according to the current settings.
+      #
+      gattr		= Graph_Attributes
+      attr		= {
+        label:		self.label,
+        tooltip:	self.desc,
+      }.merge(gattr.edge.default)
+      if (! self.visible?)
+        attr		= attr.merge(gattr.edge.invisible)
+      end
+      graph.set_edge_options(edge.source, edge.target, **attr)
+      return nil
+    end                       # def add_to_graph
+
+    # @!method export
+    # `Location`-specific export method, responsible for adding any
+    # unusual fields that need to be abstracted to the export hash.
+    # That is, things that can't be simply boiled down to a string
+    # EID.
+    #
+    # @return [Hash<String=>Any>]
+    #   the updated export hash.
+    def export
+      result			= super
+      vias			= [] | self.via.map { |kw|
+        self.game.keyword(kw, required: true).root
+      }
+      result['via']		= vias
+      return result
+    end                         # def export
+
     # @!method conflicts(*args, **kwargs)
     #
     def conflicts(*args, **kwargs)
       result		= []
       args.each do |other|
+        #
+        # We don't conflict with ourself, so skip us.
+        #
+        next if (other == self)
         other_via	= [ *other.via ]
         unless ((self.via & other_via).empty?)
           result.push(other)
@@ -126,7 +188,7 @@ module TAGF
     # @!method initialize(*args, **kwargs)
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
-      self.is_visible!
+      self.visible!
       self.initialize_element(*args, **kwargs)
     end                         # def initialize(*args, **kwargs)
 

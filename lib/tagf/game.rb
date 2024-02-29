@@ -21,28 +21,10 @@ require('tagf/exceptions')
 require('tagf/mixin/container')
 require('tagf/mixin/debugging')
 require('tagf/mixin/dtypes')
-require('ruby-graphviz')
+require('rgl/adjacency')
 require('psych')
 require('yaml')
 require('byebug')
-
-#
-# Extend the GraphViz classes to add attributes we want.  They don't
-# provide for arbitrary custom user-defined attributes.
-#
-class GraphViz::Node
-  # @!attribute [rw] location
-  # @return [TAGF::Location]
-  #   The game's Location element to which this node corresponds.
-  attr_accessor(:location)
-end                             # class GraphViz::Node
-
-class GraphViz::Edge
-  # @!attribute [rw] path
-  # @return [TAGF::Path]
-  #   The game's Path element to which this edge corresponds.
-  attr_accessor(:path)
-end                             # class GraphViz::Node
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -59,11 +41,13 @@ module TAGF
     extend(Forwardable)
     include(Exceptions)
     include(Mixin::Debugging)
+    include(Mixin::Graphable)
 
     # @!macro TAGF.constant.Loadable_Fields
     Loadable_Fields		= [
       'author',
       'copyright',
+      'copyright_year',
       'licence',
       'version',
       'date',
@@ -138,7 +122,7 @@ module TAGF
     #
     attr_accessor(:date)
 
-    attr_reader(:graph)
+    attr_reader(:graphinfo)
 
     attr_accessor(:keywords)
 
@@ -206,6 +190,56 @@ module TAGF
       return result
     end                         # def export_game
 
+    # @!method keyword(kw, **kwargs)
+    #
+    # @param [String]			kw
+    #   The string for which to search the keyword list.  A keyword
+    #   element matches if `kw` either equals its `:root` attribute or
+    #   is included in its `:alii` array.
+    # @param [Hash<Symbol=>Any>]	kwargs
+    #   Keyword arguments hash.
+    # @option kwargs [Boolean]		:required
+    #   If `true`, an exception will be raised if no match can be
+    #   found.  If `false`, the return value will be `nil` to signify
+    #   that `kw` wasn't found.
+    # @raise [RuntimeError]
+    #   if more than one registered keyword element claims ownership
+    #   of `kw`
+    # @return [nil]
+    #   if no keyword element was found that 'owns' the keyword (or
+    #   alias) 
+    # @return [TAGF::Keyword]
+    #   the keyword element that 'owns', as the definitive keyword or
+    #   as an alias, the word in `kw`
+    def keyword(kw, **kwargs)
+      keywords		= self.filter(klass: TAGF::Keyword)
+      keywords		= keywords.select { |o|
+        [ o.root, *o.alii ].include?(kw)
+      }
+      if (keywords.nil? || keywords.empty?)
+        if (kwargs[:required])
+          #
+          # Is the expectation that this keyword must already be
+          # defined?  If so, it ain't there, so complain.
+          #
+          raise_exception(RuntimeError,
+                          format('%s: cannot find keyword "%s"',
+                                 __callee__.to_s,
+                                 kw))
+        else
+          return nil
+        end
+      elsif (keywords.count != 1)
+        raise_exception(RuntimeError,
+                        format('%s: multiple (%i) keywords ' \
+                               + 'define "%s"',
+                               __callee__.to_s,
+                               keywords.count,
+                               kw))
+      end
+      return [ *keywords ][0]
+    end                         # def keyword(kw)
+
     #
     # Constructor for the main element of this entire project -- the
     # <strong>Game</strong> object.  Every element, including this
@@ -261,17 +295,26 @@ module TAGF
     #   self
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
+      #
+      # Set up the descriptive digraph object.  We don't need to have
+      # any particular attributes set in order to do this; just the
+      # game instance itself.
+      #
+      @graphinfo	= GraphInfo.new(self)
+      #
+      # Now start filling in our attributes from the method arguments.
+      #
       @creation_overrides = {
         game:		self,
         owned_by:	self,
-        is_visible:	false,  # Everything we create here is metadata
+        visible:	false,  # Everything we create here is metadata
       }
       kwargs		= kwargs.merge(self.creation_overrides)
-      self.game		= kwargs[:game]
-      self.owned_by	= kwargs[:game]
+      self.game		= kwargs[:game] || self
+      self.owned_by	= kwargs[:game] || self
       kwargs.delete(:eid) if (@eid = kwargs[:eid])
       kwargs.delete(:name) if (self.name = kwargs[:name])
-      @eid		||= self.object_id.to_s
+      @eid		||= format('game-%i', self.object_id.to_i)
       self.name		||= ''
       self.is_static!
       self.initialize_element(*args, **kwargs)
@@ -280,10 +323,12 @@ module TAGF
                                 inventory_eid: 'master_inventory')
       self.add(self)
       self.allow_containers!
+=begin
       @graph		= GraphViz.new(:TAGF,
                                        type:	:digraph,
                                        label:	format('Game: %s',
                                                        self.name))
+=end
     end                         # def initialize
 
     # @todo

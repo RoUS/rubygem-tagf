@@ -23,6 +23,8 @@ require('tagf/exceptions')
 require('tagf/mixin/element')
 require('forwardable')
 require('ostruct')
+require('rgl/adjacency')
+require('rgl/dijkstra')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -33,11 +35,74 @@ module TAGF
 
     # Module providing attributes and methods for something that can
     # (and probably will) be opened included in the digraph.
-    # Basically, Location and Path elements.  but, just in case..
+    # Basically, Location and Path elements.  But, just in case..
     module Graphable
 
       include(Mixin::DTypes)
       include(Mixin::UniversalMethods)
+
+      # Class encapsulating all 'global' aspects of the
+      # <em>per</em>-game digraph.  Each game has an instance.
+      class GraphInfo
+        
+        include(RGL)
+
+        # @!attribute [r] graph
+        #
+        # @return [RGL::DirectedAdjacencyGraph]
+        attr_reader(:graph)
+
+        attr_reader(:game)
+        attr_reader(:weighthash)
+        attr_reader(:weightmap)
+        attr_reader(:scout)
+
+        def assemble(game)
+          self.game.filter(klass: TAGF::Location).each do |loc|
+            loc.add_to_graph(@graph)
+          end
+          self.game.filter(klass: TAGF::Path).each do |path|
+            path.add_to_graph(@graph)
+          end
+          return nil
+        end                     # def assemble
+
+        # @!method initialize(game)
+        # @param [TAGF::Game] game
+        #   The game instance which this graph is intended to
+        #   describe.
+        #
+        # @return [void]
+        def initialize(game)
+          @game		= game
+          @graph	= RGL::DirectedAdjacencyGraph.new
+          #
+          # Since all of our edge weights are essentially zero, create
+          # a hash with that as the default value.  Paths which might
+          # have a different weight (such as those involving doors or
+          # other obstacles) can, of course, change this on a
+          # <em>per</em>-case basis.
+          #
+          @weighthash	= {}
+          @weighthash.default = 0.0
+          @weightmap	= RGL::EdgePropertiesMap.new(@weighthash,
+                                                     true)
+          #
+          # Something used by RGL to help traverse the graph when
+          # finding shortest paths between locations.
+          #
+          @visitor	= RGL::DijkstraVisitor.new(@graph)
+          #
+          # And the actual hunter/seeker for path walking.
+          #
+          @scout	= RGL::DijkstraAlgorithm.new(@graph,
+                                                     @weightmap,
+                                                     @visitor)
+          return nil
+        end                     # def initialize
+
+        nil
+      end                       # class GraphInfo
 
       # @!macro TAGF.constant.Loadable_Fields
       Loadable_Fields		= [
@@ -95,7 +160,47 @@ module TAGF
 
       attr_accessor(:tooltip)
 
+      # @!attribute [rw] graph_component
+      # When the game has been fully instantiated, the Game#graph
+      # digraph is populated with all of the game's TAGF::Location and
+      # TAGF::Path elements.  The #graph_component will be set to the
+      # appropriate graph object.
+      #
+      # Vertices in RGL don't have wrappers; instead, they're
+      # registered in an internal data structure.  As a consequence,
+      # Location elements' #graph_component will reference the
+      # Location object itself.
+      #
+      # Edges in RGL, on the other hand, <em>do</em> have their own
+      # RGL objects.  Therefore, the #graph_component attribute for
+      # Path objects will reference an actual RGL::Edge object of some
+      # sort.
+      #
+      # @return [TAGF::Location]
+      #   if the receiver is a TAGF::Location object, that object
+      #   itself is returned.
+      # @return [RGL::Edge]
+      #   if the receiver is a TAGF::Path object, the corresponding
+      #   RGL::Edge object is returned.
       attr_accessor(:graph_component)
+
+      # @!method add_to_graph(graphobj)
+      # @abstract
+      # Graphable classes need to override this methos.
+      #
+      # This method will be invoked for each instance of every
+      # Graphable class in the game.  It is this method's
+      # responsibility to add the instance to the graph, including any
+      # rendering attributes (see Graph_Attributes).
+      #
+      # @return [void]
+      def add_to_graph(graphobj)
+        raise_exception(RuntimeError,
+                        format('Graphable classes ' \
+                               + 'must override method #%s',
+                               __callee__.to_s))
+        return nil
+      end                       # def add_to_graph
 
       # @!method label(rcvr=nil)
       # Provide a default stringify method for all game elements.
