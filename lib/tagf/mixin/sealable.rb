@@ -316,7 +316,7 @@ module TAGF
         # to the actual attributes of this object.
         #
         Loadable_Fields.each do |fname|
-          fgetter	= fname.to_symm
+          fgetter	= fname.to_sym
           fivar		= format('@%s', fname).to_sym
           if (kwargs.has_key?(fgetter))
             fsetter	= format('%s=', fname).to_sym
