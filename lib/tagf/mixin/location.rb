@@ -128,9 +128,10 @@ module TAGF
           all_paths	= self.paths
           if (estpaths = path.conflicts(*all_paths))
             raise_exception(TAGF::Exceptions::ConflictingPath,
-                            newpath:	self,
+                            newpath:	path,
                             paths:	estpaths)
           end
+          self.paths.push(path) unless (self.paths.include?(path))
         end
         return self
       end                       # def add_path

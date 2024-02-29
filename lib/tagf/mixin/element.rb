@@ -17,7 +17,7 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-#require('tagf')
+require('tagf')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -84,6 +84,10 @@ module TAGF
         'game',
         'owned_by',
         #
+        # Modules that potentially should be mixed in to instances.
+        #
+        'mixins',
+        #
         # Attributes describing the element (description,
         # singular/plural article, &c.).
         #
@@ -105,7 +109,7 @@ module TAGF
         # walls, &c.
         #
         'is_static',
-        'is_visible',
+        'visible',
       ]
 
       # @!macro TAGF.constant.Abstracted_Fields
@@ -198,9 +202,46 @@ module TAGF
       # @!macro doc.TAGF.classmethod.flag.invoke
       flag(:is_static)
 
-      #
+      # @!attribute [rw] visible
       # @!macro doc.TAGF.classmethod.flag.invoke
-      flag(:is_visible)
+      # For discernable objects, such as Location, Feature, and Item
+      # elements, this controls whether or not they are perceptible to
+      # the player; <em>i.e.</em>, whether their existence is even
+      # acknowledged in any user-readable output.  Secret passages can
+      # be implemented by marking a Path as invisible.
+      #
+      # @see #invisible
+      #
+      # @result [Boolean]
+      #   `true` if the receiver is considered visible to the player.
+      flag(:visible)
+
+      # @!attribute [rw] invisible
+      # @!macro doc.TAGF.classmethod.flag.invoke
+      # This is an inversion of the #visible attribute, rather than an
+      # attribute in its own right.  It modifies the `:@visible`
+      # instance variable and has none of its own.
+      #
+      # @see #visible
+      #
+      # @result [Boolean]
+      #   `true` if the receiver is considered imperceptible to the
+      #   player. 
+      def invisible
+        result		= (! self.visible?)
+        return result
+      end                       # def invisible
+      alias_method(:invisible?, :invisible)
+      def invisible=(val)
+        self.visible	= (! truthify(val))
+        result		= (! self.visible?)
+        return result
+      end                       # def invisible=(val)
+      def invisible!
+        result		= true
+        self.visible	= false
+        return result
+      end                       # def invisible!
 
       #
       # List of attributes that are considered essentially immutable,
@@ -222,6 +263,8 @@ module TAGF
       #   default is determined from the first letter of the element's
       #   #desc value..
       attr_accessor(:article)
+
+      attr_accessor(:mixins)
 
       #
       # How to refer to contents when displayed.  Are they 'in' the
@@ -268,7 +311,7 @@ module TAGF
         return result unless (self.is_container?)
 
         self.inventory.features.each do |f|
-          next unless (f.is_visible?)
+          next unless (f.visible?)
           result	+= format("  You see %s.", f.name)
           #
           # @todo
@@ -305,6 +348,20 @@ module TAGF
                ? true \
                : false
       end                       # def is_container?
+
+      # @!attribute [rw] sealable
+      # Any class, instance, or module that includes Mixin::Sealable
+      # will get the is considered sealable (which means it gets
+      # additional attributes like #openable, #opened, #lockable,
+      # <em>&c.</em>).  It can be tested by checking its #sealable?
+      # attribute, defined here.
+      # @return [Boolean]
+      #   `true` if the receiver includes the Mixin::Sealable module
+      #   and therefore has openable/lockable/needs-a-key features.
+      def sealable
+        return self.kind_of?(TAGF::Mixin::Sealable) ? true : false
+      end                       # def sealable
+      alias_method(:sealable?, :sealable)
 
       #
       # @return [Boolean]
@@ -433,7 +490,7 @@ module TAGF
         if (self.has_inventory?)
           iheader		= nil
           self.inventory.each do |eid,iobj|
-            if ((! iobj.is_visible?) \
+            if ((! iobj.visible?) \
                 || iobj.kind_of?(TAGF::Path))
               next
             end
@@ -553,37 +610,6 @@ module TAGF
         return result
       end                       # def abstractify
 
-      # @!method label(rcvr=nil)
-      # Provide a default stringify method for all game elements.
-      # (Or, actually, any kind of object, though non-game objects
-      # will be unimaginatively labeled.)
-      # Unless this method is overridden, the return value will
-      # include the result from the element's #to_key method; if the
-      # #name attribute is a String, then that will be appended.
-      #
-      # @param [Any] rcvr		self
-      #   Optional object for which a label should be generated.  By
-      # default, it's `self`.
-      # @return [String]
-      def label(rcvr=nil)
-        rcvr		||= self
-        result		= rcvr.to_s
-        catch(:labeled) do
-          if (! (rcvr.respond_to?(:name) \
-                 && rcvr.respond_to?(:to_key)))
-            throw(:labeled)
-          end
-          if (rcvr.name.kind_of?(String))
-            result	= format('%s - %s',
-                                 rcvr.to_key,
-                                 rcvr.name.to_s)
-          else
-            result	= rcvr.to_key
-          end
-        end                     # catch(:labeled)
-        return result
-      end                       # def label(rcvr=nil)
-
       # @param [Array] args
       # @!macro doc.TAGF.formal.kwargs
       # @option kwargs [Symbol]	:eid		(nil)
@@ -612,17 +638,48 @@ module TAGF
         # We need to do this early so that any seal-specific fields
         # in `kwargs` will be processed properly.
         #
-        if (kwargs[:sealable] \
-            && (! self.class.ancestors.include?(TAGF::Mixin::Sealable)))
-          self.singleton_class.include(TAGF::Mixin::Sealable)
-          kwargs.delete(:sealable)
-        end
+        if ((mixins = kwargs[:mixins]) \
+            && mixins.kind_of?(Array))
+          self.mixins	= [ *mixins ].compact.uniq
+          mixins.each do |mixin_s|
+            mixin_s	= mixin_s.downcase.sub(%r!^.*::!, '')
+            mixin	= format('TAGF::Mixin::%s',
+                                 mixin_s.capitalize)
+            if (TAGF.const_defined?(mixin))
+              mixin	= TAGF.const_get(mixin)
+              if (! self.class.ancestors.include?(mixin))
+                self.class.include(mixin)
+                mixin_init = format('initialize_%s', mixin_s).to_sym
+                if (self.respond_to?(mixin_init))
+                  self.send(mixin_init, *args, **kwargs)
+                end
+                warn(format('%s: mixed %s into %s',
+                            __callee__.to_s,
+                            mixin.to_s,
+                            self.to_key))
+              end
+            else
+              raise_exception(RuntimeError,
+                              format('%s: cannot locate mixin "%s" ' \
+                                     + 'for element %s',
+                                     __callee__.to_s,
+                                     mixin,
+                                     self.to_key))
+            end                 # if (TAGF.const_defined?(mixin))
+          end                   # mixins.each do
+        else
+          #
+          # No explicit mixins, so make the attribute an empty array.
+          #
+          self.mixins	= []
+        end                     # if (kwargs[:mixins])
+        kwargs.delete(:mixins)
         #
         # Default to things being visible; it takes an explicit change
-        # or a `is_visible: false` tuple in `kwargs` to make something
+        # or a `visible: false` tuple in `kwargs` to make something
         # hidden.
         #
-        self.is_visible!
+        self.visible!
         #
         # Now set attributes according to the keyword arguments hash.
         #

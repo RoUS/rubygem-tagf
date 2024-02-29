@@ -41,6 +41,10 @@ module TAGF
 
       # @!macro TAGF.constant.Loadable_Fields
       Loadable_Fields		= [
+        'desc_open',
+        'desc_closed',
+        'shortdesc_open',
+        'shortdesc_closed',
         'openable',
         'opened',
         'autoclose',
@@ -53,6 +57,11 @@ module TAGF
       # @!attribute [rw] seal_key
       # @return [String]
       attr_accessor(:seal_key)
+
+      attr_accessor(:desc_open)
+      attr_accessor(:shortdesc_open)
+      attr_accessor(:desc_closed)
+      attr_accessor(:shortdesc_closed)
 
       # @!attribute [rw] openable
       # Does this element have the option of being open or closed?
@@ -295,8 +304,8 @@ module TAGF
         return self.relock?
       end                       # def relock=(value)
 
-      # @!method initialize_seal(*args, **kwargs)
-      def initialize_seal(*args, **kwargs)
+      # @!method initialize_sealable(*args, **kwargs)
+      def initialize_sealable(*args, **kwargs)
         if (self.respond_to?(:is_surface?) \
             && self.is_surface?)
           self.openable	= true
@@ -314,10 +323,10 @@ module TAGF
             self.send(fsetter, kwargs[fgetter])
           end
         end
-      end                       # def initialize_seal
+      end                       # def initialize_sealable
 
       nil
-    end                         # module LightSource
+    end                         # module Sealable
 
     nil
   end                           # module TAGF::Mixin
