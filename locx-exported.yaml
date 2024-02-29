@@ -1,0 +1,739 @@
+%YAML 1.2
+---
+game:
+  author: theRoUS
+  copyright: Copyright © 2019-2024 by theRoUS
+  copyright_year: 2019-2024
+  licence: Apache 2.0
+  version:
+  date:
+  tooltip:
+  allow_containers: true
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: gameloctest01
+  mixins:
+  name: LocTest01
+  desc: Test 01 of game location connexions.
+  shortdesc:
+  article: a
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  start: Loc0
+  game: gameloctest01
+  owned_by: gameloctest01
+factions: []
+features: []
+items:
+- is_living: true
+  eid: bird
+  mixins:
+  name:
+  desc: little songbird
+  shortdesc:
+  article: a
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  mass: 0.0
+  volume: 0.0
+  game: gameloctest01
+  owned_by: birdcage
+keywords:
+- root: up
+  alii:
+  - upward
+  flags:
+  - :motion
+  uses: 0
+  eid: kw-up
+  mixins:
+  name:
+  desc:
+  shortdesc:
+  article:
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+- root: down
+  alii:
+  - downward
+  flags:
+  - :motion
+  uses: 0
+  eid: kw-down
+  mixins:
+  name:
+  desc:
+  shortdesc:
+  article:
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+- root: east
+  alii:
+  - e
+  flags:
+  - :motion
+  - :facing
+  uses: 0
+  eid: kw-east
+  mixins:
+  name:
+  desc:
+  shortdesc:
+  article:
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+- root: west
+  alii:
+  - w
+  flags:
+  - :motion
+  - :facing
+  uses: 0
+  eid: kw-west
+  mixins:
+  name:
+  desc:
+  shortdesc:
+  article:
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+- root: southeast
+  alii:
+  - se
+  flags:
+  - :motion
+  - :facing
+  uses: 0
+  eid: kw-southeast
+  mixins:
+  name:
+  desc:
+  shortdesc:
+  article:
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+- root: northwest
+  alii:
+  - nw
+  flags:
+  - :motion
+  - :facing
+  uses: 0
+  eid: kw-northwest
+  mixins:
+  name:
+  desc:
+  shortdesc:
+  article:
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+- root: back
+  alii:
+  - return
+  - retreat
+  flags:
+  - :motion
+  uses: 0
+  eid: kw-back
+  mixins:
+  name:
+  desc:
+  shortdesc:
+  article:
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+- root: RFID
+  alii:
+  flags:
+  - :item
+  - :key
+  uses: 0
+  eid: kw-RFID
+  mixins:
+  name: RFID plot item
+  desc: A small metal-and-plastic doodad of apparently no consequence, but somehow
+    giving an impression of importance.
+  shortdesc:
+  article: an
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+locations:
+- light_level: 0.0
+  tooltip:
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: Loc0
+  mixins:
+  name: Location 0 - Entrance
+  desc: You're in Location 0, the starting location for players in new games.
+  shortdesc: entrance room.
+  article: a
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: true
+  game: gameloctest01
+  owned_by: gameloctest01
+  paths:
+  - loc0-loc0
+  - loc0-loc1
+  - loc0-loc2
+- light_level: 0.0
+  tooltip:
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: Loc1
+  mixins:
+  name: Location 1
+  desc: Room 1, one of the locations accessible from the entrance.
+  shortdesc: Room 1.
+  article: a
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: true
+  game: gameloctest01
+  owned_by: gameloctest01
+  paths:
+  - loc1-loc0
+  - loc1-loc2
+  - loc1-loc4
+- light_level: 0.0
+  tooltip:
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: Loc2
+  mixins:
+  name: Location 2
+  desc: 'The ending (?) location, #2'
+  shortdesc: Room 2.
+  article: a
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: true
+  game: gameloctest01
+  owned_by: gameloctest01
+  paths:
+  - loc2-loc0
+  - loc2-loc1
+  - loc2-loc3
+- light_level: 0.0
+  tooltip:
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: Loc3
+  mixins:
+  name: Location 3 (secret room)
+  desc: The Secret Room!
+  shortdesc: It's a secret!
+  article: a
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+  paths: []
+- light_level: 0.0
+  tooltip:
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: Loc4
+  mixins:
+  name: Location 4 (oubliette)
+  desc: There is no way out.
+  shortdesc: You're doomed for all time.
+  article: a
+  preposition:
+  tags: []
+  is_static: true
+  is_visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+  paths: []
+containers:
+- mass: 0.0
+  volume: 0.0
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: birdcage
+  mixins:
+  name: birdcage
+  desc: rather battered little brass birdcage
+  shortdesc:
+  article: a
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  game: gameloctest01
+  owned_by: Loc1
+paths:
+- tooltip: Ceiling grate
+  via:
+  - up
+  reversible: true
+  sealable: true
+  seal_key: RFID
+  must_possess: true
+  desc_open: The grate in the ceiling is open.  You can probably crawl upward through
+    it.
+  desc_closed: The ceiling grate is closed.
+  shortdesc_open: You could probably crawl upward through the grate in the ceiling.
+  shortdesc_closed:
+  openable: true
+  opened: false
+  autoclose: false
+  lockable: true
+  locked: true
+  relock: false
+  eid: loc0-loc0
+  mixins:
+  - Sealable
+  name: Loc0 ceiling grate
+  desc: A small hole up on the wall would let you crawl upwards.  There is a steel
+    grate across the opening.
+  shortdesc: upward-leading crawl.
+  article: an
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc0
+  destination: Loc0
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Stone door
+  via:
+  - east
+  reversible: true
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open: The stone door is open, and through it you can see a broad passage, with
+    a flat, smooth floor and smooth walls.
+  desc_closed: The stone door is currently closed.
+  shortdesc_open: The stone door to the east is open.
+  shortdesc_closed: The stone door is currently closed.
+  openable: true
+  opened: false
+  autoclose: true
+  lockable: false
+  locked: false
+  relock: false
+  eid: loc0-loc1
+  mixins:
+  - Sealable
+  name: loc0-loc1
+  desc: To the east is a stone door.
+  shortdesc: broad smooth passage.
+  article: a
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc0
+  destination: Loc1
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Narrow cramped tunnel
+  via:
+  - west
+  reversible: true
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  eid: loc0-loc2
+  mixins:
+  name: loc0-loc2
+  desc: A narrow, cramped tunnel, with rough walls and floor, leads west.
+  shortdesc: narrow cramped tunnel.
+  article: an
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc0
+  destination: Loc2
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Door-sized opening
+  via:
+  - west
+  reversible: true
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  eid: loc1-loc0
+  mixins:
+  name: loc1-loc0
+  desc: A rough doorway-sized opening to the west appears to open up after a few metres.
+  shortdesc: door-sized opening.
+  article: an
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc1
+  destination: Loc0
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Low rocky tunnel
+  via:
+  - southeast
+  reversible: true
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  eid: loc1-loc2
+  mixins:
+  name: loc1-loc2
+  desc: A low rocky tunnel slopes downward to the southeast, leading to Location 2.
+  shortdesc: low rocky tunnel.
+  article: an
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc1
+  destination: Loc2
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Dark pit
+  via:
+  - down
+  reversible: false
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  eid: loc1-loc4
+  mixins:
+  name: loc1-loc4
+  desc: A dark pit lies at your feet, radiating menace and exuding a miasma of hopelessness.  It
+    probably leads somewhere you don't want to go.
+  shortdesc: dark pit.
+  article: an
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc1
+  destination: Loc4
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Narrow crack
+  via:
+  - east
+  reversible: true
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  eid: loc2-loc0
+  mixins:
+  name: loc2-loc0
+  desc: A narrow crack leads east.
+  shortdesc: narrow crack.
+  article: an
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc2
+  destination: Loc0
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Low rocky tunnel
+  via:
+  - northwest
+  reversible: true
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  eid: loc2-loc1
+  mixins:
+  name: loc2-loc1
+  desc: A low rocky tunnel slopes upward to the northwest, leading to Location 1.
+  shortdesc: low rocky tunnel.
+  article: an
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: true
+  origin: Loc2
+  destination: Loc1
+  game: gameloctest01
+  owned_by: gameloctest01
+- tooltip: Dark secret passage
+  via:
+  - down
+  reversible: false
+  sealable: true
+  seal_key:
+  must_possess: false
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  eid: loc2-loc3
+  mixins:
+  name: loc2-loc3
+  desc: Close examination reveals a dark, secret passage hidden behind a boulder.  It
+    appears to lead steeply down into the darkness to an unknown destination.
+  shortdesc: dark secret passage.
+  article: a
+  preposition:
+  tags: []
+  is_static: false
+  is_visible: false
+  origin: Loc2
+  destination: Loc3
+  game: gameloctest01
+  owned_by: gameloctest01
+npcs: []
+# Local Variables:
+# mode: yaml
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
+# End:

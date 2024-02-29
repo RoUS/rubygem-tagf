@@ -59,6 +59,10 @@
 * Build `describe` method that can do as deep a dive as requested for
   nested `Container`s with inventories.
 * Event processing: think about objects registering 'event listeners'.
+* Add `Mixin::Container` and `Mixin::Portable` to YAML element fields.
+* Change YAML `sealable` to be an array element of `mixins`?
+* Re-integrate `Mixin::Location` (*et alia*?) to `Location` if that's
+  the only actual element that reference it.
 
 ## Tools
 * Build a visual graph from `Location` paths (`Connexions`)
@@ -74,6 +78,10 @@
      `.owned_by.paths[]`.
   1. Everything with an `:owned_by` field should be listed in the
      `owned_by.inventory` structure.
+  1. All `:seal_key` values in Keyword definitions themselves are
+     registered as keywords.
+  1. Keywords and alii must be unique; only one can define "e", for
+     instance.
 
 ## Testing
 

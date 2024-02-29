@@ -23,34 +23,38 @@
 # Invisible Location and Path elements are depicted in red, with the
 # paths using dashed rather than solid lines.
 #
-# Path elements which are marked reversible use an open diamond as the
-# arrowhead at the destination end.  If they <em>aren't</em>
-# reversible, the arrowhead is a double arrow instead to indicate the
-# path is one-way.
+# Path elements which are marked reversible use a single arrowhead to
+# retain the indication of the main direction.  If a path is
+# <em>not</em> reversible, a double-arrowhead is used to emphasise
+# that it's a one-way-only path.  So:
+#
+# * One arrowhead (`→`)
+# : The path is reversible, and commands for 'go back' will backtrace
+#   along it.
+# * Double arrowhead (`↠`)
+# : The path is IRreversible; once followed, 'go back' commands won't
+#   return along it.
+#
+# Paths which are sealable (`kind_of?(TAGF::Mixin::Sealable)`)
+# <em>and</em> openable will be annotated with either a door "🚪" (if
+# not lockable) or a padlock.  If it's locked, a padlock & key "🔐"
+# will be used; if it's unlocked, an open padlock "🔓" will be used.
 #
 require('bundler')
 Bundler.setup
 require('tagf')
 require('ostruct')
-require('ruby-graphviz')
+require('pathname')
+require('rgl/adjacency')
+require('rgl/dijkstra')
+require('rgl/dot')
 require('byebug')
 
-#
-# Different conditions use different styles, and nodes use different
-# ones than edges.  Define the default attributes, and then the ones
-# modified by circumstance.
-#
-class GraphViz::Node
-  attr_accessor(:element)
-end
-class GraphViz::Edge
-  attr_accessor(:element)
-end
-
-grafattr		= OpenStruct.new(
-  node:			OpenStruct.new(
+edgeweights		= {}
+graph_attr		= OpenStruct.new(
+  vertex:			OpenStruct.new(
     #
-    # By default, nodes will look like this.
+    # By default, vertices will look like this.
     #
     default:		{
       color:		'black',
@@ -64,6 +68,10 @@ grafattr		= OpenStruct.new(
     invisible:		{
       shape:		'ellipse',
       fillcolor:	'red',
+    },
+    start:		{
+      shape:		'parallelogram',
+      fillcolor:	'lime',
     }),
   edge:			OpenStruct.new(
     #
@@ -94,48 +102,51 @@ grafattr		= OpenStruct.new(
 # Read in the game definition.
 #
 fioer			= TAGF::Filer.new
-game			= fioer.load_game('locx.yaml')
+yamlfile		= ARGV[0] || 'locx.yaml'
+yamlpath		= Pathname(yamlfile)
+basename		= yamlpath.to_s.sub(%r!#{yamlpath.extname}$!,
+                                            '')
+game			= fioer.load_game(yamlpath)
+game.filter(klass: TAGF::Location).each do |loc|
+  cxs			= game.filter(klass: TAGF::Path, origin: loc)
+  loc.add_path(*cxs) unless (cxs.nil? || cxs.empty?)
+end
 
 #
 # Prepare to graph this bugger.
 #
-locgraf			= GraphViz.new(:TAGF,
-                                       type:	:digraph,
-                                       label:	format('%s locations',
-                                                       game.name))
+locgraf			= RGL::DirectedAdjacencyGraph.new
+
 #
-# Set up the default attributes for nodes and edges.
-#
-grafattr.edge.default.each do |k,v|
-  locgraf.edge_attrs[k]	= v
-end
-grafattr.node.default.each do |k,v|
-  locgraf.node_attrs[k]	= v
-end
-#
-# We keep hashes of location elements and the graph nodes keyed by the
-# location EIDs.  This will be useful later for navigating through
+# We keep hashes of location elements and the graph vertices keyed by
+# the location EIDs.  This will be useful later for navigating through
 # things.
 #
 lochash			= {}
-nodehash		= {}
+vertexhash		= {}
 pathhash		= {}
 edgehash		= {}
 
 #
-# Go through the list of game elements and create a graph node for
+# Go through the list of game elements and create a graph vertex for
 # each Location object.  Ignore all other types of elements.
 #
 game.inventory.each do |eid,locelt|
   next unless (locelt.kind_of?(TAGF::Location))
   attr			= {
-    label:		locelt.name,
-  }
-  attr.merge!(grafattr.node.invisible) unless (locelt.is_visible?)
-  node			= locgraf.add_nodes(eid,
-                                            **attr)
+    label:		locelt.label,
+    tooltip:		locelt.desc,
+  }.merge(graph_attr.vertex.default)
+  if (! locelt.is_visible?)
+    attr		= attr.merge(graph_attr.vertex.invisible)
+  end
+  if (locelt == game.start)
+    attr		= attr.merge(graph_attr.vertex.start)
+  end
+  locgraf.add_vertex(locelt)
+  locgraf.set_vertex_options(locelt, **attr)
   lochash[eid]		= locelt
-  nodehash[eid]		= node
+  vertexhash[eid]	= locelt
 end
 
 #
@@ -145,29 +156,66 @@ end
 lochash.values.each do |locelt|
   locelt.paths.each do |cxelt|
     eid			= cxelt.eid
+    label_prefix	= ''
+    if (cxelt.sealable? &&
+        cxelt.openable?)
+      if (cxelt.lockable?)
+        label_prefix	= cxelt.locked ? '🔐 ' : '🔓 '
+      else
+        label_prefix	= '🚪 '
+      end
+    end
+    vias		= cxelt.via.map { |k|
+      game.keyword(k).root
+    }.join(',')
+    tip			= label_prefix + vias
+    if (cxelt.respond_to?(:tooltip) &&
+        cxelt.tooltip.kind_of?(String))
+      tip		= format('%s[%s] %s',
+                                 label_prefix,
+                                 vias,
+                                 cxelt.tooltip)
+    end
     attr		= {
       #
       # Since a path may be accessed by more than one keyword, the
       # label lists all keywords that apply.
       #
-      label:		cxelt.via.join(','),
+      label:		tip, #label + vias,
       id:		eid,
+      tooltip:		tip,
+    }.merge(graph_attr.edge.default)
+    if (! cxelt.is_visible?)
+      attr		= attr.merge(graph_attr.edge.invisible)
+    end
+    if (! cxelt.reversible?)
+      attr		= attr.merge(graph_attr.edge.irreversible)
+    end
+    origin		= lochash[cxelt.origin.eid]
+    destination		= lochash[cxelt.destination.eid]
+    locgraf.add_edge(origin,
+                     destination)
+    edgeweights[[origin,destination]] = 0.0
+    edge		= locgraf.edges.find { |e|
+      (e.source == origin) &&
+      (e.target == destination)
     }
-    attr.merge!(grafattr.edge.invisible) unless (cxelt.is_visible?)
-    attr.merge!(grafattr.edge.irreversible) unless (cxelt.reversible?)
-    edge		= locgraf.add_edge(nodehash[cxelt.origin.eid],
-                                           nodehash[cxelt.destination.eid],
-                                           **attr,
-                                           id:	cxelt.eid)
+    locgraf.set_edge_options(origin, destination, **attr)
     edgehash[eid]	= edge
     pathhash[eid]	= cxelt
   end
 end
 debugger
+edgeprops		= RGL::EdgePropertiesMap.new(edgeweights, true)
+visitor			= RGL::DijkstraVisitor.new(locgraf)
+dij			= RGL::DijkstraAlgorithm.new(locgraf,
+                                                     edgeprops,
+                                                     visitor)
 #
 # Doughnut batter is ready, time to pop them in the eazy bacon oven!
 #
-locgraf.output(png: 'location-map.png')
+locgraf.write_to_graphic_file('png',
+                              format('location-map-%s', basename))
 
 # Local Variables:
 # mode: ruby

@@ -55,6 +55,8 @@ group(:default, :development, :test) do
   gem('pathname',	'>= 0.2.0')
   gem('psych')
   gem('readline')
+  gem('rgl')
+  gem('ruby-graphviz')
   gem('tagf',
       path:		'.')
   gem('thor')
@@ -93,7 +95,6 @@ group(:development, :test) do
   gem('rspec',		'~> 3.0')
   gem('rubocop',	'~> 1.21')
   gem('rubocop-rake')
-  gem('ruby-graphviz')
   gem('simplecov')
   gem('test-unit',	'~> 3.0')
   gem('yard', 		'~> 0.9.11')

@@ -35,25 +35,42 @@ module TAGF
 
     # @!macro TAGF.constant.Loadable_Fields
     Loadable_Fields	= [
-      'word',
+      'root',
       'alii',
       'flags',
       'uses',
     ]
 
-    # @!macro TAGF.constant.Abstracted_Fields
-    Abstracted_Fields		= {
-      flags:			Array[Symbol],
-    }
+    # @!method check_keyword(word)
+    # Ensure that the `word` argument obeys our simple syntax
+    # requirements.
+    #
+    # @raise [ArgumentError]
+    #   on failure of syntax check:
+    #   <tt>"keywords must be single-word strings; bad value
+    #   "<em>class</em>:<em>inspectM</em>"</tt> 
+    # @return [Boolean]
+    #   `true` if the keyword string passes the syntax check
+    def self.check_keyword(word)
+      if (word.kind_of?(String) \
+          && word.match(%r!^\S+$!))
+        return true
+      end
+      raise_exception(ArgumentError,
+                      format('keywords must be single-word ' \
+                             + 'strings; bad value "%s:%s"',
+                             word.class.to_s,
+                             word.inspect))
+    end                         # def self.check_keyword
 
-    # @!attribute [r] word
+    # @!attribute [r] root
     # The actual keyword at the heart of the object.  Keywords are
     # strings and may contain no whitespace.  Generally speaking
     # they're also lowercase and considered case-sensitive.
     #
     # @return [String]
     #   the actual keyword string.
-    attr_reader(:word)
+    attr_reader(:root)
 
     # @!attribute [rw] alii
     # A list of alternate versions of the keyword, such as `"s"` being
@@ -103,7 +120,7 @@ module TAGF
 
     # @!method includes?(word)
     def includes?(word)
-      our_words		= [ self.word, *self.alii ].uniq
+      our_words		= [ self.root, *self.alii ].uniq
       result		= our_words.include?(word)
       return result
     end                         # def includes?(word)
@@ -115,26 +132,21 @@ module TAGF
     #
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
-      @word		= args[0] || kwargs[:word]
-      unless (@word.kind_of?(String) \
-              && @word.match(%r!^\S+$!))
-        raise_exception(ArgumentError,
-                        format('keywords must be single-word ' \
-                               + 'strings; bad value "%s:%s"',
-                               @word.class.to_s,
-                               @word.inspect))
+      @root		= args[0] || kwargs[:root]
+      [ @root, *kwargs[:alii] ].compact.each do |word|
+        Keyword.check_keyword(word)
       end
       #
       # Pre-set some default values for this keyword.
       #
-      eid		= format('kw-%s', @word)
+      eid		= format('kw-%s', @root)
       self.alii		= Set.new
       self.flags	= Set.new
       self.initialize_element(*args,
                               **kwargs,
                               eid: eid)
       self.is_static!
-      self.is_visible	= false
+      self.visible	= false
 
     end                         # def initialize(*args, **kwargs)
 

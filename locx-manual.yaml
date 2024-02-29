@@ -6,26 +6,27 @@ game:
   author:	'theRoUS'
   copyright_year: '2019-2024'
   licence:	'Apache 2.0'
-  desc: |-
+  desc: >-
     Test 01 of game location connexions.
   start:	'Loc0'
 
-keyword:
-  eid:		'kw-up'
-  word:		'up'
-  alii:		nil
-  flags:
-    - :motion
-
 keywords:
+  - eid:	'kw-up'
+    root:	'up'
+    alii:
+      - 'upward'
+    flags:
+      - :motion
+
   - eid:	'kw-down'
-    word:	'down'
-    alii:	nil
+    root:	'down'
+    alii:
+      - 'downward'
     flags:
       - :motion
 
   - eid:	'kw-east'
-    word:	'east'
+    root:	'east'
     alii:
       - 'e'
     flags:
@@ -33,7 +34,7 @@ keywords:
       - :facing
 
   - eid:	'kw-west'
-    word:	'west'
+    root:	'west'
     alii:
       - 'w'
     flags:
@@ -41,7 +42,7 @@ keywords:
       - :facing
 
   - eid:	'kw-southeast'
-    word:	'southeast'
+    root:	'southeast'
     alii:
       - 'se'
     flags:
@@ -49,36 +50,36 @@ keywords:
       - :facing
 
   - eid:	'kw-northwest'
-    word:	'northwest'
+    root:	'northwest'
     alii:
       - 'nw'
     flags:
       - :motion
       - :facing
 
-container:
-  eid:		'birdcage'
-  game:		'gameloctest01'
-  owned_by:	'Loc1'
-  name:		'birdcage'
-  article:	'a'
-  desc: |-
-    rather battered little brass birdcage
+containers:
+  - eid:	'birdcage'
+    game:	'gameloctest01'
+    owned_by:	'Loc1'
+    name:	'birdcage'
+    article:	'a'
+    desc: >-
+      rather battered little brass birdcage
 
-item:
-  eid:		'bird'
-  game:		'gameloctest01'
-  owned_by:	'birdcage'
-  is_living:	true
-  article:	'a'
-  desc:		'little songbird'
+items:
+  - eid:	'bird'
+    game:	'gameloctest01'
+    owned_by:	'birdcage'
+    is_living:	true
+    article:	'a'
+    desc:	'little songbird'
 
 locations:
   - eid:	'Loc0'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'Location 0 - Entrance'
-    desc: |-
+    desc: >-
       You're in Location 0, the starting location for players in new
       games.
     shortdesc:	'entrance room.'
@@ -91,91 +92,139 @@ locations:
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'Location 1'
-    desc: |-
+    desc: >-
       Room 1, one of the locations accessible from the entrance.
     shortdesc:	'Room 1.'
     paths:
       - 'loc1-loc0'
       - 'loc1-loc2'
+      - 'loc1-loc4'
 
   - eid:	'Loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'Location 2'
-    desc: |-
+    desc: >-
       The ending (?) location, #2
     shortdesc:	'Room 2.'
     paths:
       - 'loc2-loc0'
+      - 'loc2-loc1'
       - 'loc2-loc3'
 
   - eid:	'Loc3'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'Location 3 (secret room)'
-    desc: |-
+    desc: >-
       The Secret Room!
     shortdesc:	"It's a secret!"
     is_visible:	false
     paths:	[]
 
-path:
-  eid:		'loc0-loc0'
-  game:		'gameloctest01'
-  owned_by:	'gameloctest01'
-  name:		'loc0-loc0'
-  desc: |-
-    A small hole up on the wall would let you crawl upwards.
-  shortdesc:	'upward-leading crawl.'
-  origin:	'Loc0'
-  destination:	'Loc0'
-  sealable:	true
-  seal_key:	'RFID'
-  via:
-    - 'up'
-  reversible:	true
+  - eid:	'Loc4'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'Location 4 (oubliette)'
+    desc: >-
+      There is no way out.
+    shortdesc:	"You're doomed for all time."
+    is_visible:	false
+    paths:	[]
 
 paths:
+  - eid:	'loc0-loc0'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'Loc0 ceiling grate'
+    origin:	'Loc0'
+    destination: 'Loc0'
+    desc: >-
+      A small hole up on the wall would let you crawl upwards.  There
+      is a steel grate across the opening.
+    shortdesc:	'upward-leading crawl.'
+    tooltip: >-
+      Ceiling grate
+    via:
+      - 'up'
+    reversible:	true
+    mixins:
+      - Sealable
+    openable:	true
+    opened:	false
+    autoclose:	false
+    lockable:	true
+    locked:	true
+    seal_key:	'RFID'
+    desc_open: >-
+      The grate in the ceiling is open.  You can probably crawl upward
+      through it.
+    shortdesc_open: >-
+      You could probably crawl upward through the grate in the
+      ceiling.
+    desc_closed: >-
+      The ceiling grate is closed.
+    shortdesc_closed: null
+
   - eid:	'loc0-loc1'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'loc0-loc1'
-    desc: |-
-      A broad passage, with a flat, smooth floor and smooth walls, is
-      visible to the east.
+    desc: >-
+      To the east is a stone door.
     shortdesc:	'broad smooth passage.'
+    tooltip: >-
+      Stone door
     origin:	'Loc0'
     destination: 'Loc1'
     via:
-      - 'e'
+      - 'east'
     reversible:	true
+    mixins:
+      - Sealable
+    openable:	true
+    opened:	false
+    autoclose:	true
+    lockable:	false
+    locked:	false
+    desc_open: >-
+      The stone door is open, and through it you can see a broad
+      passage, with a flat, smooth floor and smooth walls.
+    shortdesc_open: >-
+      The stone door to the east is open.
+    desc_closed: >-
+      The stone door is currently closed.
+    shortdesc_closed: >-
+      The stone door is currently closed.
 
   - eid:	'loc0-loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'loc0-loc2'
-    desc: |-
+    desc: >-
       A narrow, cramped tunnel, with rough walls and floor, leads
       west.
-    shortdesc:	'cramped tunnel.'
+    shortdesc:	'narrow cramped tunnel.'
+    tooltip:	'Narrow cramped tunnel'
     origin:	'Loc0'
     destination: 'Loc2'
     via:
-      - 'w'
+      - 'west'
     reversible:	true
 
   - eid:	'loc1-loc0'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'loc1-loc0'
-    desc: |-
+    desc: >-
       A rough doorway-sized opening to the west appears to open up
       after a few metres.
     shortdesc:	'door-sized opening.'
+    tooltip:	'Door-sized opening'
     origin:	'Loc1'
     destination: 'Loc0'
     via:
-      - 'w'
+      - 'west'
     reversible:	true
 
   - eid:	'loc2-loc0'
@@ -184,54 +233,73 @@ paths:
     name:	'loc2-loc0'
     desc:	'A narrow crack leads east.'
     shortdesc:	'narrow crack.'
+    tooltip:	'Narrow crack'
     origin:	'Loc2'
     destination: 'Loc0'
     via:
-      - 'e'
+      - 'east'
     reversible:	true
 
   - eid:	'loc1-loc2'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'loc1-loc2'
-    desc: |-
+    desc: >-
       A low rocky tunnel slopes downward to the southeast, leading to
       Location 2.
     shortdesc:	'low rocky tunnel.'
+    tooltip:	'Low rocky tunnel'
     origin:	'Loc1'
     destination: 'Loc2'
     via:
-      - 'se'
+      - 'southeast'
     reversible:	true
+
+  - eid:	'loc1-loc4'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'loc1-loc4'
+    desc: >-
+      A dark pit lies at your feet, radiating menace and exuding a
+      miasma of hopelessness.  It probably leads somewhere you don't
+      want to go.
+    shortdesc:	'dark pit.'
+    tooltip:	'Dark pit'
+    origin:	'Loc1'
+    destination: 'Loc4'
+    via:
+      - 'down'
+    reversible:	false
 
   - eid:	'loc2-loc1'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'loc2-loc1'
-    desc: |-
+    desc: >-
       A low rocky tunnel slopes upward to the northwest, leading to
       Location 1.
     shortdesc:	'low rocky tunnel.'
+    tooltip:	'Low rocky tunnel'
     origin:	'Loc2'
     destination: 'Loc1'
     via:
-      - 'nw'
+      - 'northwest'
     reversible:	true
 
   - eid:	'loc2-loc3'
     game:	'gameloctest01'
     owned_by:	'gameloctest01'
     name:	'loc2-loc3'
-    desc: |-
+    desc: >-
       Close examination reveals a dark, secret passage hidden behind a
       boulder.  It appears to lead steeply down into the darkness to
       an unknown destination.
     shortdesc:	'dark secret passage.'
+    tooltip:	'Dark secret passage'
     is_visible:	false
     origin:	Loc2
     destination: Loc3
     via:
-      - 'up'
       - 'down'
     reversible:	false
 
