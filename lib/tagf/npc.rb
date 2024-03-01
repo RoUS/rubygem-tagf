@@ -36,6 +36,24 @@ module TAGF
     include(Mixin::DTypes)
     include(Mixin::Actor)
 
+    # @!macro TAGF.constant.Loadable_Fields
+    Loadable_Fields		= [
+      'light_tolerance',
+    ]
+
+    # @!attribute [rw] light_tolerance
+    # Highest value for the current Location#light_level that the NPC
+    # can tolerate; any brighter than this, and it should flee.
+    #
+    # @todo
+    #   This needs to be combined with the effect of any light source
+    #   the player is carrying.
+    #
+    # @return [Float]
+    #   the maximum light level the NPC can tolerate, from 0.0 to
+    #   100.0.
+    float_accessor(light_tolerance: 100.0)
+
     #
     # @!macro doc.TAGF.formal.kwargs
     # @return [NPC] self
