@@ -109,7 +109,7 @@ module TAGF
     # represented as symbols, and the values are determined and stored
     # as part of exception class declaration.
     #
-    # @see ErrorBase#assign_ID
+    # @see ErrorBase.assign_ID
     #
     EXCEPTION_IDS	= {}
 
@@ -564,7 +564,7 @@ module TAGF
       #     Explicit severity for constructed instance of the
       #     exception.  If omitted, the default is taken from the
       #     severity set for the class itself, or `:severe`.  See
-      #     {SEVERITY}, {ErrorBase#assign_ID}, and {#severity}.
+      #     {SEVERITY}, {ErrorBase.assign_ID}, and {#severity}.
       def initialize(*args, **kwargs)
         @msg		= nil
         #
@@ -1761,6 +1761,132 @@ module TAGF
       nil
     end                         # class ConflictingPath
 
+    # Report that an element hasn't been supplied with a required
+    # #name value.
+    class NameRequired < ErrorBase
+
+      #
+      # Assign this exception class a unique ID number
+      #
+      self.assign_ID(0x01e)
+
+      self.severity	= :severe
+
+      #
+      # @!macro doc.TAGF.formal.kwargs
+      # @!macro ErrorBase.initialize
+      # @option kwargs [Symbol]			:element
+      #   The game element object which needs a name but wasn't given
+      #   one.
+      # @return [NameRequired] self
+      #
+      def initialize(*args, **kwargs)
+        _dbg_exception_start(__callee__)
+        super
+        if (@msg.nil?)
+          if (element = kwargs[:element])
+            @msg	= format('game element %s requires a name, ' +
+                                 'none supplied',
+                                 element.to_key)
+          else
+            @msg	= ('game element requires a name, ' +
+                           'none supplied')
+          end
+        end                     # if (@msg.nil?)
+        self.set_message(@msg)
+      end                       # def initialize
+
+      nil
+    end                         # class NameRequired
+
+    # @!macro doc.TAGF.Exceptions.InventoryLimitExceeded.module
+    module MapError
+
+      #
+      include(Mixin::DTypes)
+
+      #
+      include(Mixin::UniversalMethods)
+
+      # Report that a specific Location is completely inaccessible.
+      class NoAccess < ErrorBase
+
+        #
+        # Assign this exception class a unique ID number
+        #
+        self.assign_ID(0x01f)
+
+        self.severity	= :severe
+
+        #
+        # @!macro doc.TAGF.formal.kwargs
+        # @!macro ErrorBase.initialize
+        # @option kwargs [Symbol]	:location
+        #   The game location object which has limited access.
+        # @return [NoAccess] self
+        #
+        def initialize(*args, **kwargs)
+          _dbg_exception_start(__callee__)
+          super
+          if (@msg.nil?)
+            if (loc = kwargs[:location])
+              @msg	=
+                format('location %s is inaccessible ' +
+                       '(except perhaps by use of a shortcut)',
+                       loc.to_key)
+            else
+              @msg	= ('location is inaccessible ' +
+                           '(except perhaps by use of a shortcut)')
+            end
+          end                   # if (@msg.nil?)
+          self.set_message(@msg)
+        end                     # def initialize
+
+        nil
+      end                       # class NoExit
+
+      # Report that a specific Location can be entered, but there's no
+      # way to walk out again.
+      class NoExit < ErrorBase
+
+        #
+        # Assign this exception class a unique ID number
+        #
+        self.assign_ID(0x020)
+
+        self.severity	= :severe
+
+        #
+        # @!macro doc.TAGF.formal.kwargs
+        # @!macro ErrorBase.initialize
+        # @option kwargs [Symbol]	:location
+        #   The game location object which has limited access.
+        # @return [NoExit] self
+        #
+        def initialize(*args, **kwargs)
+          _dbg_exception_start(__callee__)
+          super
+          if (@msg.nil?)
+            if (loc = kwargs[:location])
+              @msg	=
+                format('location %s can be entered, ' +
+                       'but not left except by "go back" '+
+                       '(or perhaps by use of a shortcut)',
+                       loc.to_key)
+            else
+              @msg	= ('location can be entered, ' +
+                           'but not left except by "go back" '+
+                           '(except perhaps by use of a shortcut)')
+            end
+          end                   # if (@msg.nil?)
+          self.set_message(@msg)
+        end                     # def initialize
+
+        nil
+      end                       # class NoExit
+
+      nil
+    end                         # module MapError
     nil
   end                           # module TAGF::Exceptions
 
