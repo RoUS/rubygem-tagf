@@ -52,28 +52,101 @@ module TAGF
         # @return [RGL::DirectedAdjacencyGraph]
         attr_reader(:graph)
 
+        # @!attribute [r] game
+        # The game object within which is embedded all the graph
+        # information.  Read-only and set by the constructor.
+        #
+        # @return [TAGF::Game]
+        #   the game instance from which the graph information will be
+        #   extracted.
         attr_reader(:game)
+
+        # @!attribute [r] weighthash
+        # A mapping of edges to their weights (Float values), used to
+        # determine the cost of routes from one vertex to another and
+        # the 'shortest' path from those.  Each key is a two-element
+        # array composed of the `origin` and `destination` (or
+        # `source` and `target`, in RGL terms) vertices; the
+        # corresponding value is a floating-point number indicating
+        # the weight.
+        #
+        # By default (see #initialize), this begins as an empty hash
+        # object with a default value of `0.0`, so <em>all</em>
+        # lookups will return that value.  Edges (paths) that should
+        # actually be more expensive to traverse can explicitly add an
+        # entry to this hash to override the `0.0` default.
+        #
+        # The #weighthash object is used to build the map stored in
+        # the #weightmap attribute (<em>q.v.</em>).
+        #
+        # @return [Hash<Array<(Location,Location)>=>Float>]
         attr_reader(:weighthash)
+
+        # @!attribute [r] weightmap
+        # Readonly attribute, set by the constructor, holding the
+        # RGL-specific data structure for determining the weight of
+        # edges in the game digraph.
+        #
+        # @return [RGL::EdgePropertiesMap]
+        #   see the documentation for RGL::EdgePropertiesMap
         attr_reader(:weightmap)
+
+        # @!attribute [r] scout
+        # Instance of the Dijkstra path-finding algorithm class from
+        # the RGL gem.  The attribute's value is set by the
+        # constructor.  Uses #weightmap and #graph (which must
+        # therefore have been set up before the instance is created)
+        # to walk the graph and determine edge (path) costs.  Methods
+        # of this object return the lowest-cost routes between
+        # locations (vertices).
+        #
+        # @return [RGL::DijkstraAlgorithm]
+        #   the RGL path-finding object we use to find the shortest
+        #   route from one location to another.
         attr_reader(:scout)
 
-        def assemble(game)
+        # @!method assemble
+        # Intended to be invoked after all game objects have been
+        # instantiated and completed, this method tells each Location
+        # (vertex) and Path (edge) object to add itself to the game
+        # graph.
+        #
+        # If the graph has already been assembled, this is a no-op.
+        #
+        # Once this method has been invoked, the graph is ready for
+        # use, whether for route analysis during gameplay, or
+        # standalone rendering into a graphic image, or any other
+        # reason.
+        #
+        # @return [void]
+        def assemble
+          return nil if (@assembled)
           self.game.filter(klass: TAGF::Location).each do |loc|
-            loc.add_to_graph(@graph)
+            loc.add_to_graph
           end
           self.game.filter(klass: TAGF::Path).each do |path|
-            path.add_to_graph(@graph)
+            path.add_to_graph
           end
+          @assembled	= true
           return nil
         end                     # def assemble
 
         # @!method initialize(game)
+        # Create ans set up an instance of the GraphInfo class, which
+        # contains all the bits necessary to treat the game as a
+        # directed graph of locations and paths between them.  The
+        # digraph can be used for something as prosaic as rendering
+        # a graphic 'map' of the game, or for finding routes between
+        # locations, but may also end up being useful in as-yet
+        # unforeseen ways.
+        #
         # @param [TAGF::Game] game
         #   The game instance which this graph is intended to
         #   describe.
         #
         # @return [void]
         def initialize(game)
+          @assembled	= false
           @game		= game
           @graph	= RGL::DirectedAdjacencyGraph.new
           #
@@ -132,6 +205,13 @@ module TAGF
           invisible:		{
             shape:		'ellipse',
             fillcolor:		'red',
+          },
+          #
+          # The starting location has its own special look.
+          #
+          start:		{
+            shape:		'parallelogram',
+            fillcolor:		'lime',
           }),
         edge:			OpenStruct.new(
           #
