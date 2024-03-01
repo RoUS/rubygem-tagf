@@ -17,6 +17,7 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
+require('tagf/mixin/actor')
 require('tagf/mixin/dtypes')
 require('tagf/mixin/universal')
 require('tagf/exceptions')
@@ -402,7 +403,7 @@ module TAGF
     #
     def actors
       result		= self.select(only: :objects) { |o|
-        o.kind_of?(Actor)
+        o.kind_of?(TAGF::Mixin::Actor)
       }
       return result
     end                         # def actors
