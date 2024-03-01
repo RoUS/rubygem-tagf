@@ -107,6 +107,17 @@ yamlpath		= Pathname(yamlfile)
 basename		= yamlpath.to_s.sub(%r!#{yamlpath.extname}$!,
                                             '')
 game			= fioer.load_game(yamlpath)
+game.graphinfo.assemble
+game.graphinfo.graph.write_to_graphic_file('png', basename)
+exit(0)
+
+__END__
+
+#
+# This is the code that was used to prototype the mechanisms used to
+# build the graph within the context of the game code itself.
+# Retained here for potential future expansion or experimentation.
+#
 game.filter(klass: TAGF::Location).each do |loc|
   cxs			= game.filter(klass: TAGF::Path, origin: loc)
   loc.add_path(*cxs) unless (cxs.nil? || cxs.empty?)
@@ -205,7 +216,9 @@ lochash.values.each do |locelt|
     pathhash[eid]	= cxelt
   end
 end
-debugger
+
+edgeweights		= {}
+edgeweights.default	= 0.0
 edgeprops		= RGL::EdgePropertiesMap.new(edgeweights, true)
 visitor			= RGL::DijkstraVisitor.new(locgraf)
 dij			= RGL::DijkstraAlgorithm.new(locgraf,
