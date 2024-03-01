@@ -20,6 +20,7 @@ warn(__FILE__) if (TAGF.debugging?(:file))
 #require('tagf')
 require('tagf/mixin/dtypes')
 require('tagf/mixin/element')
+require('tagf/exceptions')
 require('byebug')
 
 # @!macro doc.TAGF.module
@@ -38,6 +39,7 @@ module TAGF
     #
     include(Mixin::DTypes)
     include(Mixin::Element)
+    include(Exceptions)
 
     # @!macro TAGF.constant.Loadable_Fields
     Loadable_Fields		= [
@@ -62,10 +64,12 @@ module TAGF
 
     #
     def update_all_members!
-      newattitude		= self.attitude
-      @game.actors.each do |eid,actor|
-        if (actor.respond_to?(:faction) && (actor.faction == self))
-          actor.attitude	= newattitude
+      newattitude	= self.attitude
+      actorenum		= @game.filter(klass: TAGF::Mixin::Actor,
+                                       faction: self)
+      if (actorenum)
+        actorenum.each do |actor|
+          actor.attitude = newattitude
         end
       end
     end                         # def update_all_members!
@@ -78,7 +82,8 @@ module TAGF
       TAGF::Mixin::Debugging.invocation
       initialize_element(*args, **kwargs)
       if (self.name.nil?)
-        raise_exception(NameRequired, self)
+        raise_exception(NameRequired,
+                        element: self)
       end
       return self
     end                         # def initialize(*args, **kwargs)
