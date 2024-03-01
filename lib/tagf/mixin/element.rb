@@ -624,6 +624,9 @@ module TAGF
       def initialize_element(*args, **kwargs)
         TAGF::Mixin::Debugging.invocation
         @eid		||= kwargs[:eid] || self.object_id.to_s
+        @game		||= kwargs[:game]
+        kwargs.delete(:eid)
+        kwargs.delete(:game)
         @tags		||= []
         if (self.owned_by.nil? \
             && ((! kwargs.has_key?(:owned_by)) \
@@ -648,15 +651,15 @@ module TAGF
             if (TAGF.const_defined?(mixin))
               mixin	= TAGF.const_get(mixin)
               if (! self.class.ancestors.include?(mixin))
-                self.class.include(mixin)
+                self.singleton_class.include(mixin)
                 mixin_init = format('initialize_%s', mixin_s).to_sym
                 if (self.respond_to?(mixin_init))
                   self.send(mixin_init, *args, **kwargs)
+                  warn(format('%s: mixed %s into %s',
+                              __callee__.to_s,
+                              mixin.to_s,
+                              self.to_key))
                 end
-                warn(format('%s: mixed %s into %s',
-                            __callee__.to_s,
-                            mixin.to_s,
-                            self.to_key))
               end
             else
               raise_exception(RuntimeError,
