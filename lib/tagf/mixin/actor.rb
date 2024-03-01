@@ -38,30 +38,6 @@ module TAGF
       include(Mixin::DTypes)
       include(Mixin::Container)
 
-      #
-      # Eigenclass for the Actor module.  Simply provides an
-      # `included` method to propagate the class methods to the
-      # including class.
-      #
-      class << self
-
-        # @!macro doc.TAGF.module.classmethod.included
-        def included(klass)
-=begin
-          whoami		= format('%s eigenclass.%s',
-                                         self.name,
-                                         __method__.to_s)
-          warn(format('%s called for %s',
-                      whoami,
-		      klass.name))
-=end
-          super
-          return nil
-        end                       # def included(klass)
-
-        nil
-      end                         # module TAGF::Mixin::Actors eigenclass
-
       # @!macro TAGF.constant.Loadable_Fields
       Loadable_Fields		= [
         'maxhp',
