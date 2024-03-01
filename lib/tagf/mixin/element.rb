@@ -212,31 +212,37 @@ module TAGF
       #
       # @see #invisible
       #
-      # @result [Boolean]
+      # @return [Boolean]
       #   `true` if the receiver is considered visible to the player.
       flag(:visible)
 
       # @!attribute [rw] invisible
-      # @!macro doc.TAGF.classmethod.flag.invoke
       # This is an inversion of the #visible attribute, rather than an
       # attribute in its own right.  It modifies the `:@visible`
-      # instance variable and has none of its own.
+      # instance variable through the #visible accessors, and has no
+      # instance variable of its own.
       #
       # @see #visible
       #
-      # @result [Boolean]
+      # @return [Boolean]
       #   `true` if the receiver is considered imperceptible to the
-      #   player. 
+      #   player.
+      # @overload invisible
+      #   Returns the inverse of the setting of the #visible flag.
       def invisible
         result		= (! self.visible?)
         return result
       end                       # def invisible
       alias_method(:invisible?, :invisible)
+      # @overload invisible=(val)
+      #   Sets the #visible flag to the inverse of `val`.
       def invisible=(val)
         self.visible	= (! truthify(val))
         result		= (! self.visible?)
         return result
       end                       # def invisible=(val)
+      # @overload invisible!
+      #   Sets the #visible flag to `false`.
       def invisible!
         result		= true
         self.visible	= false
