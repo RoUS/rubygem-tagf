@@ -179,7 +179,6 @@ module TAGF
       self.is_static!
       self.visible!
       self.initialize_element(*args, **kwargs)
-      self.initialize_sealable(*args, **kwargs)
       self.initialize_container(*args, **kwargs)
       self.game.add(self)
     end                         # def initialize
