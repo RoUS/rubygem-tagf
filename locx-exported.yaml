@@ -495,14 +495,7 @@ containers:
   game: gameloctest01
   owned_by: Loc1
 paths:
-- tooltip: Ceiling grate
-  via:
-  - up
-  reversible: true
-  sealable: true
-  seal_key: RFID
-  must_possess: true
-  desc_open: The grate in the ceiling is open.  You can probably crawl upward through
+- desc_open: The grate in the ceiling is open.  You can probably crawl upward through
     it.
   desc_closed: The ceiling grate is closed.
   shortdesc_open: You could probably crawl upward through the grate in the ceiling.
@@ -513,6 +506,13 @@ paths:
   lockable: true
   locked: true
   relock: false
+  seal_key: RFID
+  tooltip: Ceiling grate
+  via:
+  - up
+  reversible: true
+  sealable: true
+  must_possess: true
   eid: loc0-loc0
   mixins:
   - Sealable
@@ -529,14 +529,7 @@ paths:
   destination: Loc0
   game: gameloctest01
   owned_by: gameloctest01
-- tooltip: Stone door
-  via:
-  - east
-  reversible: true
-  sealable: true
-  seal_key:
-  must_possess: false
-  desc_open: The stone door is open, and through it you can see a broad passage, with
+- desc_open: The stone door is open, and through it you can see a broad passage, with
     a flat, smooth floor and smooth walls.
   desc_closed: The stone door is currently closed.
   shortdesc_open: The stone door to the east is open.
@@ -547,6 +540,13 @@ paths:
   lockable: false
   locked: false
   relock: false
+  seal_key:
+  tooltip: Stone door
+  via:
+  - east
+  reversible: true
+  sealable: true
+  must_possess: false
   eid: loc0-loc1
   mixins:
   - Sealable
@@ -566,19 +566,9 @@ paths:
   via:
   - west
   reversible: true
-  sealable: true
+  sealable: false
   seal_key:
   must_possess: false
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
   eid: loc0-loc2
   mixins: []
   name: loc0-loc2
@@ -597,19 +587,9 @@ paths:
   via:
   - west
   reversible: true
-  sealable: true
+  sealable: false
   seal_key:
   must_possess: false
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
   eid: loc1-loc0
   mixins: []
   name: loc1-loc0
@@ -628,19 +608,9 @@ paths:
   via:
   - southeast
   reversible: true
-  sealable: true
+  sealable: false
   seal_key:
   must_possess: false
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
   eid: loc1-loc2
   mixins: []
   name: loc1-loc2
@@ -659,19 +629,9 @@ paths:
   via:
   - down
   reversible: false
-  sealable: true
+  sealable: false
   seal_key:
   must_possess: false
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
   eid: loc1-loc4
   mixins: []
   name: loc1-loc4
@@ -691,19 +651,9 @@ paths:
   via:
   - east
   reversible: true
-  sealable: true
+  sealable: false
   seal_key:
   must_possess: false
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
   eid: loc2-loc0
   mixins: []
   name: loc2-loc0
@@ -722,19 +672,9 @@ paths:
   via:
   - northwest
   reversible: true
-  sealable: true
+  sealable: false
   seal_key:
   must_possess: false
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
   eid: loc2-loc1
   mixins: []
   name: loc2-loc1
@@ -753,19 +693,9 @@ paths:
   via:
   - down
   reversible: false
-  sealable: true
+  sealable: false
   seal_key:
   must_possess: false
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
   eid: loc2-loc3
   mixins: []
   name: loc2-loc3
