@@ -74,6 +74,16 @@ items:
     article:	'a'
     desc:	'little songbird'
 
+factions:
+  - eid:	dwarves
+    name:	dwarves
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    desc: >-
+      The troupe of threatening little dwarves, always hostile.
+    shortdesc:	Threatening little dwarves.
+    attitude:	:hostile
+
 locations:
   - eid:	'Loc0'
     game:	'gameloctest01'
@@ -129,6 +139,16 @@ locations:
     desc: >-
       There is no way out.
     shortdesc:	"You're doomed for all time."
+    visible:	false
+    paths:	[]
+
+  - eid:	'Loc5'
+    game:	'gameloctest01'
+    owned_by:	'gameloctest01'
+    name:	'Location 5 (the Lost Room)'
+    desc: >-
+      There is no way out.  But then, there is no way in, either.
+    shortdesc:	"You couldn't get heah from theah."
     visible:	false
     paths:	[]
 

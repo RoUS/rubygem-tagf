@@ -43,7 +43,20 @@ game:
   start: Loc0
   game: gameloctest01
   owned_by: gameloctest01
-factions: []
+factions:
+- attitude: :hostile
+  eid: dwarves
+  mixins: []
+  name: dwarves
+  desc: The troupe of threatening little dwarves, always hostile.
+  shortdesc: Threatening little dwarves.
+  article: a
+  preposition:
+  tags: []
+  is_static: false
+  visible: true
+  game: gameloctest01
+  owned_by: gameloctest01
 features: []
 items:
 - is_living: true
@@ -399,6 +412,43 @@ locations:
   name: Location 4 (oubliette)
   desc: There is no way out.
   shortdesc: You're doomed for all time.
+  article: a
+  preposition:
+  tags: []
+  is_static: true
+  visible: false
+  game: gameloctest01
+  owned_by: gameloctest01
+  paths: []
+- light_level: 0.0
+  tooltip:
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
+  desc_open:
+  desc_closed:
+  shortdesc_open:
+  shortdesc_closed:
+  openable: false
+  opened: false
+  autoclose: false
+  lockable:
+  locked: false
+  relock: false
+  seal_key:
+  eid: Loc5
+  mixins: []
+  name: Location 5 (the Lost Room)
+  desc: There is no way out.  But then, there is no way in, either.
+  shortdesc: You couldn't get heah from theah.
   article: a
   preposition:
   tags: []
