@@ -145,7 +145,7 @@
 #   passed the class (or module) object that is including it.  We
 #   extend the caller's eigenclass with the
 #   {TAGF::Mixin::ClassMethods} module, which adds various class
-#   methods (like {TAGF::Mixin::DType#flag}).
+#   methods (like #flag from TAGF::Mixin::DTypes).
 #
 #   @param [Class,Module] klass
 #     Object whose eigenclass is being extended by this module.
@@ -156,7 +156,7 @@
 #   passed the class (or module) object that is including it.  We
 #   extend the caller's eigenclass with the
 #   {TAGF::Mixin::ClassMethods} module, which adds various class
-#   methods (like {TAGF::Mixin::DTypes#flag}).
+#   methods (like #flag from TAGF::Mixin::DTypes).
 #   @todo
 #     <b>Fix this description; it is no longer accurate.</b>
 #
