@@ -110,8 +110,11 @@ module TAGF
       # Symbols describing possible attitudes available to an actor.
       #
       C_Attitudes       = %i[
+                             obsessed
                              friendly
                              neutral
+                             fearful
+                             dislike
                              hostile
                             ]
 
@@ -140,7 +143,9 @@ module TAGF
         ftype		= __callee__.to_s.capitalize
         ftype		= ftype.sub(%r!_fields!, '_Fields')
         if (rcvr.nil?)
-          rcvr          = self.kind_of?(Class) ? self : self.class
+          rcvr          = self.kind_of?(Class) \
+                          ? self \
+                          : self.singleton_class
         end
         fieldlist	= nil
         if (__callee__ == :loadable_fields)
