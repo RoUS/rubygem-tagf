@@ -10,12 +10,22 @@ require('yaml')
 require('byebug')
 require('pp')
 
+#
+# Prepare the support to ask for information from the command line.
+# First, our list of data fields gathered from the command line, and
+# the default values for each.
+#
 cmdopts = {
   file_ref:	'locx-manual.yaml',
   file_test:	'locx-exported.yaml',
   verbosity:	0,
+  quiet:	false,
 }
 
+#
+# Define the parser that process the command line to collect our
+# parsing optons.
+#
 oparser = OptionParser.new do |odef|
   odef.version  = '0.1.0'
   odef.banner   = <<-EOT
@@ -28,6 +38,15 @@ or definitions in the test file are pruned before comparison.
 
 Usage: #{File.basename($0)} [OPTIONS] [REF-FILE [TEST-FILE]]
 
+Exit status:
+  0    	if the test file is functionally identical to the reference
+	file.  'Functionally' means that it has all the same elements
+  	and fields, and all have the same value as in the reference
+  	file.
+  1	At least one difference was found; there were one or more
+  	class mismatches, of fields were present in the reference file
+	but missing from the test file, or fields in the test file
+  	had different values than in the reference file.
   EOT
 
   desc          = ('YAML file providing the reference for ' \
@@ -42,9 +61,24 @@ Usage: #{File.basename($0)} [OPTIONS] [REF-FILE [TEST-FILE]]
     cmdopts[:file_test]	= tfile
   end
 
-  desc		= 'Increase verbosity.'
-  odef.on('-v', '--verbose', desc) do |verbosity|
-    cmdopts[:verbosity] += 1
+  desc		= ('Increase verbosity.  `--no-verbose` resets the ' \
+                   + 'verbosity to 0.  ' \
+                   + "Default is #{cmdopts[:verbosity]}.")
+  odef.on('-v', '--[no-]verbose', desc) do |verbosity|
+    if (verbosity == false)
+      cmdopts[:verbosity] = 0
+    else
+      cmdopts[:verbosity] += 1
+    end
+  end
+
+  desc		= ('Suppress error messages.  Overrides verbosity. ' \
+                   '--no-quiet removes the restriction, allowing ' \
+                   'the current value of --verbose to function ' \
+                   'normally.')
+
+  odef.on('-q', '--[no-]quiet', desc) do |quietude|
+    cmdopts[:quiet] = quietude
   end
 end
 oparser.parse!
@@ -60,6 +94,7 @@ if (cmdopts[:file_test].nil?)
 end
 
 @verbosity		= cmdopts[:verbosity]
+@quiet			= cmdopts[:quiet]
 #
 # Trim a copy of the candidate so it only contains the same keys as
 # the reference hash.  And sort both by key.  Returns a two-element
@@ -70,7 +105,7 @@ def compare_record(sect, eid, refhash, testhash)
   result	= true
   keys		= refhash.keys.sort { |a,b| a.to_s <=> b.to_s }
   keys.each do |key|
-    unless (@verbosity.zero?)
+    if ((! @quiet) && (@verbosity.to_i > 0))
       puts(format('Checking "%s[%s].%s ..',
                   sect,
                   refhash['eid'],
@@ -104,7 +139,7 @@ candidate	= ''
 
 @success	= true
 @diffcount	= 0
-unless (@verbosity.zero?)
+if ((! @quiet) && (@verbosity > 0))
   puts(format('Comparing YAML from "%s" with reference "%s"',
               cmdopts[:file_test],
               cmdopts[:file_ref]))
@@ -118,7 +153,7 @@ yaml_ref.each do |sect,elt_ref|
   elt_test		= yaml_test[sect]
   reference	= {}
   candidate	= {}
-  unless (@verbosity.zero?)
+  if ((! @quiet) && (@verbosity > 0))
     puts(format("Checking classes for section '%s'",
                 sect))
   end
@@ -150,12 +185,14 @@ yaml_ref.each do |sect,elt_ref|
 end
 
 if (@success)
-  unless (@verbosity.zero?)
+  if ((! @quiet) && (@verbosity > 0))
     puts('YAML is functionally equivalent.')
   end
 else
-  warn(format('Significant differences (%i) were found.',
-              @diffcount))
+  unless (@quiet)
+    warn(format('Significant differences (%i) were found.',
+                @diffcount))
+  end
 end
 exit(@success ? 0 : 1)
 
