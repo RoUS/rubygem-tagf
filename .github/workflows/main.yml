@@ -18,13 +18,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    #
+    # Versionary needs to be installed before Bundler because the
+    # gemspec references it.  Right now I'm floundering about how to
+    # do this within the framework.  I really should look it up..
+    #
+    - name: Versionary install
+      run: |
+        gem install --no-user-install --install-dir vendor/bundle/ruby/3.0.0/gems versionomy
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Versionary install
-      run: |
-        gem install --no-user-install --install-dir vendor/bundle/ruby/3.0.0/gems versionomy
     - name: Run the default task
       run: bundle exec rake
