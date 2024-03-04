@@ -53,7 +53,6 @@ group(:default, :development, :test) do
   gem('logger')
   gem('optparse')
   gem('ostruct',	'>= 0.5.5')
-  gem('pathname',	'>= 0.2.0')
   gem('psych')
   gem('readline')
   gem('rgl')
