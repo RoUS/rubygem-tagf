@@ -1,4 +1,6 @@
-# TODO items (unordered) for TAGF Ruby gem
+# TODO list for TAGF project
+
+## Coding/concepts to investigate
 
 * Rationalise `ClassMethods`, `PackageClassMethods`, and
   `UniversalMethods` — particularly with regard to the game options.
@@ -83,7 +85,8 @@
   - TAGF::NPC#light_tolerance added, but behaviour needs to be
     designed and implemented.
 
-### Completed TODO items
+### Completed coding/concept items
+
 * ~~Fix all references to `sptaf` and `TAF` to `tagf` and `TAGF`
   respectively.~~
 * ~~Abstract out all methods in the top `TAGF` module to a separate
@@ -98,6 +101,7 @@
   the only actual element that reference it.~~
 
 ## Tools
+
 * Build a visual graph from `Location` paths (`Connexions`)
   - *Prototyped with `render.rb`, and digraph now built into the code
     itself (primarily for purposes of finding shortest paths).*
@@ -118,6 +122,8 @@
   1. Keywords and alii must be unique; only one can define "e", for
      instance.
 
+### Complete tool items
+
 ## Testing
 
 * Continue writing unit tests for underlying support attributes and
@@ -128,6 +134,7 @@
   * Describe fully in YAML
   * Write tests for running through Colossal Cave
 
+### Completed testing items
 
 <!-- Local Variables: -->
 <!-- mode: markdown -->
