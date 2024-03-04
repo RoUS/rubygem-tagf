@@ -28,6 +28,7 @@ jobs:
 
     - name: Install the Versionary gem pre-bundler
       run: |
+        pwd
         gem install --no-user-install --install-dir vendor/bundle versionomy
 
     - name: What is going where
@@ -38,6 +39,9 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+
+    - name: And where are they now?
+      run: tree -d
 
     - name: Run the default task
       run: bundle exec rake
