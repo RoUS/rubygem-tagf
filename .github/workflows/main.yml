@@ -24,7 +24,7 @@ jobs:
     # do this within the framework.  I really should look it up..
     #
     - name: Set up Ruby
-      uses: ruby/setup-ruby
+      uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: false
