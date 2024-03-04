@@ -52,7 +52,7 @@ end                             # Rake::TestTask.new(:test) do
 #
 Dir['tasks/**/*.rake'].each { |t| load(t) }
 
-task(:default => :test)
+task(:default => 'doc:yard')
 
 # Local Variables:
 # mode: ruby
