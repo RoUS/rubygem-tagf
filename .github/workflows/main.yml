@@ -26,7 +26,7 @@ jobs:
         bundler: none
         bundler-cache: false
 
-    - name: What is the CWD
+    - name: Why does Github think this is broken
       run: pwd
 
     - name: Install versionary manually in vendor/bundle/ruby/3.0.0
