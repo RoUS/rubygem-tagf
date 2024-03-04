@@ -16,7 +16,6 @@
 # frozen_string_literal: true
 
 source('https://rubygems.org/')
-require('versionomy')
 
 #
 # All the dependencies *were* in the gemspec file, but Bundler is
