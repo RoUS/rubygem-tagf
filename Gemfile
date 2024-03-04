@@ -73,9 +73,9 @@ group(:development, :test) do
   #
   # Pick the right debugging gem.
   #
-  if (Versionomy.ruby_version < Versionomy.parse('1.9.0'))
+  if (RUBY_VERSION < '1.9.0')
     gem('ruby-debug')
-  elsif (Versionomy.ruby_version >= Versionomy.parse('2.0.0'))
+  elsif (RUBY_VERSION >= '2.0.0')
     gem('byebug')
   else
     gem('debugger')
