@@ -23,5 +23,8 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+    - name: Versionary install
+      run: |
+        gem install --no-user-install --install-dir vendor/bundle/ruby/3.0.0/gems versionomy
     - name: Run the default task
       run: bundle exec rake
