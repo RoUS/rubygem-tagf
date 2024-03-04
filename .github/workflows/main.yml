@@ -27,9 +27,9 @@ jobs:
         bundler-cache: false
 
     - name: Install the Versionary gem pre-bundler
-      run: |
-        pwd
-        gem install --no-user-install --install-dir vendor/bundle/ruby/3.0.0 versionomy
+      run:
+        - pwd
+        - gem install --no-user-install --install-dir vendor/bundle/ruby/3.0.0 versionomy
 
     - name: What is going where
       run: tree -d
