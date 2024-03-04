@@ -1,3 +1,5 @@
+%YAML 1.2
+---
 name: Ruby
 
 on:
@@ -18,10 +20,28 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Ruby
+
+    - name: Set up Ruby w/o bundler
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler: none
+        bundler-cache: false
+
+    - name: Install the Versionary gem pre-bundler
+      run: |
+        gem install --no-user-install --install-dir vendor/bundle/ruby/3.0.0 versionomy
+
+    - name: Set up Ruby normally now
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+
     - name: Run the default task
       run: bundle exec rake
+
+# Local Variables:
+# mode: yaml
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:
