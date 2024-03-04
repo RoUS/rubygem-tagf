@@ -15,7 +15,9 @@
 #++
 # frozen_string_literal: true
 
+=begin
 require('versionomy')
+=end
 
 # @!macro doc.TAGF.module
 module TAGF
@@ -30,7 +32,10 @@ module TAGF
   #
   RUBY_VERSION_MIN_GEMSPEC	= ">= #{RUBY_VERSION_MIN}"
 
+=begin
   @version			= Versionomy.parse('0.1.0')
+=end
+  @version			= '0.1.0'
   @version.freeze
   #
   # Frozen string representation of the module version number.
