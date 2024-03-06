@@ -119,6 +119,9 @@
      `owned_by.inventory` structure.
   1. All `:seal_key` values in Keyword definitions themselves are
      registered as keywords.
+  1. Anything listed as a `:seal_key` needs to be registered as a
+     `Portable` `Item` or else the seal can't be opened.  This should
+     be a warning.
   1. Keywords and alii must be unique; only one can define "e", for
      instance.
 
