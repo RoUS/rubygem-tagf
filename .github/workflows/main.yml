@@ -26,15 +26,9 @@ jobs:
         bundler: none
         bundler-cache: false
 
-    - name: Why does Github think this is broken
-      run: pwd
-
     - name: Install versionary manually in vendor/bundle/ruby/3.0.0
       run: |
         gem install --no-user-install --install-dir vendor/bundle/ruby/3.0.0 versionomy
-
-    - name: What is going where
-      run: tree -d
 
     - name: Set up Ruby normally now
       uses: ruby/setup-ruby@v1
@@ -42,11 +36,8 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
 
-    - name: And where are they now?
-      run: tree -d
-
-    - name: Run the default task
-      run: bundle exec rake
+    - name: Build the documentation
+      run: bundle exec rake doc:yard
 
 # Local Variables:
 # mode: yaml
