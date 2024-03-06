@@ -1799,7 +1799,9 @@ module TAGF
       nil
     end                         # class NameRequired
 
-    # @!macro doc.TAGF.Exceptions.InventoryLimitExceeded.module
+    # Exceptions for issues with the structure of the game, such as
+    # locations which are inaccessible, or which cannot be exited once
+    # entered.
     module MapError
 
       #
@@ -1829,15 +1831,15 @@ module TAGF
           _dbg_exception_start(__callee__)
           super
           if (@msg.nil?)
-            if (loc = kwargs[:location])
-              @msg	=
-                format('location %s is inaccessible ' +
-                       '(except perhaps by use of a shortcut)',
-                       loc.to_key)
-            else
-              @msg	= ('location is inaccessible ' +
+            msgformat	= ('location %<location>sis inaccessible ' +
                            '(except perhaps by use of a shortcut)')
+            msgargs	= {
+              location:	'',
+            }
+            if (loc = kwargs[:location])
+              msgargs[:location] = format('"%s" ', loc.to_key)
             end
+            @msg	 = format(msgformat, **msgargs)
           end                   # if (@msg.nil?)
           self.set_message(@msg)
         end                     # def initialize
@@ -1867,23 +1869,79 @@ module TAGF
           _dbg_exception_start(__callee__)
           super
           if (@msg.nil?)
-            if (loc = kwargs[:location])
-              @msg	=
-                format('location %s can be entered, ' +
-                       'but not left except by "go back" '+
-                       '(or perhaps by use of a shortcut)',
-                       loc.to_key)
-            else
-              @msg	= ('location can be entered, ' +
+            msgformat	= ('location %<location>scan be entered, ' +
                            'but not left except by "go back" '+
-                           '(except perhaps by use of a shortcut)')
+                           '(or perhaps by use of a shortcut)')
+            msgargs	= {
+              location:	'',
+            }
+            if (loc = kwargs[:location])
+              msgargs[:location] = format('"%s" ', loc.to_key)
             end
+            @msg	= format(msgformat, **msgargs)
           end                   # if (@msg.nil?)
           self.set_message(@msg)
         end                     # def initialize
 
         nil
       end                       # class NoExit
+
+      # A Path which is lockable should have a `:seal_key` identifier,
+      # which is something (like a key or a magic item) that a player
+      # must have in inventory in order to unlock the seal.  Seal keys
+      # are Item objects which are Portable.  This exception is used
+      # when a Path's seal_key is not actually defined in the game
+      # database.
+      class NoSealKey < ErrorBase
+
+        #
+        # Assign this exception class a unique ID number
+        #
+        self.assign_ID(0x021)
+
+        # The lack of a seal_key might be deliberate, allowing the
+        # path to be sealed and unopenable.
+        self.severity	= :warning
+
+        #
+        # @!macro doc.TAGF.formal.kwargs
+        # @!macro ErrorBase.initialize
+        # @option kwargs [Symbol]	:path
+        #   The game Path object which requires an unregistered
+        #   seal_key.
+        # @option kwargs [Symbol]	:seal_key
+        #   The EID of the (missing) seal_key from the Path object.
+        # @return [NoSealKey] self
+        #
+        def initialize(*args, **kwargs)
+          _dbg_exception_start(__callee__)
+          super
+          if (@msg.nil?)
+            # 'path requires key; none registered'
+            # 'path "%s" requires key; none registered'
+            # 'path requires key "%s"; none registered'
+            # 'path "%s" requires key "%s"; none registered'
+            msgformat	= ('path%<path>s requires key%<seal_key>s; ' +
+                           'none registered')
+            msgargs	= {
+              path:	'',
+              seal_key:	'',
+            }
+            if (seal_EID = kwargs[:seal_key])
+              msgargs[:seal_key] = format(' "%s"', seal_EID.to_s)
+            end
+            if (path = kwargs[:path])
+              msgargs[:path] = format(' "%s" ("%s")',
+                                      path.eid,
+                                      path.shortdesc)
+            end
+            @msg	= format(msgformat, **msgargs)
+          end                   # if (@msg.nil?)
+          self.set_message(@msg)
+        end                     # def initialize
+
+        nil
+      end                       # class NoSealKey
 
       nil
     end                         # module MapError
