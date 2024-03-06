@@ -112,6 +112,10 @@
 #   Refine the `String` class to add methods for variable width and
 #   formatted display.
 
+# @!macro [new] doc.TAGF.Tools.module
+#   Module containing definitions and classes relating to development
+#   and management tools for TAGF games.
+
 # @!macro [new] TAGF.constant.Abstracted_Fields
 #   Names of attributes that are stored in `YAML` form only by EID.
 #   When an object is instantiated using `YAML` data, field names in
