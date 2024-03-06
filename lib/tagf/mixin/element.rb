@@ -661,10 +661,6 @@ module TAGF
                 mixin_init = format('initialize_%s', mixin_s).to_sym
                 if (self.respond_to?(mixin_init))
                   self.send(mixin_init, *args, **kwargs)
-                  warn(format('%s: mixed %s into %s',
-                              __callee__.to_s,
-                              mixin.to_s,
-                              self.to_key))
                 end
               end
             else

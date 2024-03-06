@@ -25,6 +25,8 @@ require('forwardable')
 require('ostruct')
 require('rgl/adjacency')
 require('rgl/dijkstra')
+require('rgl/dot')
+require('ruby-graphviz')
 require('byebug')
 
 # @!macro doc.TAGF.module
