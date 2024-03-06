@@ -217,13 +217,6 @@ lochash.values.each do |locelt|
   end
 end
 
-edgeweights		= {}
-edgeweights.default	= 0.0
-edgeprops		= RGL::EdgePropertiesMap.new(edgeweights, true)
-visitor			= RGL::DijkstraVisitor.new(locgraf)
-dij			= RGL::DijkstraAlgorithm.new(locgraf,
-                                                     edgeprops,
-                                                     visitor)
 #
 # Doughnut batter is ready, time to pop them in the eazy bacon oven!
 #
