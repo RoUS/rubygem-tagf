@@ -1700,7 +1700,7 @@ module TAGF
         if (@msg.nil?)
           if (fattr = kwargs[:field])
             @msg	= format('unknown attribute "%s"',
-                                 fatter.to_sym.inspect)
+                                 fattr.to_sym.inspect)
             if (element = kwargs[:element])
               @msg	= format('%s for object %s:%s',
                                  @msg,
