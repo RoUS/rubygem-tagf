@@ -19,17 +19,6 @@ game:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: gameloctest01
   mixins: []
   name: LocTest01
@@ -43,6 +32,12 @@ game:
   start: Loc0
   game: gameloctest01
   owned_by: gameloctest01
+  settings:
+    EnableHitpoints: true
+    EnforceMass: true
+    EnforceItemCounts: true
+    NearbyDistance: &1 !ruby/class 'Integer'
+    PlayerMaxHitpoints: *1
 factions:
 - attitude: :hostile
   eid: dwarves
@@ -60,6 +55,19 @@ factions:
 features: []
 items:
 - is_living: true
+  mass: 0.0
+  volume: 0.0
+  allow_containers: false
+  is_surface: false
+  is_openable:
+  is_open:
+  is_transparent: false
+  capacity_items: 0
+  current_items: 0
+  capacity_mass: 0.0
+  current_mass: 0.0
+  capacity_volume: 0.0
+  current_volume: 0.0
   eid: bird
   mixins: []
   name:
@@ -70,8 +78,6 @@ items:
   tags: []
   is_static: false
   visible: true
-  mass: 0.0
-  volume: 0.0
   game: gameloctest01
   owned_by: birdcage
 keywords:
@@ -239,17 +245,6 @@ locations:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: Loc0
   mixins: []
   name: Location 0 - Entrance
@@ -279,17 +274,6 @@ locations:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: Loc1
   mixins: []
   name: Location 1
@@ -319,17 +303,6 @@ locations:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: Loc2
   mixins: []
   name: Location 2
@@ -359,17 +332,6 @@ locations:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: Loc3
   mixins: []
   name: Location 3 (secret room)
@@ -396,17 +358,6 @@ locations:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: Loc4
   mixins: []
   name: Location 4 (oubliette)
@@ -433,17 +384,6 @@ locations:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: Loc5
   mixins: []
   name: Location 5 (the Lost Room)
@@ -471,17 +411,6 @@ containers:
   current_mass: 0.0
   capacity_volume: 0.0
   current_volume: 0.0
-  desc_open:
-  desc_closed:
-  shortdesc_open:
-  shortdesc_closed:
-  openable: false
-  opened: false
-  autoclose: false
-  lockable:
-  locked: false
-  relock: false
-  seal_key:
   eid: birdcage
   mixins: []
   name: birdcage
@@ -507,6 +436,7 @@ paths:
   locked: true
   relock: false
   seal_key: RFID
+  seal_name:
   tooltip: Ceiling grate
   via:
   - up
@@ -529,6 +459,7 @@ paths:
   destination: Loc0
   game: gameloctest01
   owned_by: gameloctest01
+  forbidden: []
 - desc_open: The stone door is open, and through it you can see a broad passage, with
     a flat, smooth floor and smooth walls.
   desc_closed: The stone door is currently closed.
@@ -541,6 +472,7 @@ paths:
   locked: false
   relock: false
   seal_key:
+  seal_name: smooth-passage-door
   tooltip: Stone door
   via:
   - east
@@ -562,6 +494,7 @@ paths:
   destination: Loc1
   game: gameloctest01
   owned_by: gameloctest01
+  forbidden: []
 - tooltip: Narrow cramped tunnel
   via:
   - west
@@ -583,17 +516,31 @@ paths:
   destination: Loc2
   game: gameloctest01
   owned_by: gameloctest01
-- tooltip: Door-sized opening
+- desc_open: The stone door at the end of the smooth passage to the west is open.
+  desc_closed: The stone door in the smooth passage is closed.
+  shortdesc_open: The smooth passage door is open.
+  shortdesc_closed: The stone door is closed.
+  openable: true
+  opened: false
+  autoclose: true
+  lockable: false
+  locked: false
+  relock: false
+  seal_key:
+  seal_name: smooth-passage-door
+  tooltip: Door-sized opening
   via:
   - west
   reversible: true
-  sealable: false
-  seal_key:
+  sealable: true
   must_possess: false
   eid: loc1-loc0
-  mixins: []
+  mixins:
+  - Sealable
   name: loc1-loc0
-  desc: A rough doorway-sized opening to the west appears to open up after a few metres.
+  desc: A rough doorway-sized opening to the west appears to open up after a few metres
+    to a broad passage of smoothed stone.  At the limit of visibility you can see
+    a stone door.
   shortdesc: door-sized opening.
   article: an
   preposition:
@@ -604,6 +551,7 @@ paths:
   destination: Loc0
   game: gameloctest01
   owned_by: gameloctest01
+  forbidden: []
 - tooltip: Low rocky tunnel
   via:
   - southeast

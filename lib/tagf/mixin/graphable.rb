@@ -48,6 +48,19 @@ module TAGF
       class GraphInfo
         
         include(RGL)
+        include(Mixin::UniversalMethods)
+
+        #
+        # The YAML file providing the default GraphViz rendering
+        # attributes, supplied with the TAGF package.
+        #
+        GRAPHVIZ_CONFIG_DEFAULT	= File.realpath(
+          File.join(File.dirname(__FILE__), # tagf/lib/tagf/mixin/
+                    '..',       # tagf/lib/tagf/
+                    '..',       # tagf/lib/
+                    '..',       # tagf/
+                    'config',   # tagf/config/
+                   'graph-attributes.yml'))
 
         # @!attribute [r] graph
         #
@@ -107,7 +120,12 @@ module TAGF
         #   route from one location to another.
         attr_reader(:scout)
 
-        # @!method assemble
+        # @!attribute [r] graphattr
+        #
+        # @return [Hash<String=>String,Hash>]
+        attr_reader(:graphattr)
+
+        # @!method assemble(**kwargs)
         # Intended to be invoked after all game objects have been
         # instantiated and completed, this method tells each Location
         # (vertex) and Path (edge) object to add itself to the game
@@ -120,14 +138,147 @@ module TAGF
         # standalone rendering into a graphic image, or any other
         # reason.
         #
+        # @param [Hash<Symbol=>Any>]	kwargs
+        # @option kwargs [String]	:config
+        # @option kwargs [Boolean]	:merge_config
+        #
         # @return [void]
-        def assemble
+        def assemble(**kwargs)
           return nil if (@assembled)
+          debugger
+          @graphattr		= Graph_Attributes
+          cfgfile		= kwargs[:config] \
+                                  || GRAPHVIZ_CONFIG_DEFAULT
+          catch(:attrs_loaded) do
+            begin
+              cfgdata		= File.read(cfgfile)
+            rescue StandardError => exc
+              warn(format("%s: unable to load config file '%s'\n" +
+                          "  %s, %s",
+                          __callee__.to_s,
+                          cfgfile,
+                          exc.class.to_s,
+                          exc.message))
+              throw(:attrs_loaded)
+            end
+            @graphattr		= YAML.load(File.read(cfgfile))
+          end                   # catch(:attrs_loaded)
+          #
+          # Now have all the locations and paths add themselves to the
+          # graph.
+          #
           self.game.filter(klass: TAGF::Location).each do |loc|
-            loc.add_to_graph
+            if (loc.graph_component.nil?)
+              @graph.add_vertex(loc)
+              loc.graph_component = loc
+            end
+            #
+            # Figure out what GraphViz rendering attributes apply to
+            # this edge.
+            #
+            cfgattrs		= @graphattr['vertex']
+            #
+            # Start with some calculated values before going through
+            # the static assignments from the hash.
+            #
+            vtxattrs		= {
+              'label'		=> loc.label,
+              'tooltip'		=> loc.desc,
+            }
+            #
+            # Now walk through the attribute hash, grinding ever more
+            # finely.
+            #
+            if (attrs = cfgattrs['default'])
+              vtxattrs		= vtxattrs.merge(attrs)
+            end
+            if (loc.invisible? \
+                && (attrs = cfgattrs['invisible']))
+              vtxattrs		= vtxattrs.merge(attrs)
+            end
+            if ((loc == @game.start) \
+                && (attrs = cfgattrs['start']))
+              vtxattrs		= vtxattrs.merge(attrs)
+            end
+            #
+            # The 'annotation' attribute is local to us, and modifies
+            # the GraphViz 'label' attribute.
+            #
+            if (note = vtxattrs.delete('annotation'))
+              vtxattrs['label'] = format('%s%s',
+                                          note,
+                                          vtxattrs['label'])
+            end
+            #
+            # Okey, set the rendering attributes to whatever we
+            # evolved.
+            #
+            vtxattrs		= symbolise_kwargs(vtxattrs)
+            @graph.set_vertex_options(loc,
+                                      **vtxattrs)
           end
           self.game.filter(klass: TAGF::Path).each do |path|
-            path.add_to_graph
+            if (path.graph_component.nil?)
+              @graph.add_edge(path.origin, path.destination)
+              edge		= @graph.edges.find { |e|
+                (e.source == path.origin) &&
+                (e.target == path.destination)
+              }
+              path.graph_component = edge
+            end
+            #
+            # Figure out what GraphViz rendering attributes apply to
+            # this edge.
+            #
+            cfgattrs		= @graphattr['edge']
+            #
+            # Start with some calculated values before going through
+            # the static assignments from the hash.
+            #
+            edgeattrs		= {
+              'label'		=> path.label,
+              'tooltip'		=> path.desc,
+            }
+            #
+            # Now walk through the attribute hash, grinding ever more
+            # finely.
+            #
+            edgeattrs		= edgeattrs.merge(cfgattrs['default'])
+            if (path.respond_to?(:openable?) \
+                && path.openable? \
+                && (attrs = cfgattrs['openable']))
+              edgeattrs		= edgeattrs.merge(attrs)
+            end
+            if (path.respond_to?(:lockable?) \
+                && path.lockable? \
+                && (attrs = cfgattrs['lockable']))
+              edgeattrs		= edgeattrs.merge(attrs)
+            end
+            if (path.invisible? \
+                && (attrs = cfgattrs['invisible']))
+              edgeattrs		= edgeattrs.merge(attrs)
+            end
+            if (path.irreversible? \
+                && (attrs = cfgattrs['irreversible']))
+              edgeattrs		= edgeattrs.merge(attrs)
+            end
+            #
+            # The 'annotation' attribute is local to us, and modifies
+            # the GraphViz 'label' attribute.
+            #
+            if (note = edgeattrs.delete('annotation'))
+              edgeattrs['label'] = format('%s%s',
+                                          note,
+                                          edgeattrs['label'])
+            end
+            #
+            # Okey, set the rendering attributes to whatever we
+            # evolved.
+            #
+            edgeattrs		= symbolise_kwargs(edgeattrs)
+            @graph.set_edge_options(path.origin,
+                                    path.destination,
+                                    **edgeattrs)
           end
           @assembled	= true
           return nil
@@ -190,55 +341,63 @@ module TAGF
       # components that are marked as invisible are rendered
       # differently from those which are visible.
       #
-      Graph_Attributes		= OpenStruct.new(
-        vertex:			OpenStruct.new(
+      Graph_Attributes		= {
+        'vertex'		=> {
           #
           # By default, vertices will look like this.
           #
-          default:		{
-            color:		'black',
-            shape:		'rectangle',
-            style:		'filled',
-            fillcolor:		'silver',
+          'default'		=> {
+            'color'		=> 'black',
+            'shape'		=> 'rectangle',
+            'style'		=> 'filled',
+            'fillcolor'		=> 'silver',
           },
           #
           # If a location is invisible, modify its appearance as follows.
           #
-          invisible:		{
-            shape:		'ellipse',
-            fillcolor:		'red',
+          'invisible'		=> {
+            'shape'		=> 'ellipse',
+            'fillcolor'		=> 'red',
           },
           #
           # The starting location has its own special look.
           #
-          start:		{
-            shape:		'parallelogram',
-            fillcolor:		'lime',
-          }),
-        edge:			OpenStruct.new(
+          'start'		=> {
+            'shape'		=> 'parallelogram',
+            'fillcolor'		=> 'lime',
+          },
+        },
+        'edge'			=> {
           #
           # Normal path depiction.
           #
-          default:		{
-            color:		'slategrey',
-            style:		'solid',
-            arrowhead:		'normal',
+          'default'		=> {
+            'color'		=> 'slategrey',
+            'style'		=> 'solid',
+            'arrowhead'		=> 'normal',
+          },
+          'openable'		=> {
+            'annotation'	=> '🚪 ',
+          },
+          'lockable'		=> {
+            'annotation'	=> '🔓 ',
           },
           #
           # If it's invisible, its looks are modified as follows.
           #
-          invisible:		{
-            color:		'red',
-            style:		'dashed',
+          'invisible'		=> {
+            'color'		=> 'red',
+            'style'		=> 'dashed',
           },
           #
           # And if it can only be traversed one direction, mark it so.
           #
-          irreversible:		{
-            arrowhead:		'normalnormal',
-            arrowtail:		'tee',
-          })
-      )
+          'irreversible'	=> {
+            'arrowhead'		=> 'normalnormal',
+            'arrowtail'		=> 'tee',
+          },
+        },
+      }
 
       attr_accessor(:tooltip)
 

@@ -69,41 +69,6 @@ module TAGF
     #   the current ambient light level, from 0.0 to 100.0.
     float_accessor(:light_level)
 
-    # @!method add_to_graph(graphobj)
-    # This method will be invoked for every Location instance in the
-    # game.  It has the responsibility of adding the Location as a
-    # vertex in the graph, and setting the rendering attributes as
-    # appropriate (see Graph_Attributes)..
-    #
-    # @return [void]
-    def add_to_graph
-      graph		= self.game.graphinfo.graph
-      #
-      # If we're already registered, don't do it again.
-      #
-      if (self.graph_component.nil?)
-        graph.add_vertex(self)
-        self.graph_component = self
-      end
-      #
-      # However, our attributes might have changed since we were
-      # added, so always do this part.
-      #
-      gattr		= Graph_Attributes
-      attr		= {
-        label:		self.label,
-        tooltip:	self.desc,
-      }.merge(gattr.vertex.default)
-      if (! self.visible?)
-        attr		= attr.merge(gattr.vertex.invisible)
-      end
-      if (self == self.game.start)
-        attr		= attr.merge(gattr.vertex.start)
-      end
-      graph.set_vertex_options(self, **attr)
-      return nil
-    end                       # def add_to_graph
-
     # @!method distance_to(loc, **kwargs)
     # Return the smallest number of moves from this location to
     # `loc`.
@@ -161,7 +126,12 @@ module TAGF
     # @return [Hash<String=>Any>]
     #   the updated export hash.
     def export
-      result			= super
+      result			= nil
+      begin
+        result			= super
+      rescue NoMethodError
+        result			= {}
+      end
       pathlist			= [] | self.paths.map { |p| p.eid }
       result['paths']		= pathlist
       return result

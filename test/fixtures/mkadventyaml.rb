@@ -1,3 +1,4 @@
+#! /usr/bin/env ruby
 require('byebug')
 require('yaml')
 
@@ -19,9 +20,11 @@ require('yaml')
 # Table 6: Hints and events
 #
 
-puts('%YAML 1.1
+puts(<<-EOT)
+%YAML 1.1
 ---
-')
+EOT
+
 tables			= []
 data			= {}
 ldata			= {}
@@ -69,14 +72,11 @@ data			= {
   #
   #	eid:		[String] Unique element identifier, like
   #			a slug.
-  #	locnum:		[Integer] The location number from the ADVENT
-  #			data file, which is used in table 3
-  #			(map/movement).
   #	desc:		[String] Long description.
   #	brief:		[String] Short (one-line) description.  The
   #			EID will probably be determined by eyeballing
   #			this.
-  #	cx:		[Hash] Definitions of how this location is
+  #	paths:		[Hash] Definitions of how this location is
   #			connected to others.  For each element, the
   #			key is the 'other' location, and the value is
   #			an array of keyword numbers that will move the
@@ -84,9 +84,14 @@ data			= {
   #
   locations:		{},
   #
-  # Built from tables[4] (vocabulary).  The key for each element is
-  # the keyword index, and the value is an array of the equivalent
-  # strings (such as 'S' and 'SOUTH').
+  # Built from table[3] (map/movement).
+  #
+  connexions:		[],
+  #
+  # Built from tables[1] (location descriptions), tables[2] (brief
+  # descriptions), and tables[4] (vocabulary).  The key for each
+  # element is the keyword index, and the value is an array of the
+  # equivalent strings (such as 'S' and 'SOUTH').
   #
   keywords:		{},
   #
@@ -101,6 +106,12 @@ data			= {
   events:		{},
 }
 
+loc_proto		= {
+        eid:		origin,
+        desc:		nil,
+        brief:		nil,
+        paths:		{},
+}
 #
 # Process Table 1, the location long descriptions.
 #
@@ -111,17 +122,13 @@ dtable			= data[:locations]
 while (line = tables[tnum].shift)
   (locnum,ldesc)	= line.split(%r!\t!)
   locnum		= locnum.to_i
+  eid			= format('loc%i', locnum)
   if (locnum != clocnum)
-    if (dtable[locnum].nil?)
-      dtable[locnum]	= {
-        eid:		nil,
-        locnum:		locnum,
-        desc:		nil,
-        brief:		nil,
-        cx:		{},
-      }
+    if (dtable[eid].nil?)
+      dtable[eid]	= loc_proto.dup
+      dtable[eid][:eid]	= eid
     end
-    locdata		= dtable[locnum]
+    locdata		= dtable[eid]
     clocnum		= locnum
   end
   if (ldesc.kind_of?(String))
@@ -133,7 +140,8 @@ while (line = tables[tnum].shift)
     end
   else
     warn(format("Location %i in table %i has bogus description",
-                tnum, locnum))
+                locnum,
+                tnum))
   end
 end
 
@@ -145,73 +153,48 @@ clocnum			= 0
 tnum			= 2
 dtable			= data[:locations]
 while (line = tables[tnum].shift)
-  (locnum,ldesc)	= line.split(%r!\t!)
+  (locnum,sdesc)	= line.split(%r!\t!)
   locnum		= locnum.to_i
+  eid			= format('loc%i', locnum)
   if (locnum != clocnum)
-    if (dtable[locnum].nil?)
+    if (dtable[eid].nil?)
       warn(format('Location %i is in table %i but not table 1',
                   locnum, tnum))
-      dtable[locnum]	= {
-        eid:		nil,
-        locnum:		locnum,
-        desc:		nil,
-        brief:		nil,
-        cx:		{},
-      }
+      dtable[eid]	= loc_proto.merge(
+        {
+          eid:		eid,
+        })
     end
-    locdata		= dtable[locnum]
+    locdata		= dtable[eid]
     clocnum		= locnum
   end
-  if (ldesc.kind_of?(String))
-    ldesc.strip!
+  if (sdesc.kind_of?(String))
+    sdesc.strip!
     if (locdata[:brief])
-      locdata[:brief]	<< "\n" << ldesc
+      locdata[:brief]	<< "\n" << sdesc
     else
-      locdata[:brief]	= ldesc
+      locdata[:brief]	= sdesc
     end
   else
     warn(format("Location %i in table %i has bogus description",
-                tnum, locnum))
+                locnum,
+                tnum))
   end
-end
-
-#
-# Now do Table 3, the location connexion map.
-#
-locnum			= -1
-clocnum			= 0
-tnum			= 3
-dtable			= data[:locations]
-while (line = tables[tnum].shift)
-  locs			= line.split(%r!\t!).map { |l| l.to_i }
-  (locnum,target,how)	= locs
-  if (locnum != clocnum)
-    if (dtable[locnum].nil?)
-      warn(format('Location %i is in table %i but not table 1 nor 2',
-                  locnum, tnum))
-      dtable[locnum]	= {
-        eid:		nil,
-        locnum:		locnum,
-        desc:		nil,
-        brief:		nil,
-        cx:		{},
-      }
-    end
-    locdata		= dtable[locnum]
-    clocnum		= locnum
-  end
-  locdata[:cx][target]	||= []
-  locdata[:cx][target]	|= [ *how ]
 end
 
 #
 # Table 4: vocabulary (keywords).  Integer followed by a keyword
 # assigned to it.  Multiple occurrences allowed for each integer key.
 #
+# N.B.: We do this *before* Table 3 because the latter uses the
+# keyword numbers defined here.
 lwnum			= -1
 ckwnum			= 0
 tnum			= 4
 dtable			= data[:keywords]
+tables[tnum].sort! { |a,b|
+  a.split(%r!\t!)[0].to_i <=> b.split(%r!\t!)[0].to_i
+}
 while (line = tables[tnum].shift)
   (kwnum,kword)		= line.split(%r!\t!)
   kwnum			= kwnum.to_i
@@ -226,10 +209,52 @@ while (line = tables[tnum].shift)
   if (kwnum.between?(2, 70))
     kwdata[:flags]	|= [ :motion ]
   elsif (kwnum.between?(1001, 1023))
-    kwdata[:flags]	|= [ :item ]
+    kwdata[:flags]	|= [ :need ]
   end
 end
 
+#
+# Now do Table 3, the location connexion map.
+#
+origin_n		= -1
+corigin_n		= 0
+tnum			= 3
+dtable			= data[:connexions]
+while (line = tables[tnum].shift)
+  cx			= {
+    origin:		nil,
+    target:		nil,
+    via:		[],
+  }
+  dtable.push(cx)
+  locs			= line.split(%r!\t!).map { |l| l.to_i }
+  (origin_n,target_n,how) = locs
+  origin		= format('loc%i', origin_n.to_i)
+  target		= format('loc%i', target_n.to_i)
+  cx[:origin]		= origin
+  cx[:target]		= target
+  how.each do |motion_n|
+    cx[:via].push(dtable[:keywords][motion_n
+  end
+  if (origin_n != corigin_n)
+    if (dtable[:locations][origin].nil?)
+      warn(format('Location %s is in table %i but not table 1 nor 2',
+                  origin,
+                  tnum))
+      dtable[:locations][origin] = {
+        eid:		origin,
+        desc:		nil,
+        brief:		nil,
+        paths:		{},
+      }
+    end
+    locdata		= dtable[origin]
+    corigin_n		= origin_n
+  end
+  locdata[:paths][target] ||= []
+  locdata[:paths][target] |= [ *how ]
+end
+debugger
 #
 # Table 5: Static game states (?).  Hundreds digit used to identify
 # alternate states.

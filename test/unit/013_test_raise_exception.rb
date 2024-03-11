@@ -17,6 +17,38 @@ class Test_Raise_Exception < Test::Unit::TestCase
 
   Exception_Text	= 'explicit static text'
 
+  Test_Elements		= [
+    TestElement.new(
+      comment:	'010: raise(String)',
+      value:	Exception_Text
+    ),
+    TestElement.new(
+      comment:	'020: raise(exception-instance)',
+      value:	IOError.new(Exception_Text)
+    ),
+    TestElement.new(
+      comment:	'030: raise(exception-class)',
+      value:	Errno::ENOENT,
+      args:	[
+        Exception_Text,
+      ]
+    ),
+    TestElement.new(
+      comment:	'040: raise(Proc, *args)',
+      value:	Proc.new { |*args| FiberError.new(*args) },
+      args:	[
+        Exception_Text,
+      ]
+    ),
+    TestElement.new(
+      comment:	'050: raise(bogus-argument, *args)',
+      value:	Object,
+      args:	[
+        Exception_Text,
+      ]
+    ),
+  ]
+
   #
   # Executed before each test is invoked.
   #
@@ -50,6 +82,21 @@ class Test_Raise_Exception < Test::Unit::TestCase
   #
   # And all of the above with args and kwargs
   #
+
+  def mktestmsg(exctype, *args, **kwargs)
+    kwargs[:levels]	||= 1
+    if (args.empty?)
+      arglist		= ''
+    else
+      arglist		= ',' + args.map { |e| e.inspect }.join(',')
+    end
+    msg			= format('raise_exception' +
+                                 '(%s%s, levels: %i)',
+                                 exctype,
+                                 arglist,
+                                 kwargs[:levels])
+    return msg
+  end
 
   def test_010_raise_exception_string
     bt_base		= nil
@@ -146,17 +193,40 @@ class Test_Raise_Exception < Test::Unit::TestCase
     rescue RuntimeError => exc
       bt_base		= exc.backtrace
     end
+    bt_common		= bt_base[1,bt_base.count]
+    common_lines	= bt_common.count
     exc_bogus		= Object
     args		= [ Exception_Text ]
     msg			= format('not an exception or ' +
                                  'exception class: %s:%s',
                                  exc_bogus.class.name,
                                  exc_bogus.inspect)
-    exc = assert_raise_with_message(NotExceptional,
-                                    msg,
-                                    'raise_exception(exc_bogus,text)') do
-      raise_exception(exc_bogus, *args)
+    debugger
+    testmsg		= mktestmsg('exc_bogus', *args, levels: 0)
+    exc_raw = assert_raise_with_message(NotExceptional,
+                                        msg,
+                                        testmsg) do
+      raise_exception(exc_bogus, *args,
+                      levels: 0)
     end
+    bt_raw		= exc_raw.backtrace
+    assert_equal(bt_raw[-common_lines,common_lines],
+                 bt_common[-common_lines,common_lines])
+    rmlevels		= 5
+    testmsg		= mktestmsg('exc_bogus', *args, levels: rmlevels)
+    exc_edited = assert_raise_with_message(NotExceptional,
+                                           msg,
+                                           testmsg) do
+      raise_exception(exc_bogus, *args,
+                      levels: rmlevels)
+    end
+    bt_edited		= exc_edited.backtrace
+    testmsg		= mktestmsg('exc_bogus', *args, levels: rmlevels)
+    assert_equal(bt_edited.count,
+                 bt_raw.count - rmlevels,
+                 'raise_exception(exc_bogus,text) bt-5')
+    assert_equal(bt_edited[-common_lines,common_lines],
+                 bt_common[-common_lines,common_lines])
   end                           # test_050_raise_exception_bogus
 
 

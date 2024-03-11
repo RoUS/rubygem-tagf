@@ -24,7 +24,13 @@ gmanual		= Game.new(
   author:	'theRoUS',
   copyright_year: '2019-2024',
   licence:	'Apache 2.0',
-  desc:		'Test 01 of game location connexions.')
+  desc:		'Test 01 of game location connexions.',
+  settings:	{
+    NearbyDistance: 12,
+    EnforceCapacities: true,
+    EnforceVolume: false,
+    EnableHitpoints: true,
+  })
 
 kw_up		= Keyword.new(
   eid:		'kw-up',
@@ -257,7 +263,7 @@ cx0_1		= Path.new(
   mixins:	[
     'Sealable',
   ],
-  sealable:	true,
+  seal_name:	'smooth-passage-door',
   openable:	true,
   opened:	false,
   autoclose:	true,
@@ -292,7 +298,9 @@ cx1_0		= Path.new(
   owned_by:	gmanual,
   name:		'loc1-loc0',
   desc:		("A rough doorway-sized opening to the west " +
-                 "appears to open up after a few metres."),
+                 "appears to open up after a few metres to a broad " +
+                 "passage of smoothed stone.  At the limit of " +
+                 "visibility you can see a stone door."),
   shortdesc:	'door-sized opening.',
   tooltip:	'Door-sized opening',
   origin:	loc1,
@@ -300,7 +308,21 @@ cx1_0		= Path.new(
   via:		[
     'west',
   ],
-  reversible:	true)
+  reversible:	true,
+  mixins:	[
+    'Sealable',
+  ],
+  seal_name:	'smooth-passage-door',
+  openable:	true,
+  opened:	false,
+  autoclose:	true,
+  lockable:	false,
+  locked:	false,
+  desc_open:	("The stone door at the end of the smooth passage " +
+                 "to the west is open."),
+  shortdesc_open: "The smooth passage door is open.",
+  desc_closed:	("The stone door in the smooth passage is closed."),
+  shortdesc_closed: 'The stone door is closed.')
 
 cx1_2		= Path.new(
   eid:		'loc1-loc2',

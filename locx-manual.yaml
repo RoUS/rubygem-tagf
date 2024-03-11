@@ -202,6 +202,7 @@ paths:
     reversible:	true
     mixins:
       - Sealable
+    seal_name:	'smooth-passage-door'
     openable:	true
     opened:	false
     autoclose:	true
@@ -238,7 +239,8 @@ paths:
     name:	'loc1-loc0'
     desc: >-
       A rough doorway-sized opening to the west appears to open up
-      after a few metres.
+      after a few metres to a broad passage of smoothed stone.  At the
+      limit of visibility you can see a stone door.
     shortdesc:	'door-sized opening.'
     tooltip:	'Door-sized opening'
     origin:	'Loc1'
@@ -246,6 +248,23 @@ paths:
     via:
       - 'west'
     reversible:	true
+    mixins:
+      - Sealable
+    seal_name:	'smooth-passage-door'
+    openable:	true
+    opened:	false
+    autoclose:	true
+    lockable:	false
+    locked:	false
+    desc_open: >-
+      The stone door at the end of the smooth passage to the west is
+      open.
+    shortdesc_open: >-
+      The smooth passage door is open.
+    desc_closed: >-
+      The stone door in the smooth passage is closed.
+    shortdesc_closed: >-
+      The stone door is closed.
 
   - eid:	'loc2-loc0'
     game:	'gameloctest01'

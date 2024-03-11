@@ -44,12 +44,14 @@ module TAGF
       'sealable',
       'seal_key',
       'must_possess',
+      'forbidden',
     ]
 
     # @!macro TAGF.constant.Abstracted_Fields
     Abstracted_Fields		= {
       origin:			EID,
       destination:		EID,
+      forbidden:		Array[EID],
     }
 
     # @!attribute [rw] reversible
@@ -60,6 +62,16 @@ module TAGF
     # @return [Boolean]
     #   whether or not the path can be followed in reverse.
     flag(:reversible)
+    def irreversible
+      return (! self.reversible)
+    end
+    alias_method(:irreversible?, :irreversible)
+    def irreversible!
+      return (self.reversible = false)
+    end
+    def irreversible=(val)
+      return (self.reversible = (! truthify(val)))
+    end
 
     # @!attribute [rw] origin
     # @see #destination
@@ -92,6 +104,17 @@ module TAGF
       @via		= val
     end                         # def via=(val)
 
+    # @!attribute [rw] forbidden
+    # A list of items that <strong>cannot</strong> be carried
+    # through the sealable interface.  (Think the gold nugget in
+    # ADVENT/Colossal Cave.)
+    #
+    # @todo
+    #   Needs to be added to the appropriate #export method.
+    #
+    # @return [Array<Element>]
+    attr_accessor(:forbidden)
+
     # @!attribute [rw] graph_edge
     # Edge object in the game graph for this path element.
     #
@@ -113,43 +136,6 @@ module TAGF
     # @return [Boolean]
     flag(:must_possess)
 
-    # @!method add_to_graph(graphobj)
-    # This method will be invoked for every Location instance in the
-    # game.  It has the responsibility of adding the Location as a
-    # vertex in the graph, and setting the rendering attributes as
-    # appropriate (see Graph_Attributes)..
-    #
-    # @return [void]
-    def add_to_graph
-      graph		= self.game.graphinfo.graph
-      #
-      # If we're already registered, don't do it again.
-      #
-      if (edge = self.graph_component.nil?)
-        graph.add_edge(self.origin, self.destination)
-        edge		= graph.edges.find { |e|
-          (e.source == self.origin) &&
-          (e.target == self.destination)
-        }
-        self.graph_component = edge
-      end
-      #
-      # However, our attributes may have changed (such as visibility)
-      # and therefore how we should be rendered.  Set the rendering
-      # bits (or reset them) according to the current settings.
-      #
-      gattr		= Graph_Attributes
-      attr		= {
-        label:		self.label,
-        tooltip:	self.desc,
-      }.merge(gattr.edge.default)
-      if (! self.visible?)
-        attr		= attr.merge(gattr.edge.invisible)
-      end
-      graph.set_edge_options(edge.source, edge.target, **attr)
-      return nil
-    end                       # def add_to_graph
-
     # @!method export
     # `Location`-specific export method, responsible for adding any
     # unusual fields that need to be abstracted to the export hash.
@@ -159,11 +145,22 @@ module TAGF
     # @return [Hash<String=>Any>]
     #   the updated export hash.
     def export
-      result			= super
+      result			= nil
+      begin
+        result			= super
+      rescue NoMethodError
+        result			= {}
+      end
       vias			= [] | self.via.map { |kw|
         self.game.keyword(kw, required: true).root
       }
       result['via']		= vias
+      if (self.respond_to?(:forbidden))
+        blocked			= [ *self.forbidden ].map { |o|
+          o.eid
+        }
+        result['forbidden']	= blocked || []
+      end
       return result
     end                         # def export
 

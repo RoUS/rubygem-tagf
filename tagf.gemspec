@@ -25,12 +25,16 @@ Gem::Specification.new do |gem|
     gem.required_rubygems_version = Gem::Requirement.new('>= 1.7.2')
   end
   gem.authors		= ['Ken Coar']
-  gem.email		= ['The.Rodent.of.Unusual.Size+tagf@gmail.com']
+  gem.email		= [
+    'The.Rodent.of.Unusual.Size+tagf@gmail.com',
+  ]
 
-  gem.date		= '2022-05-28'
+  gem.date		= '2024-03-09'
   gem.summary		= 'Text Adventure Game Framework gem'
-  gem.description	= 'Provide a basis for mostly data-driven text game construction.'
-  gem.homepage		= 'http://github.com/RoUS/tagf'
+  gem.description	= <<-EOT
+Provide a basis for mostly data-driven text game construction.
+  EOT
+  gem.homepage		= 'http://github.com/RoUS/rubygem-tagf'
 
   gem.licenses		= ['Apache 2.0']
   gem.rubygems_version 	= '1.7.2'
@@ -43,7 +47,7 @@ Gem::Specification.new do |gem|
   gem.metadata['homepage_uri'] \
   			= gem.homepage
   gem.metadata['source_code_uri'] \
-  			= 'https://example.com/'
+  			= 'http://github.com/RoUS/rubygem-tagf'
   gem.metadata['changelog_uri'] \
   			= 'https://example.com/'
 
@@ -52,7 +56,10 @@ Gem::Specification.new do |gem|
   # released.  The `git ls-files -z` loads the files in the RubyGem
   # that have been added into git.
   #
-  gem.require_paths 	= ['lib']
+  gem.require_paths 	= [
+    'lib',
+    'config',
+  ]
   gem.files 		= Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject do |f|
       ((f == __FILE__) \
