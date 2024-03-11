@@ -84,27 +84,52 @@ module TAGF
       # List of game-wide option flags to impose (or relax) certain
       # restrictions.
       #
-      GAME_OPTIONS      = %i[
-                             RaiseOnInvalidValues
-                             EnableHitpoints
-                             EnforceLighting
-                             EnforceMass
-                             EnforceVolume
-                             EnforceItemCounts
-                             EnforceCapacities
-                            ]
+      GAME_FLAGS		= %i[
+        AdminEnabled
+        RaiseOnInvalidValues
+        EnableHitpoints
+        EnforceLighting
+        EnforceMass
+        EnforceVolume
+        EnforceItemCounts
+        EnforceCapacities
+      ]
 
       #
       # Related options that can enabled/disabled collectively as well
-      # as individually.  These are called option 'clumps.'
+      # as individually.  These are called option 'groups.'
       #
-      GAME_OPTION_CLUMPS= {
-        EnforceCapacities: %i[
-                              EnforceMass
-                              EnforceVolume
-                              EnforceItemCounts
-                             ],
+      GAME_FLAG_GROUPS		= {
+        EnforceCapacities:	%i[
+          EnforceMass
+          EnforceVolume
+          EnforceItemCounts
+        ],
       }
+
+      #
+      # Game options that take a value, such as player initial
+      # hitpoints or maximum path distance to qualify as 'nearby'.
+      #
+      GAME_SETTINGS		= {
+        #
+        # Locations within this number of paths are considered
+        # 'nearby' for whatever that might mean (lighting, move by
+        # shortcut name, whatever).
+        #
+        NearbyDistance:	Integer,
+        PlayerMaxHitpoints:	Integer,
+      }
+
+      #
+      # List of all game option keywords, either flag names or keys
+      # from flag or value groups.
+      #
+      GAME_OPTIONS		= [
+        *GAME_FLAGS,
+        *GAME_FLAG_GROUPS.keys,
+        *GAME_SETTINGS.keys,
+      ].uniq
 
       #
       # Symbols describing possible attitudes available to an actor.
