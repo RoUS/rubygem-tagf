@@ -19,7 +19,6 @@ require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
 require('tagf/mixin/element')
-require('tagf/mixin/sealable')
 require('tagf/mixin/universal')
 require('byebug')
 
@@ -38,7 +37,6 @@ module TAGF
       # All Containers are Elements.
       #
       include(Mixin::Element)
-      include(Mixin::Sealable)
 
       #
       # List of all the instance variables used by attributes supplied
