@@ -113,6 +113,7 @@ require('tagf/npc')
 require('tagf/path')
 require('tagf/player')
 require('tagf/reality')
+require('tagf/settings')
 require('tagf/ui')
 require('tagf/version')
 
