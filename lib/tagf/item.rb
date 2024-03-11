@@ -18,7 +18,9 @@
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
+require('tagf/mixin/container')
 require('tagf/mixin/element')
+require('tagf/mixin/portable')
 require('tagf/mixin/universal')
 require('byebug')
 
@@ -38,8 +40,9 @@ module TAGF
     #
     include(Mixin::DTypes)
     include(Mixin::UniversalMethods)
-    include(Mixin::Portable)
+    include(Mixin::Container)
     include(Mixin::Element)
+    include(Mixin::Portable)
 
     #
     # If the item is a container, we'll mix in Mixin::Container during
