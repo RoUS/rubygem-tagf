@@ -43,7 +43,7 @@ module TAGF
       #   an array of the currently-active options
       #
       # @see Mixin::UniversalMethods::GAME_OPTIONS
-      # @see Mixin::UniversalMethods::GAME_OPTION_CLUMPS
+      # @see Mixin::UniversalMethods::GAME_OPTION_GROUPS
       def game_options(*args, **kwargs)
         #
         # Make sure we actually have an options Set before doing
@@ -71,15 +71,15 @@ module TAGF
                       opt.to_s))
           requested.delete(opt)
         end
-        GAME_OPTION_CLUMPS.each do |brolly,clumped|
+        GAME_OPTION_GROUPS.each do |brolly,grouped|
           if (requested.keys.include?(brolly))
             newval	= requested[brolly]
-            clumped.each do |opt|
+            grouped.each do |opt|
               requested[opt] = newval unless (requested.keys.include?(opt))
             end
             requested[brolly] = false
           end
-        end                     # GAME_OPTION_CLUMPS.each
+        end                     # GAME_OPTION_GROUPS.each
         newopts		= requested.keys.select { |k| requested[k] }
         @game_options.replace(Set.new(newopts))
         return @game_options.to_a
