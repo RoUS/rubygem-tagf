@@ -1,0 +1,92 @@
+%YAML 1.2
+#
+# GraphViz-style attributes for Location and Path objects when the
+# game map/graph is rendered.
+#
+# 'Default' attributes are applied and then refined on a per-element
+# basis according to the element's configuration.
+#
+# Entries in this file appear in the order that their triggering
+# conditions are evaluated in the code; e.g., a Path element is
+# checked for sealability, then openability, then lockability.  This
+# means that later values at a particular level, if applied, will
+# override earlier ones with the same names at that level.
+#
+---
+#
+# Atributes that apply to graph vertices (game Location elements).
+#
+vertex:
+  #
+  # The default rendering attributes for all Location elements
+  # before being refined for particular instances.
+  #
+  default:
+    shape:		rectangle
+    style:		filled
+    color:		black
+    fillcolor:		silver
+  #
+  # If the Location is marked as 'invisible' (#invisible? => true),
+  # add/merge these with the default rendering attributes.
+  #
+  invisible:
+    shape:		ellipse
+    fillcolor:		red
+  #
+  # If the Game object's #start attribute matches this Location, apply
+  # these refinements.  Note that this is a bit of a snowflake since
+  # it is NOT dependent upon a Location element's attributes, but upon
+  # one belonging to the Game object.
+  #
+  start:
+    shape:		parallelogram
+
+#
+# Rendering attributes that apply to graph edges (game Path elements).
+#
+edge:
+  #
+  # The default rendering attributes for paths between Location
+  # elements.
+  #
+  default:
+    style:		solid
+    color:		slategrey
+    arrorhead:		normal
+  #
+  # Alter the default as follows if a Path element is invisible
+  # (#invisible? => true).
+  #
+  invisible:
+    style:		dashed
+    color:		red
+  #
+  # A Path that cannot be retraced ('go back' is disallowed; the
+  # object returns #reversible? => false/#irreversible? => true) gets
+  # the following refinements to the rendering attributes.
+  #
+  irreversible:
+    arrowhead:		normalnormal
+    arrowtail:		tee
+  #
+  # If a Path is sealable (might be obstructed, have a door, be
+  # locked, &c.) then apply these refinements.
+  #
+  sealable:		{}
+  #
+  # If a Sealable Path can be opened/closed, apply these refinements.
+  #
+  openable:
+    annotation:		'🚪 '
+  #
+  # If a Sealable Path can be locked/unlocked, apply these
+  # refinements.
+  #
+  lockable:
+    annotation:		'🔓 '
+
+# Local Variables:
+# mode: yaml
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# End:
