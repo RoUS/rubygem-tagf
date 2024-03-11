@@ -122,6 +122,8 @@ module TAGF
     #
     attr_accessor(:date)
 
+    attr_reader(:settings)
+
     attr_reader(:graphinfo)
 
     attr_accessor(:keywords)
@@ -165,11 +167,29 @@ module TAGF
     # `game.inventory.filter` nonsense.
     def_delegator(:@inventory, :filter)
 
+    # Make all the TAGF::Settings instance attributes accessible
+    # through the Game object.
+    [*GAME_FLAGS, *GAME_FLAG_GROUPS.keys].uniq.compact.each do |fsym|
+      fstr		= fsym.to_s
+      getter		= fsym
+      query		= format('%s?', fstr).to_sym
+      forcer		= format('%s!', fstr).to_sym
+      setter		= format('%s=', fstr).to_sym
+      def_delegators(:@settings, getter, query, forcer, setter)
+    end
+    GAME_SETTINGS.keys.each do |ssym|
+      sstr		= ssym.to_s
+      getter		= ssym
+      setter		= format('%s=', sstr).to_sym
+      def_delegators(:@settings, getter, setter)
+    end
+
     # @!method export_game
     # @return [Hash<String=>Any>]
     def export_game
+      xsettings		= self.settings.export_settings
       result		= {
-        'game'		=> self.export,
+        'game'		=> self.export.merge(xsettings),
       }
       elements		= {}
       TAGF::Filer::Loadables.each do |k,v|
@@ -207,7 +227,7 @@ module TAGF
     #   of `kw`
     # @return [nil]
     #   if no keyword element was found that 'owns' the keyword (or
-    #   alias) 
+    #   alias)
     # @return [TAGF::Keyword]
     #   the keyword element that 'owns', as the definitive keyword or
     #   as an alias, the word in `kw`
@@ -295,6 +315,11 @@ module TAGF
     #   self
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
+      #
+      # Set up the game-wide settings..
+      #
+      settings		= kwargs.delete(:settings) || {}
+      @settings		= TAGF::Settings.new(**settings)
       #
       # Set up the descriptive digraph object.  We don't need to have
       # any particular attributes set in order to do this; just the
