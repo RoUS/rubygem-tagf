@@ -72,7 +72,12 @@ module TAGF
     # @return [Hash<String=>Any>]
     #   the updated export hash.
     def export
-      result			= super
+      result			= nil
+      begin
+        result			= super
+      rescue NoMethodError
+        result			= {}
+      end
       lochash			= {}
       result['locations']	= lochash
       self.locations.each do |loc,visits|

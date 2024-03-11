@@ -549,7 +549,12 @@ module TAGF
       #
       # @return [Hash<String=>Any>]
       def export
-        result			= {}
+        result			= nil
+        begin
+          result		= super
+        rescue NoMethodError
+          result		= {}
+        end
         flist			= self.loadable_fields
         alist			= self.abstracted_fields.keys
         flist.each do |fname|
