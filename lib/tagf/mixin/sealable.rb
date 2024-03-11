@@ -18,9 +18,10 @@
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
 require('tagf/mixin/dtypes')
+require('tagf/mixin/element')
 require('tagf/mixin/universal')
 require('tagf/exceptions')
-require('tagf/mixin/element')
+require('tagf/item')
 require('forwardable')
 require('byebug')
 
@@ -52,11 +53,24 @@ module TAGF
         'locked',
         'relock',
         'seal_key',
+        'seal_name',
       ]
+
+      # @!macro TAGF.constant.Abstracted_Fields
+      Abstracted_Fields		= {
+      }
 
       # @!attribute [rw] seal_key
       # @return [String]
       attr_accessor(:seal_key)
+
+      # @!attribute [rw] seal_name
+      # The name of the seal; used to ensure that if it changes state
+      # from one side (such as being opened or unlocked), the change
+      # is reflected from the other side (in the appropriate path).
+      #
+      # @return [String]
+      attr_accessor(:seal_name)
 
       attr_accessor(:desc_open)
       attr_accessor(:shortdesc_open)
@@ -311,6 +325,7 @@ module TAGF
           self.openable	= true
           self.opened	= true
         end
+        self.forbidden	= []
         #
         # Propagate any seal-specific attribute values from `kwargs`
         # to the actual attributes of this object.
