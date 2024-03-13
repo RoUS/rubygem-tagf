@@ -15,44 +15,92 @@
 #++
 # frozen_string_literal: true
 
-require('tagf/debugging')
-warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf/mixin/dtypes')
-require('tagf/mixin/element')
-require('readline')
-require('thor')
+require('cri')
+require('ostruct')
+require('shellwords')
 require('byebug')
 
 # @!macro doc.TAGF.module
 module TAGF
 
-  #
-  # Prototype command-line interface class for development
-  # (creating/modifying games, listing interconnexions, <em>&c.</em>
-  #
-  class CLI < ::Thor
+  # @!macro doc.TAGF.CLI.module
+  module CLI
 
-    package_name('TAGF')
+    # Global (well, within the TAGF::CLI module) hash of command names
+    # and parsing structures for the `cri` gem.
+    Commands		= {}
 
-    #
-    include(Mixin::Element)
-    include(Mixin::UniversalMethods)
-    include(Mixin::DTypes)
+    # @!macro doc.TAGF.CLI.module.eigenclass
+    class << self
 
-    #
-    desc('list', 'List game definitions')
-    def list
-      
-    end                         # def list
+      # Import the TAGF::CLI::Commands command hash into the
+      # eigenclass, where the command processing methods reside.
+      Commands		= TAGF::CLI::Commands
 
-    #
-    desc('version', format('Shows the %s version', @package_name))
-    def version
-      puts(format('%s %s', 'TAGF', ::TAGF::VERSION.to_s))
-    end                         # def version
-           
+      # @!method command(cmd_p, &block)
+      #
+      # @param [String]			cmd_p
+      # @yield [cdef]
+      #   The skeleton Cri::Command object created by this method.
+      #   The block gives the caller the opportunity to set up the
+      #   command, such as the description, flags, and options.
+      # @yieldreturn [Cri::Command]
+      #   The Cri::Command object created by the method and configured
+      #   by the block.
+      # @return [Cri::Command]
+      def command(cmd_p, &block)
+	Commands[cmd_p]	= Cri::Command.define { |cdef|
+	  cdef.name(cmd_p)
+	  yield(cdef)
+          cdef
+	}
+	return Commands[cmd_p]
+      end                       # def command
+
+      def subcommand(cmd_p, **options, &block)
+	cmdsegs		= cmd_p.split(%r!\s+!)
+	cmdgroup	= cmdsegs.pop
+	(name, *alii)	= cmdgroup.split(%r!\|!)
+	if (cmdsegs.empty?)
+	  parent	= :root
+	  key		= name
+	else
+	  parent	= cmdsegs.compact.join('~')
+	  key		= [ parent, name ].compact.join('~')
+	end
+        debugger
+	result		= CLI.command(key) do |cdef|
+	  cdef.name(name)
+	  cdef.aliases(alii) unless (alii.empty?)
+	  yield(cdef, name, cmdgroup)
+	end
+	unless ((name == 'help') \
+		|| (options.key?(:help_subcommand) \
+		    && (! options[:help_subcommand])))
+	  Commands[key].add_command(Commands['help'].dup)
+	end
+	unless (parent.nil?)
+	  Commands[parent].add_command(Commands[key])
+	end
+        return result
+      end                       # def subcommand
+
+      def cmdpath(cmd_p)
+	cmd		= cmd_p.dup
+	segments	= []
+	while (cmd)
+	  segments.unshift(cmd.name)
+	  cmd		= cmd.supercommand
+	end
+	result		= segments.join(' ')
+	return result
+      end                       # def cmdpath
+
+      nil
+    end                         # Eigenclass for TAGF::CLI module
+
     nil
-  end                           # class TAGF::CLI
+  end                           # module TAGF::CLI
 
   nil
 end                             # module TAGF

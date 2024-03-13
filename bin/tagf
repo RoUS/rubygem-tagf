@@ -1,0 +1,105 @@
+#! /usr/bin/env ruby
+#--
+# Copyright © 2022 Ken Coar
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+# frozen_string_literal: true
+
+require('bundler')
+Bundler.setup
+require('tagf/cli')
+require('byebug')
+
+include(TAGF)
+
+# Import the TAGF::CLI::Commands command hash into our namespace for
+# easy reference.
+Commands		= TAGF::CLI::Commands
+
+# @!macro doc.TAGF.module
+module TAGF
+
+  # This is the shell command-line tool, so define a `help` command.
+  CLI.command('help') do |cdef|
+    cdef.usage('help [command]')
+    cdef.aliases(:h)
+    cdef.summary('Display help')
+    cdef.description(<<-EOT)
+Display help for the #{__FILE__} shell command-line tool.
+    EOT
+    cdef.run do |opts,args,cmd|
+      if (cmd == CLI::Commands['help'])
+        puts(cmd.help)
+      end
+    end
+  end                           # CLI.command('help')
+
+  nil
+end				# module TAGF
+
+warn('Starting debugger?')
+cmd_help		= Commands['help']
+
+# @todo
+#   This needs to be moved (with appropriate edits) into
+#   lib/tagf/tools/render.rb, and files in lib/tagf/toold/*.rb
+#   `require`d into this file.
+cmd_help_render		= CLI.subcommand('help render') do |cdef,**opts|
+  cdef.summary('Render an image of a game map.')
+  cdef.usage('render [options]')
+  cdef.description(<<-EOT)
+The `render` command loads a TAGF game from its YAML file
+and generates a graphical image of its location map.
+
+The `--output` option will override the default image file
+name, which is derives from the `--source` file name.  Any
+final extension on the source file name is removed and
+replaced with the image format.  For example,
+
+    render --source=foo.yml --format=svg
+
+will produce an output file named `foo.svg`.
+  EOT
+
+  debugger
+  cdef.option(:s,
+              :source,
+              'game source YAML file',
+              argument:	:required)
+  cdef.option(:o,
+              :output,
+              'output file name',
+              argument:	:required)
+  cdef.option(:f,
+              :format,
+              'image format (e.g., "svg", "png", "jpg")',
+              argument:	:optional,
+              default:	'png')
+
+  cdef.run do |opts,args,cmd|
+    warn('#run for "help render"')
+  end
+end
+
+#cmd_help.run([])
+cmd_help_render.run([])
+debugger
+warn('After debugger?')
+
+# Local Variables:
+# mode: ruby
+# indent-tabs-mode: nil
+# eval: (if (intern-soft "fci-mode") (fci-mode 1))
+# eval: (auto-fill-mode 1)
+# End:
