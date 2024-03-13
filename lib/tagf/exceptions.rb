@@ -827,7 +827,8 @@ module TAGF
           offender	= kwargs[:offender] || args[0]
           @msg		= format('not an exception or ' +
                                  'exception class: %s:%s',
-                                 offender.class.name,
+                                 offender.class.name \
+                                 || offender.class.to_s,
                                  offender.inspect)
         end
         self.set_message(@msg)
@@ -855,10 +856,11 @@ module TAGF
         _dbg_exception_start(__callee__)
         super
         if (@msg.nil?)
-          objtype	= arg[0].class.name
-          @msg		= format('not a game object: <%s>[%s]',
+          obj		= kwargs[:object] || args[0]
+          objtype	= obj.class.name || obj.class.to_s
+          @msg		= format('not a game object: %s:%s',
                                  objtype,
-                                 arg[0].to_s)
+                                 obj.inspect)
         end
         self.set_message(@msg)
       end                       # def initialize
@@ -1945,6 +1947,23 @@ module TAGF
 
       nil
     end                         # module MapError
+
+    #
+    # Bring the Exceptions::MapError::NoAccess exception declaration
+    # up to the top level (Exceptions::NoAccess).
+    #
+    NoAccess		= MapError::NoAccess
+    #
+    # Bring the Exceptions::MapError::NoExit exception declaration
+    # up to the top level (Exceptions::NoExit).
+    #
+    NoExit		= MapError::NoExit
+    #
+    # Bring the Exceptions::MapError::NoSealKey exception declaration
+    # up to the top level (Exceptions::NoSealKey).
+    #
+    NoSealKey		= MapError::NoSealKey
+
     nil
   end                           # module TAGF::Exceptions
 
