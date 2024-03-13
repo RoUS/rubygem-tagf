@@ -19,6 +19,8 @@
 require('bundler')
 Bundler.setup
 require('tagf')
+require('tagf/cli')
+require('tagf/exceptions')
 require('tagf/filer')
 require('pathname')
 require('rgl/dot')
@@ -30,6 +32,8 @@ module TAGF
 
   # @!macro doc.TAGF.Tools.module
   module Tools
+
+    include(TAGF::Exceptions)
 
     #
     # Given a TAGF game definition, use the internal RGL digraph to
@@ -89,7 +93,7 @@ module TAGF
         filer		= TAGF::Filer.new
         game		= filer.load_game(source)
         sname      	= Pathname(source)
-        output_default	= same.to_s.sub(%r!#{sname.extname}$!, '')
+        output_default	= sname.to_s.sub(%r!#{sname.extname}$!, '')
       end
       #
       # And if there's an explicit output filename, it dominates, of
@@ -97,6 +101,10 @@ module TAGF
       #
       output		= kwargs[:output] || output_default
       gformat		= kwargs[:format] || 'png'
+      #
+      # Assume we're going to be successful.
+      #
+      result		= Errno::NOERROR.new.errno
       catch(:render_done) do
         #
         # If we're given a bogus graphic format, gritch about it.
@@ -108,10 +116,6 @@ module TAGF
           result	= -1
           throw(:render_done)
         end
-        #
-        # Assume we're going to be successful.
-        #
-        result		= Errno::NOERROR.new.errno
         begin
           #
           # There may be something bogus in the game itself, or the
@@ -129,13 +133,86 @@ module TAGF
         end
       end                       # catch(:render_done)
       return result
-    end                         # def run(**kwargs)
+    end                         # def render(**kwargs)
     module_function(:render)
 
     nil
   end                           # module Tools
 
 end                             # module TAGF
+
+TAGF::CLI.subcommand('help render') do |cdef,**opts|
+  cdef.summary('Render an image of a game map.')
+  cdef.run do |opts,args,cmd|
+    subcmd		= [cmd.name, *args].compact.join('~')
+    puts(Commands[subcmd].help)
+    Errno::NOERROR.new.errno
+  end
+end
+
+TAGF::CLI.command('render') do |cdef,**opts|
+  cdef.summary('Render an image of a game map.')
+  cdef.usage('render [options] [sourcefile]')
+  cdef.description(<<-EOT)
+The `render` command loads a TAGF game from its YAML file
+and generates a graphical image of its location map.
+
+The `--output` option will override the default image file
+name, which is derived from the source file name (from the
+parameter or the `--source` option).  Any final extension
+on the source file name is removed and replaced with the
+image format.  For example,
+
+*   render --source=foo.yml --format=svg
+
+will produce an output file named `foo.svg`.
+  EOT
+
+  cdef.flag(:h, :help, 'Display command help') do |value,cmd|
+    puts(cmd.help)
+    exit(0)
+  end
+  cdef.flag(:v,
+            :verbose,
+            'Increase verbosity',
+            multiple:	true)
+#  cdef.param(:sourcefile)
+  cdef.option(:s,
+              :source,
+              ('game source YAML file ' +
+               '(overrides `sourcefile` parameter)'),
+              argument:	:required)
+  cdef.option(:o,
+              :output,
+              'output file name',
+              argument:	:required)
+  cdef.option(:f,
+              :format,
+              'image format (e.g., "svg", "png", "jpg")',
+              argument:	:optional,
+              default:	'png')
+
+  cdef.run do |opts,args,cmd|
+    opts[:verbosity]	= [*opts.delete(:verbose)].count
+    input		= opts[:source] || args[0]
+    if (input.nil?)
+      warn(format('%s: %s: source file not specified ' +
+                  '(parameter or --source required)',
+                  Pathname($0).basename,
+                  cmd.name))
+      exit(TAGF::Exceptions::NoLoadFile.errorcode)
+    end
+    opts[:source]	= input
+    result		= TAGF::Tools.render(**opts)
+    warn(format("%s.%s\n  opts = %s\n  args = %s\n  cmd  = %s",
+                self.respond_to?(:name) ? self.name : self.class.to_s,
+                __callee__.to_s,
+                opts.inspect,
+                args.inspect,
+                cmd.inspect))
+    result
+  end
+end
 
 # Local Variables:
 # mode: ruby

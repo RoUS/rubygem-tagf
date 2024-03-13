@@ -68,7 +68,6 @@ module TAGF
 	  parent	= cmdsegs.compact.join('~')
 	  key		= [ parent, name ].compact.join('~')
 	end
-        debugger
 	result		= CLI.command(key) do |cdef|
 	  cdef.name(name)
 	  cdef.aliases(alii) unless (alii.empty?)

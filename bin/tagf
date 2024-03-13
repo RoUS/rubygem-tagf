@@ -34,9 +34,10 @@ module TAGF
   CLI.command('help') do |cdef|
     cdef.usage('help [command]')
     cdef.aliases(:h)
-    cdef.summary('Display help')
+    cdef.summary(format('Display help for the %s shell interface',
+                        Pathname($0).basename))
     cdef.description(<<-EOT)
-Display help for the #{__FILE__} shell command-line tool.
+Display help for the #{Pathname($0).basename} shell command-line tool.
     EOT
     cdef.run do |opts,args,cmd|
       if (cmd == CLI::Commands['help'])
@@ -48,54 +49,23 @@ Display help for the #{__FILE__} shell command-line tool.
   nil
 end				# module TAGF
 
-warn('Starting debugger?')
-cmd_help		= Commands['help']
+#
+# Load the various tools for which this script front-ends.
+#
+require('tagf/tools/render')
 
-# @todo
-#   This needs to be moved (with appropriate edits) into
-#   lib/tagf/tools/render.rb, and files in lib/tagf/toold/*.rb
-#   `require`d into this file.
-cmd_help_render		= CLI.subcommand('help render') do |cdef,**opts|
-  cdef.summary('Render an image of a game map.')
-  cdef.usage('render [options]')
-  cdef.description(<<-EOT)
-The `render` command loads a TAGF game from its YAML file
-and generates a graphical image of its location map.
-
-The `--output` option will override the default image file
-name, which is derives from the `--source` file name.  Any
-final extension on the source file name is removed and
-replaced with the image format.  For example,
-
-    render --source=foo.yml --format=svg
-
-will produce an output file named `foo.svg`.
-  EOT
-
-  debugger
-  cdef.option(:s,
-              :source,
-              'game source YAML file',
-              argument:	:required)
-  cdef.option(:o,
-              :output,
-              'output file name',
-              argument:	:required)
-  cdef.option(:f,
-              :format,
-              'image format (e.g., "svg", "png", "jpg")',
-              argument:	:optional,
-              default:	'png')
-
-  cdef.run do |opts,args,cmd|
-    warn('#run for "help render"')
-  end
+#
+# Now go forth and function!
+#
+args			= ARGV.dup
+verb			= args.shift
+unless (cmd = TAGF::CLI::Commands[verb])
+  warn(format('%s: unknown command: %s',
+              Pathname($0).basename,
+              verb.inspect))
+  exit(1)
 end
-
-#cmd_help.run([])
-cmd_help_render.run([])
-debugger
-warn('After debugger?')
+cmd.run(args)
 
 # Local Variables:
 # mode: ruby
