@@ -26,27 +26,29 @@ module TAGF
   # @!macro doc.TAGF.CLI.module
   module CLI
 
-    # Global (well, within the TAGF::CLI module) hash of command names
-    # and parsing structures for the `cri` gem.
+    # Global (well, within the `TAGF::CLI` module) hash of command
+    # names and parsing structures for the `cri` gem.
     Commands		= {}
 
     # @!macro doc.TAGF.CLI.module.eigenclass
     class << self
 
-      # Import the TAGF::CLI::Commands command hash into the
+      # Import the `TAGF::CLI::Commands` command hash into the
       # eigenclass, where the command processing methods reside.
       Commands		= TAGF::CLI::Commands
 
       # @!method command(cmd_p, &block)
       #
       # @param [String]			cmd_p
-      # @yield [cdef]
-      #   The skeleton Cri::Command object created by this method.
-      #   The block gives the caller the opportunity to set up the
-      #   command, such as the description, flags, and options.
-      # @yieldreturn [Cri::Command]
-      #   The Cri::Command object created by the method and configured
-      #   by the block.
+      # @!macro [new] doc.Cri.block
+      #   @yield [cdef]
+      #     The skeleton `Cri::Command` object created by this method.
+      #     The block gives the caller the opportunity to set up the
+      #     command, such as the description, flags, and options.
+      #   @yieldreturn [Cri::Command]
+      #     The `Cri::Command` object created by the method and
+      #     configured by the block.
+      # @!macro doc.Cri.block
       # @return [Cri::Command]
       def command(cmd_p, &block)
 	Commands[cmd_p]	= Cri::Command.define { |cdef|
@@ -57,6 +59,17 @@ module TAGF
 	return Commands[cmd_p]
       end                       # def command
 
+      # @!method subcommand(cmd_p, **options, &block)
+      #
+      # @param [String]		cmd_p
+      #   Space-delimited full command being added; the parent and
+      #   subcommand bits will be calculated.  For example:
+      #   `"set remote host"`.
+      #
+      # @param [Hash<Symbol=>Any>]	kwargs
+      # @!macro doc.Cri.block
+      # @return [Cri::Command]
+      #   the `Cri` subcommand structure just created
       def subcommand(cmd_p, **options, &block)
 	cmdsegs		= cmd_p.split(%r!\s+!)
 	cmdgroup	= cmdsegs.pop
@@ -84,7 +97,34 @@ module TAGF
         return result
       end                       # def subcommand
 
+      # @!method find_command(cmdname)
+      #
+      # @return [Cri::Command]
+      # @return [nil]
+      def find_command(cmdname)
+        cmd		= CLI::Commands.values.find { |obj|
+          (obj.supercommand.nil? \
+           && [obj.name,*obj.aliases].compact.include?(cmdname))
+        }
+        return cmd
+      end                       # def find_command
+
+      # @!method cmdpath(cmd_p)
+      # Given a `Cri::Command` object (that may actually be a
+      # some-level-deep subcommand), reconstitute the command string
+      # that parses to the object.
+      #
+      # @param [Cri::Command] cmd_p
+      # @return [String]
       def cmdpath(cmd_p)
+        unless (cmd_p.kind_of?(Cri::Command))
+          raise_error(ArgumentError,
+                      format('%s requires a Cri::Command object, ' +
+                             'not %s:%s',
+                             __callee__.to_s,
+                             cmd_p.class.to_s,
+                             cmd_p.inspect))
+        end
 	cmd		= cmd_p.dup
 	segments	= []
 	while (cmd)
@@ -102,11 +142,12 @@ module TAGF
   end                           # module TAGF::CLI
 
   nil
-end                             # module TAGF
+end				# module TAGF
 
 # Local Variables:
 # mode: ruby
 # indent-tabs-mode: nil
 # eval: (if (intern-soft "fci-mode") (fci-mode 1))
 # eval: (auto-fill-mode 1)
+# eval: (whitespace-mode 1)
 # End:

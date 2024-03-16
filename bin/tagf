@@ -53,18 +53,20 @@ end				# module TAGF
 # Load the various tools for which this script front-ends.
 #
 require('tagf/tools/render')
+require('tagf/tools/validate')
 
 #
 # Now go forth and function!
 #
 args			= ARGV.dup
 verb			= args.shift
-unless (cmd = TAGF::CLI::Commands[verb])
+unless (cmd = TAGF::CLI.find_command(verb))
   warn(format('%s: unknown command: %s',
               Pathname($0).basename,
               verb.inspect))
   exit(1)
 end
+debugger
 cmd.run(args)
 
 # Local Variables:
