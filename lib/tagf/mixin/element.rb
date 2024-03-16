@@ -270,7 +270,17 @@ module TAGF
       #   #desc value..
       attr_accessor(:article)
 
-      attr_accessor(:mixins)
+      # @!attribute [r] mixins
+      # Return an array of all Path elements that list the receiver as
+      # the origin.
+      #
+      # @return [Array<Module>]
+      def mixins
+        result		= self.singleton_class.ancestors.select { |o|
+          o.to_s	=~ %r!^TAGF::Mixin::!
+        }
+        return result
+      end                       # def mixins
 
       #
       # How to refer to contents when displayed.  Are they 'in' the
@@ -654,7 +664,6 @@ module TAGF
         #
         if ((mixins = kwargs[:mixins]) \
             && mixins.kind_of?(Array))
-          self.mixins	= [ *mixins ].compact.uniq
           mixins.each do |mixin_s|
             mixin_s	= mixin_s.downcase.sub(%r!^.*::!, '')
             mixin	= format('TAGF::Mixin::%s',
@@ -677,11 +686,6 @@ module TAGF
                                      self.to_key))
             end                 # if (TAGF.const_defined?(mixin))
           end                   # mixins.each do
-        else
-          #
-          # No explicit mixins, so make the attribute an empty array.
-          #
-          self.mixins	= []
         end                     # if (kwargs[:mixins])
         kwargs.delete(:mixins)
         #

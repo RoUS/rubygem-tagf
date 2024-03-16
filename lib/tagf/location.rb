@@ -117,6 +117,30 @@ module TAGF
       return self
     end                       # def add_path
 
+    # @!method incoming
+    # Return an array of all Path elements that list the receiver as
+    # the origin.
+    #
+    # @return [Array<TAGF::Path>]
+    def incoming
+      result		= game.filter(klass: Path).select { |o|
+        (o.destination == self)
+      }
+      return result
+    end                         # def incoming
+
+    # @!method outgoing
+    # Return an array of all Path elements that list the receiver as
+    # the origin.
+    #
+    # @return [Array<TAGF::Path>]
+    def outgoing
+      result		= game.filter(klass: Path).select { |o|
+        (o.origin == self)
+      }
+      return result
+    end                         # def outgoing
+
     # @!method export
     # `Location`-specific export method, responsible for adding any
     # unusual fields that need to be abstracted to the export hash.
