@@ -1888,13 +1888,14 @@ module TAGF
         nil
       end                       # class NoExit
 
-      # A Path which is lockable should have a `:seal_key` identifier,
-      # which is something (like a key or a magic item) that a player
-      # must have in inventory in order to unlock the seal.  Seal keys
-      # are Item objects which are Portable.  This exception is used
-      # when a Path's seal_key is not actually defined in the game
-      # database.
-      class NoSealKey < ErrorBase
+      # An element which is lockable should have a `:seal_key`
+      # identifier, which is something (like a key or a magic item)
+      # that a player must have in inventory in order to unlock the
+      # seal.  Seal keys are Item objects which are Portable.  Items
+      # are accessible by the player by keyword.  This exception is
+      # used when an element's seal_key is not actually defined as a
+      # keyword.
+      class NoSealKeyword < ErrorBase
 
         #
         # Assign this exception class a unique ID number
@@ -1909,33 +1910,33 @@ module TAGF
         # @!macro doc.TAGF.formal.kwargs
         # @!macro ErrorBase.initialize
         # @option kwargs [Symbol]	:path
-        #   The game Path object which requires an unregistered
-        #   seal_key.
+        #   The game object which requires an unregistered seal_key.
         # @option kwargs [Symbol]	:seal_key
-        #   The EID of the (missing) seal_key from the Path object.
+        #   The EID of the (missing) seal_key from the Sealable
+        #   object.
         # @return [NoSealKey] self
         #
         def initialize(*args, **kwargs)
           _dbg_exception_start(__callee__)
           super
           if (@msg.nil?)
-            # 'path requires key; none registered'
-            # 'path "%s" requires key; none registered'
-            # 'path requires key "%s"; none registered'
-            # 'path "%s" requires key "%s"; none registered'
-            msgformat	= ('path%<path>s requires key%<seal_key>s; ' +
-                           'none registered')
+            # 'sealable requires key; none registered'
+            # 'sealable "%s" requires key; no keyword registered'
+            # 'sealable requires key "%s"; no keyword registered'
+            # 'sealable "%s" requires key "%s"; no keyword registered'
+            msgformat	= ('sealable%<sealable>s requires ' +
+                           'key%<seal_key>s; no keyword registered')
             msgargs	= {
-              path:	'',
+              sealable:	'',
               seal_key:	'',
             }
             if (seal_EID = kwargs[:seal_key])
               msgargs[:seal_key] = format(' "%s"', seal_EID.to_s)
             end
-            if (path = kwargs[:path])
-              msgargs[:path] = format(' "%s" ("%s")',
-                                      path.eid,
-                                      path.shortdesc)
+            if (sealable = kwargs[:sealable])
+              msgargs[:sealable] = format(' "%s" ("%s")',
+                                          sealable.eid,
+                                          sealable.shortdesc)
             end
             @msg	= format(msgformat, **msgargs)
           end                   # if (@msg.nil?)
@@ -1943,7 +1944,63 @@ module TAGF
         end                     # def initialize
 
         nil
-      end                       # class NoSealKey
+      end                       # class NoSealKeyword
+
+      # A Sealable element which is lockable should have a `:seal_key`
+      # identifier, which is something (like a key or a magic item)
+      # that a player must have in inventory in order to unlock the
+      # seal.  Seal keys are Item objects which are Portable.  This
+      # exception is used when the seal_key is not actually defined in
+      # the game database as an item
+      class NoSealKeyItem < ErrorBase
+
+        #
+        # Assign this exception class a unique ID number
+        #
+        self.assign_ID(0x022)
+
+        # The lack of a seal_key might be deliberate, allowing the
+        # path to be sealed and unopenable.
+        self.severity	= :warning
+
+        #
+        # @!macro doc.TAGF.formal.kwargs
+        # @!macro ErrorBase.initialize
+        # @option kwargs [Symbol]	:sealable
+        #   The game object which requires an unregistered seal_key.
+        # @option kwargs [Symbol]	:seal_key
+        #   The EID of the (missing) seal_key from the Sealable object.
+        # @return [NoSealKeyItem] self
+        #
+        def initialize(*args, **kwargs)
+          _dbg_exception_start(__callee__)
+          super
+          if (@msg.nil?)
+            # 'sealable requires key; no item registered'
+            # 'sealable "%s" requires key; no item registered'
+            # 'sealable requires key "%s"; no item registered'
+            # 'sealable "%s" requires key "%s"; no item registered'
+            msgformat	= ('sealable%<sealable>s requires ' +
+                           'key%<seal_key>s; no item registered')
+            msgargs	= {
+              sealable:	'',
+              seal_key:	'',
+            }
+            if (seal_EID = kwargs[:seal_key])
+              msgargs[:seal_key] = format(' "%s"', seal_EID.to_s)
+            end
+            if (sealable = kwargs[:sealable])
+              msgargs[:sealable] = format(' "%s" ("%s")',
+                                          sealable.eid,
+                                          sealable.shortdesc)
+            end
+            @msg	= format(msgformat, **msgargs)
+          end                   # if (@msg.nil?)
+          self.set_message(@msg)
+        end                     # def initialize
+
+        nil
+      end                       # class NoSealKeyItem
 
       nil
     end                         # module MapError
@@ -1959,10 +2016,15 @@ module TAGF
     #
     NoExit		= MapError::NoExit
     #
-    # Bring the Exceptions::MapError::NoSealKey exception declaration
-    # up to the top level (Exceptions::NoSealKey).
+    # Bring the Exceptions::MapError::NoSealKeyword exception
+    # declaration up to the top level (Exceptions::NoSealKeyword).
     #
-    NoSealKey		= MapError::NoSealKey
+    NoSealKeyword	= MapError::NoSealKeyword
+    #
+    # Bring the Exceptions::MapError::NoSealKeyItem exception
+    # declaration up to the top level (Exceptions::NoSealKeyItem).
+    #
+    NoSealKeyItem	= MapError::NoSealKeyItem
 
     nil
   end                           # module TAGF::Exceptions
