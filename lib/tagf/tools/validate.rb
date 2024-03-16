@@ -22,7 +22,7 @@ require('tagf')
 require('tagf/cli')
 require('tagf/exceptions')
 require('tagf/filer')
-require('logger')
+require('tagf/logging')
 require('pathname')
 require('rgl/dot')
 require('ruby-graphviz')
@@ -35,39 +35,6 @@ module TAGF
   module Tools
 
     include(TAGF::Exceptions)
-
-    attr_accessor(:logger)
-    module_function(:logger)
-    module_function(:logger=)
-
-    class Reporter
-
-      attr_accessor(:level)
-
-      def report(*args, **kwargs)
-        return nil if (self.level < 0)
-        if (args[0].kind_of?(Integer))
-          msglevel	= args.shift
-        end
-        if ((kwlevel = kwargs[:level]).kind_of?(Integer))
-          msglevel	= kwlevel
-        end
-        if (msglevel < self.level)
-          warn(args[0])
-        end
-        return nil
-      end                       # def report(*args, **kwargs)
-
-      def initialize(*args, **kwargs)
-        if (kwargs[:quiet])
-          self.level	= -1
-        else
-          self.level	= (kwargs[:level] || 0).to_i
-        end
-      end                       # def initialize
-
-      nil
-    end                         # class Reporter
 
     #
     # Given a TAGF game definition, use the internal RGL digraph to
@@ -113,8 +80,7 @@ module TAGF
     def validate(**kwargs)
       verbosity		= kwargs[:verbosity].to_i
       verbosity		= -2 if kwargs[:quiet]
-      logger		= Reporter.new(level: verbosity)
-      worst_severity	= Exceptions::SEVERITY.success
+      logger		= Reporter.new(maxlevel: verbosity)
       #
       # What are we validating?
       #
@@ -194,7 +160,7 @@ module TAGF
       #
       noaccess.each do |obj|
         msg		= NoAccess.new(location: obj)
-        worst_severity	= [worst_severity, msg.severity].max
+        logger.increment_severity(msg)
         logger.report(msg.render,
                       level:	-1)
       end
@@ -217,7 +183,7 @@ module TAGF
       #
       deadends.each do |obj|
         msg		= NoExit.new(location: obj)
-        worst_severity	= [worst_severity, msg.severity].max
+        logger.increment_severity(msg)
         logger.report(msg.render,
                       level:	-1)
       end
@@ -241,7 +207,7 @@ module TAGF
       #
       nokeyword.each do |obj|
         msg		= NoSealKeyword.new(sealable: obj)
-        worst_severity	= [worst_severity, msg.severity].max
+        logger.increment_severity(msg)
         logger.report(msg.render,
                       level:	-1)
       end
@@ -258,7 +224,7 @@ module TAGF
       #
       noitem.each do |obj|
         msg		= NoSealKeyItem.new(sealable: obj)
-        worst_severity	= [worst_severity, msg.severity].max
+        logger.increment_severity(msg)
         logger.report(msg.render,
                       level:	-1)
       end
@@ -270,7 +236,46 @@ module TAGF
                              obj.to_key),
                       level:	4)
       end
-      return worst_severity - 1
+      if ((logger.worst_severity > SEVERITY.success) ||
+          (verbosity > 0))
+        #
+        # If we encountered any issues, or have any verbosity at all,
+        # give a report of the severity levels encountered.
+        #
+        # To line them all up, we need to do some calculations; we're
+        # left-justifying the level name, but in a fixed-width field.
+        #
+        name_maxl	= SEVERITY_BY_LEVEL.values.map { |n|
+          n.to_s.length
+        }.max
+        #
+        # Build an array of the individual severity count reports,
+        # then join them with "\n".
+        #
+        results		= []
+        logger.severities.each do |levnum,incidents|
+          name		= SEVERITY_BY_LEVEL[levnum].to_s
+          name_l	= name.length + 1
+          results	<< format("%s:%*s%d",
+                                  name,
+                                  #
+                                  # Calculate the number of spaces to
+                                  # insert from the field width, the
+                                  # name length, and the ': ' suffix
+                                  # to the latter.
+                                  #
+                                  name_maxl - name_l + 2,
+                                  ' ',
+                                  incidents)
+        end
+        logger.report(results.join("\n"),
+                      level:	-1)
+      end                       # if any exceptions or verbosity
+      #
+      # Our return value is the worst severity we encountered — minus
+      # one, since 'success' is severity 1.
+      #
+      return logger.worst_severity - 1
     end                         # def validate(**kwargs)
     module_function(:validate)
 

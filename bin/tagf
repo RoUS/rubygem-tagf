@@ -66,8 +66,9 @@ unless (cmd = TAGF::CLI.find_command(verb))
               verb.inspect))
   exit(1)
 end
-debugger
-cmd.run(args)
+
+result			= cmd.run(args)
+exit(result)
 
 # Local Variables:
 # mode: ruby
