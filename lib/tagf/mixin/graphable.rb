@@ -145,7 +145,6 @@ module TAGF
         # @return [void]
         def assemble(**kwargs)
           return nil if (@assembled)
-          debugger
           @graphattr		= Graph_Attributes
           cfgfile		= kwargs[:config] \
                                   || GRAPHVIZ_CONFIG_DEFAULT

@@ -124,9 +124,9 @@
      be a warning.
   1. Keywords and alii must be unique; only one can define "e", for
      instance.
-  1. Add some sort of configuration option to allow customisation of
-     the rendered appearance.  Note that the SVG output didn't appear
-     to include the Unicode annotations, nor the double-headed arrows.
+* Add some sort of configuration option to allow customisation of the
+  rendered appearance.  Note that the SVG output didn't appear to
+  include the Unicode annotations, nor the double-headed arrows.
 
 ### Complete tool items
 

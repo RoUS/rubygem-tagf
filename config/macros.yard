@@ -27,6 +27,20 @@
 #   additional attribute declaration methods) for anything that
 #   extends the TAGF module into its singleton class.
 
+# @!macro [new] doc.TAGF.CLI.module
+#   Module wherein we keep all the particulars needed for processing
+#   command with the `cri` gem.  Used in the `bin/tagf` shell
+#   command-line tool, among other places.
+#
+#   Can be accessed fully-qualified (<em>e.g.</em>,
+#   `TAGF::CLI.command`) or after mixing into the code that wants to
+#   use its contents (recommended for purposes of clarity).
+
+# @!macro [new] doc.TAGF.CLI.module.eigenclass
+#   Eigenclass for the TAGF::CLI module.  The command-building and
+#   processing methods live here so we don't need to mess about with
+#   any instances.
+
 # @!macro [new] doc.TAGF.Mixin.ClassMethods.module
 #   Define class methods and constants that will be added to all
 #   modules and classes in the TAF namespace.  These definitions live
