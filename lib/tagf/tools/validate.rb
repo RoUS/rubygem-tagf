@@ -35,6 +35,7 @@ module TAGF
   module Tools
 
     include(TAGF::Exceptions)
+    include(TAGF::Tools::Definitions)
 
     #
     # Given a TAGF game definition, use the internal RGL digraph to
@@ -79,8 +80,11 @@ module TAGF
     #   failure, either -1 or whatever exception processing delivers.
     def validate(**kwargs)
       verbosity		= kwargs[:verbosity].to_i
-      verbosity		= -2 if kwargs[:quiet]
-      logger		= Reporter.new(maxlevel: verbosity)
+      verbosity		= SUPPRESS_REPORTS if (kwargs[:quiet])
+      Reporter.new(maxlevel:	verbosity,
+                   component:	__callee__.to_s,
+                   install:	true)
+      logger		= self.logger
       #
       # What are we validating?
       #
@@ -103,6 +107,9 @@ module TAGF
       # Okey, we need to digraph info, so build it.
       #
       begin
+        logger.report(format('building game digraph for "%s"',
+                             game.to_key),
+                      level:	2)
         #
         # There may be something bogus in the game itself, or the
         # graph processing might raise an exception.
@@ -162,7 +169,7 @@ module TAGF
         msg		= NoAccess.new(location: obj)
         logger.increment_severity(msg)
         logger.report(msg.render,
-                      level:	-1)
+                      level:	ERROR_REPORT)
       end
       #
       # Now look for Locations with ways in — but no ways out (all
@@ -185,7 +192,7 @@ module TAGF
         msg		= NoExit.new(location: obj)
         logger.increment_severity(msg)
         logger.report(msg.render,
-                      level:	-1)
+                      level:	ERROR_REPORT)
       end
       #
       # Sealable issues we want to mention include:
@@ -252,7 +259,9 @@ module TAGF
         # Build an array of the individual severity count reports,
         # then join them with "\n".
         #
-        results		= []
+        results		= [
+          'Report of problematic issues encountered:',
+        ]
         logger.severities.each do |levnum,incidents|
           name		= SEVERITY_BY_LEVEL[levnum].to_s
           name_l	= name.length + 1

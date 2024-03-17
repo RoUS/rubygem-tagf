@@ -30,13 +30,65 @@ module TAGF
 
     include(TAGF::Exceptions)
 
+    module Definitions
+
+      extend(Forwardable)
+
+      # A `#maxlevel` of `-2` is intended to mean that all messages
+      # should be suppressed unless they're reporting actual severe
+      # issues.
+      SUPPRESS_REPORTS		= -2
+
+      # A `#maxlevel` of `-1` is used to suppress reporting of any
+      # messages that aren't dealing with actual error conditions, as
+      # opposed to detailed 'what's going on' debugging into.
+      REPORT_ONLY_ERRORS	= -1
+
+      # Verbosity level to be attached to a call to Reporter#report
+      # when the message is about a legitimate error rather than just
+      # verbose debugging info.
+      ERROR_REPORT		= REPORT_ONLY_ERRORS
+
+      def_delegators(TAGF::Tools, :logger, :logger=)
+
+      nil
+    end                         # module TAGF::Tools::Definitions
+
+    # @!attribute [rw] logger
+    # When configured, the TAGF::Tools.logger attribute provides an
+    # application-wide means of reporting messages to `stderr`.
+    # Typically, is it set up when an instance of
+    # TAGF::Tools::Reporter is instantiated with a keyword argument of
+    # `install: true`, but it can be directly installed at any time by
+    # setting the attribute directly.
+    #
+    # @example Setting as part of creating a new Reporter
+    #   TAGF::Tools::Reporter.new(install: true)
+    # @example Installing after Reporter creation
+    #   reporter = TAGF::Tools::Reporter.new(maxlevel: 4)
+    #   TAGF::Tools.logger = reporter
+    # 
+    # @return [TAGF::Tools::Reporter]
     attr_accessor(:logger)
     module_function(:logger)
     module_function(:logger=)
 
+    # Class 
     class Reporter
 
       include(TAGF::Exceptions)
+      include(TAGF::Tools::Definitions)
+
+      # @!attribute [rw] component
+      #
+      # Component for which loggingg is being performed.  If
+      # non-`nil`, it will be prefixed as
+      # <tt>"<<em>component</em>>: #"</tt> to each message emitted,
+      # This can be disabled on a case-by-case basis by including
+      # `component: false` in the #report `kwargs`.
+      #
+      # @return [String]
+      attr_accessor(:component)
 
       # @!attribute [rw] maxlevel
       #
@@ -106,12 +158,14 @@ module TAGF
       # @param [Hash<Symbol=>Any>]	kwargs
       # @option kwargs [Integer]	:level
       # @option kwargs [String]		:message
+      # @option kwargs [Boolean]	:prefix
+      # @option kwargs [String]		:component
       # @option kwargs [String]		:format
       # @option kwargs [Array]		:fmtargs
       #
       # @return [void]
       def report(*args, **kwargs)
-        return nil if (self.maxlevel < 0)
+        return nil if (self.maxlevel <= SUPPRESS_REPORTS)
         if (args[0].kind_of?(Integer))
           msglevel	= args.shift
         end
@@ -123,8 +177,17 @@ module TAGF
           # All right, this message is eligible for reporting.  Now
           # just figure out what the message *is*.
           #
-          msg		= ''
+          if (kwargs.fetch(:prefix, true))
+            pfx		= kwargs[:component] || self.component
+            if (pfx.kind_of?(String) &&
+                (! pfx.empty?))
+              msg	= pfx + ': '
+            end
+          else
+            msg		= ''
+          end
           if (fmt = kwargs[:format])
+            fmt		= msg + fmt
             #
             # If we were passed a format string, use it (and any
             # arguments supplied for it) to generate the message text.
@@ -139,14 +202,14 @@ module TAGF
             # No formatting; see if the keyword args include a string
             # to use.
             #
-            msg		= kwargs[:message]
+            msg		+= kwargs[:message]
           else
             #
             # If all else fails, use the first positional argument we
             # were passed.  Make sure we stringify it just in case
             # it's not a string, or nothing was passed at all.
             #
-            msg		= args[0].to_s
+            msg		+= args[0].to_s
           end
           warn(msg)
           #
@@ -159,13 +222,29 @@ module TAGF
         return nil
       end                       # def report(*args, **kwargs)
 
+      # @!method initialize(*args, **kwargs)
+      # Constructor for TAGF::Tools::Reporter class.
+      #
+      # @param [Array]			args
+      # @param [Hash<Symbol=>Any>]	kwargs
+      # @option kwargs [String]		:component	(nil)
+      #   Name of the tool or component that should be prefixed to
+      #   every message string by default.
+      # @option kwargs [Boolean]	:install	(false)
+      #   Whether or not the new Reporter instance should be installed
+      #   in the module-wide TAGF::Tools#logger attribute.
+      # @option kwargs [Integer]	:maxlevel	(0)
+      #   The maximum detail level of messages to be reported.  A
+      #   value of -
       def initialize(*args, **kwargs)
         self.reset
+        self.logger	= self if (kwargs[:install])
         if (kwargs[:quiet])
-          self.maxlevel	= -1
+          self.maxlevel	= SUPPRESS_REPORTS
         else
           self.maxlevel	= (kwargs[:maxlevel] || 0).to_i
         end
+        self.component	= kwargs.fetch(:component, nil)
       end                       # def initialize
 
       nil
