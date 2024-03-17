@@ -61,7 +61,8 @@ module TAGF
 
     #
     # Hash allowing us to look up tha name of a severity based upon
-    # its numerical value.
+    # its numerical value.  Sorted in ascending numerical order for
+    # convenience.
     #
     SEVERITY_BY_LEVEL	=  SEVERITY.to_h.inject({}) { |memo,(k,v)|
       memo[v]		= k
