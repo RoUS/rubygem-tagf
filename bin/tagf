@@ -68,7 +68,7 @@ unless (cmd = TAGF::CLI.find_command(verb))
 end
 
 result			= cmd.run(args)
-exit(result)
+exit(result.to_i)
 
 # Local Variables:
 # mode: ruby
