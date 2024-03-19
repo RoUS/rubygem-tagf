@@ -1,18 +1,218 @@
-#  TAGF - Single-Player Text Adventure Framework
+#  TAGF (Text Adventure Game Framework) Architecture
 
-## Usage
+This document describes the inner workings of the TAGF code: all the
+different components and how they interact.
 
-```ruby
+## Definition Files
 
-require('tagf')
-include TAGF
-game = Game.new(eid: 'mytextgame',
-                name: 'The Secrect Caverns of the Shoggoths',
-                shortdesc: 'My first game',
-                author: 'John Q Doe <johnqdoe@example.com>')
-game.load(file: 'mytextgame.yaml')
-game.start
-```
+### [Exportable Element Fields](id:exportable-fields)
+
+#### ["Abstracted" Fields](id:abstracted-fields)
+
+### [Exporting a Game](id:exporting)
+
+## The Game Graph
+
+### The Graph Configuration File
+
+## [Exceptions](id:exceptions)
+
+Exceptions defined by the TAGF package are detailed and instrumented.
+Some are used internally to signal conditions (such as inventory
+overflow), and others are used more conventionally to end the
+application with an explanatory message.  Most of the latter apply to
+logic or dependency issues, and will only be seen by game developers.
+
+Every TAGF exception is assigned a unique numeric identifier,
+accessible *via* the `#exception_id` attribute.  This attribute is
+available for both the exception class and instances of it.
+
+Every TAGF exception also has a numeric severity value, accessible
+through `#severity`.  By default, when an exception is instantiated,
+the instance's severity is inherited from the class' `#severity`
+value.  Unlike the `#exception_id` attribute, an exception instance's
+severity can be changed, either at construction by passing a
+`severity:` keyword argument to the constructor, or after creation by
+using the instance's `#severity=` method.
+
+Every TAGF exception instance also has an `#errorcode` attribute,
+which is a combination of its exception ID value and its severity.
+The errorcode is built by left-shifting the exception ID four bits and
+ORing it with the severity.
+
+### [Exception Severities](id:severities)
+
+Every TAGF exception class (and instance thereof) is assigned a
+*severity* value (see the overview [section on
+Exceptions](#exceptions).  Exception class severities are immutable,
+but that of exception instances can be changed.
+
+Exception values which are odd numbers (1, 3) indicate either total
+success or something of note that isn't a problem.  Even values
+indicate some sort of problem.
+
+**Success**
+: Numerical value: 1
+
+  The application has successfully performed a task.  In some cases,
+  processing continues after the message is issued, but this usually
+  is an end-of-run thing.
+
+  **N.B.:** *Should be converted to 0 if it's going to be interpreted
+  in situations expecting Unixish shell/libc conventions.*
+
+**Informational**, **Info**
+: Numerical value: 3
+
+  The application has performed a task, or is providing a status
+  update on one in progress.  The message provides information about
+  the process.  Generally suppressed, and only used to bring to notice
+  something of interest.
+
+**Warning**, **Warn**
+: Numerical value: 4
+
+  The application may have performed some, but not all, of a task.
+  The message may suggest that you verify the result or check for
+  other messages.
+
+**Error**
+: Numerical value: 6
+
+  The output or result of a task is known to be incorrect, but it may
+  be localised and the application may attempt to continue execution.
+
+**Severe**, **Fatal**
+: Numerical value: 8
+
+  The application cannot continue.  A **severe** exception indicates
+  an unrecoverable condition, such as the inability to access a file,
+  or perhaps a logic error has gotten the player stuck.  Should always
+  result in an abnormal termination.
+
+## Elements, Mixins, and Tools
+
+Components of a TAGF game, such as rooms, NPCs, items, the player
+itself, and so on, are all called game *elements*.  A
+[`Location`](#element-Location) is an element.  A lantern is an
+element.  *Everything* is an element.  All elements include the
+[*`TAGF::Mixin::Element`*](#mixin-Element) mixin.  All elements are
+described later in their own section(s).
+
+[*`TAGF::Mixin::Element`*](#mixin-Element) is only one of the mixins.
+Features that might apply to disparate elements are separated out and
+mixed in selectively.  For instance, anything that provides light
+mixes in the [*`TAGF::Mixin::LightSource`*](#mixin-LightSource)
+module; anything that might have contents includes the
+[*`TAGF::Mixin::Container`*](#mixin-Container) module, and anything
+which can be opened or closed (or locked) mixes in
+[*`TAGF::Mixin::Sealable`*](#mixin-Sealable).  Mixins are described in
+their [own section](#mixins).
+
+Some tools are provided to help game developers, and more will
+doubtless be added as the need arises.  These are described in the
+[*Tools*](#tools) section.
+
+## [Tools](id:tools)
+
+A few tools are part of the TAGF package, and each is accessed from
+the command line *via* the `tagf` command (supplied in the package as
+`bin/tagf`).  These include:
+
+[**`render`**](id:tool-render)
+
+: Allows rendering of the game layout as a visual map in a graphic
+  file.  For example,
+
+  `% tagf render --format=png --source=advent.yaml`
+
+  will produce a file named `advent.png` showing all the locations and
+  the paths between them
+
+[**`validate`**](id:tool-validate)
+
+: Evaluates a game definition (`YAML`) file and identifies potential
+  mapping errors or playability issues (such as unreachable rooms,
+  rooms that can be entered but not exited, locked items (or doors)
+  with no defined keys, *&c.*).
+
+  `% tagf validate --source=advent.yaml`
+
+## [Game Components (Elements)](id:elements)
+
+### [Faction](id:element-Faction)
+
+* Mixes in [*Element*](#mixin-Element)
+
+### [Feature](id:element-Feature)
+
+* Mixes in [*Container*](#mixin-Container)
+* Mixes in [*Element*](#mixin-Element)
+
+### [Game](id:element-Game)
+
+* Mixes in [*Element*](#mixin-Element)
+
+### [Item](id:element-Item)
+
+* *May* mix in [*Container*](#mixin-Container)
+* Mixes in [*Element*](#mixin-Element)
+* Mixes in [*Portable*](#mixin-Portable)
+* *May* mix in [*Sealable*](#mixin-Sealable)
+
+### [Keyword](id:element-Keyword)
+
+* Mixes in [*Element*](#mixin-Element)
+
+### [Location](id:element-Location)
+
+* Mixes in [*Container*](#mixin-Container)
+* Mixes in [*Element*](#mixin-Element)
+* Mixes in [*Graphable*](#mixin-Graphable)
+
+### [NPC](id:element-NPC)
+
+* Mixes in: [*Actor*](#mixin-Actor)
+* Mixes in [*Element*](#mixin-Element)
+
+An NPC is a 'non-player character,' and the term refers to any sort of
+'character' wholly under the control of the game.
+
+### [Path](id:element-Path)
+
+* Mixes in [*Element*](#mixin-Element)
+* Mixes in [*Graphable*](#mixin-Graphable)
+* *May* mix in [*Sealable*](#mixin-Sealable)
+
+### [Player](id:element-Player)
+
+* Mixes in [*Actor*](#mixin-Actor)
+* Mixes in [*Element*](#mixin-Element)
+
+The `Player` element (of which there should be exactly *ONE* in a TAGF
+game) is the virtual avatar of the person playing the game — the
+*User*, as opposed to the *Player*.  The Player is controlled
+primarily by commands entered by the User, but sometimes may be
+controlled by game dynamics (such as running away randomly if
+panicked).
+
+## [Includable Features (Mixins)](id:mixins)
+
+### [Actor](id:mixin-Actor)
+
+* Mixes in [*Container*](#mixin-Container)
+
+### [Container](id:mixin-Container)
+
+* Mixes in [*Element*](#mixin-Element)
+
+### [DTypes](id:mixin-DTypes)
+### [Element](id:mixin-Element)
+### [Graphable](id:mixin-Graphable)
+### [LightSource](id:mixin-LightSource)
+### [Portable](id:mixin-Portable)
+### [Sealable](id:mixin-Sealable)
+### [UniversalMethods](id:mixin-UniversalMethods)
 
 ## [Things Specific to Actors](id:actor-features)
 
@@ -308,4 +508,5 @@ under the terms of the Apache Licence 2.0. See the
 <!-- Local Variables: -->
 <!-- mode: markdown -->
 <!-- eval: (if (intern-soft "fci-mode") (fci-mode 1)) -->
+<!-- eval: (auto-fill-mode 1) -->
 <!-- End: -->
