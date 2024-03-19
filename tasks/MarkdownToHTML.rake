@@ -34,9 +34,11 @@ namespace(:local) do
 
     Dir[File.join(topsrcdir, '*.md')].each do |mdname|
       muname	= mdname.sub(%r!\.md$!, '.html')
+      tocname	= mdname.sub(%r!\.md$!, '.build-toc')
       if ((! File.exist?(muname)) \
           || (File.mtime(muname) < File.mtime(mdname)))
         $stdout.print("Converting #{mdname}:")
+        toc_opt	= File.exist?(tocname) ? '--toc' : ''
         title	= muname.sub(%r!\.[^.]*$!, '').sub(%r!^\./!, '')
         command	= %I[
           pandoc
@@ -44,6 +46,7 @@ namespace(:local) do
           --metadata-file=#{datadir}/metadata.yaml
           --metadata=title="#{title}"
           --output="#{muname}"
+          #{toc_opt}
           "#{mdname}"
         ].join(' ')
         warn(command)
