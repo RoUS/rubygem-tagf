@@ -59,6 +59,41 @@ module TAGF
       start:			EID,
     }
 
+    # Make all the TAGF::Settings instance attributes accessible
+    # through the Game object.
+    [*GAME_FLAGS, *GAME_FLAG_GROUPS.keys].uniq.compact.each do |fsym|
+      fstr		= fsym.to_s
+      getter		= fsym
+      query		= format('%s?', fstr).to_sym
+      forcer		= format('%s!', fstr).to_sym
+      setter		= format('%s=', fstr).to_sym
+      def_delegators(:@settings, getter, query, forcer, setter)
+    end
+    GAME_SETTINGS.keys.each do |ssym|
+      sstr		= ssym.to_s
+      getter		= ssym
+      setter		= format('%s=', sstr).to_sym
+      def_delegators(:@settings, getter, setter)
+    end
+
+    # Eigenclass for the main Game class.
+    class << self
+
+      # @!method load(file)
+      # Loads a game's components from a `YAML` definition file and
+      # returns the [re]constituted game object.
+      #
+      # Basically front-ends TAGF::Filer#load_game.
+      #
+      # @return [TAGF::Game]
+      def load(file)
+        filer		= TAGF::Filer.new
+        game		= filer.load_game(file)
+        return game
+      end                       # def load(file)
+
+    end                         # Eigenclass for TAGF::Game
+
     # @!attribute [rw] author
     # The game's author's identity, in free-form text.  Name,
     # pseudonym, eddress, galactic coödinates, whatever — all are
@@ -166,23 +201,6 @@ module TAGF
     # directly so we don't have to do all sorts of
     # `game.inventory.filter` nonsense.
     def_delegator(:@inventory, :filter)
-
-    # Make all the TAGF::Settings instance attributes accessible
-    # through the Game object.
-    [*GAME_FLAGS, *GAME_FLAG_GROUPS.keys].uniq.compact.each do |fsym|
-      fstr		= fsym.to_s
-      getter		= fsym
-      query		= format('%s?', fstr).to_sym
-      forcer		= format('%s!', fstr).to_sym
-      setter		= format('%s=', fstr).to_sym
-      def_delegators(:@settings, getter, query, forcer, setter)
-    end
-    GAME_SETTINGS.keys.each do |ssym|
-      sstr		= ssym.to_s
-      getter		= ssym
-      setter		= format('%s=', sstr).to_sym
-      def_delegators(:@settings, getter, setter)
-    end
 
     # @!method export_game
     # @return [Hash<String=>Any>]
