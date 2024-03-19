@@ -447,8 +447,8 @@ paths:
   mixins:
   - Sealable
   name: Loc0 ceiling grate
-  desc: A small hole up on the wall would let you crawl upwards.  There is a steel
-    grate across the opening.
+  desc: A small hole up on the wall would let you crawl upwards.
+    There is a steel grate across the opening.
   shortdesc: upward-leading crawl.
   article: an
   preposition:
