@@ -84,6 +84,28 @@
   can actually reach the player.  Nom, nom.
   - TAGF::NPC#light_tolerance added, but behaviour needs to be
     designed and implemented.
+* Add some sort of configuration option to allow customisation of the
+  rendered appearance.  Note that the SVG output didn't appear to
+  include the Unicode annotations, nor the double-headed arrows.
+* Need to define actions that can be taken by `Actor`s, such as
+  movement, wait, take, drop, attack, *&c.*
+  - *Lots of Colossal Cave/ADVENT references here..*
+  - Need also to have actors trigger the actions.  For the player it's
+    easy; for NPCs..  Maybe actors need a "default action" (like
+    `wander`) that they do unless something overrides (such as a dwarf
+    being in the room with the player, in which case `attack` becomes
+    the primary action).
+  - Need to figure out whether turns are single-action only, or if
+    there are phases (such as movement, then do-a-thing, then ..
+    Think D&D turns).  If there's a hostile dwarf in the room, and the
+    player drops the bird, does that complete its turn and now the
+    dwarf attacks on his turn?
+  - Do actors' turns get processed according to their proximity to the
+    player?  If not it might be weird to have a dwarf come into the
+    room before one already there gets to attack.
+  - How does ADVENT do it?  If there's a dwarf in the room and the
+    player moves, the dwarf follows it.  It then gets to attack,
+    right?  How does that sequence work?  Check it out..
 
 ### Completed coding/concept items
 
@@ -111,24 +133,25 @@
   * Enhance command-line tools to be able to use `here-docs` for
     things like descriptions (started in `ui.rb`).
 * Validate `YAML` file by loading it and then checking:
-  1. `Location` paths that are marked `reversible: true` actually have
-     a `Connexion` back from the `:destination` to the `:origin`.
   1. `Connexion` objects' `:via` field match their key in
      `.owned_by.paths[]`.
   1. Everything with an `:owned_by` field should be listed in the
      `owned_by.inventory` structure.
   1. All `:seal_key` values in Keyword definitions themselves are
      registered as keywords.
-  1. Anything listed as a `:seal_key` needs to be registered as a
-     `Portable` `Item` or else the seal can't be opened.  This should
-     be a warning.
   1. Keywords and alii must be unique; only one can define "e", for
      instance.
-* Add some sort of configuration option to allow customisation of the
-  rendered appearance.  Note that the SVG output didn't appear to
-  include the Unicode annotations, nor the double-headed arrows.
 
 ### Complete tool items
+
+  1. ~~`Location` paths that are marked `reversible: true` actually have
+     a `Connexion` back from the `:destination` to the `:origin`.~~
+     * `reversible` means 'go back' works.  `Location`s that only have
+       incoming paths *might* be exitable *via* magic or shortcut
+       keywords, but the validation tool treats these as a warning.
+  1. ~~Anything listed as a `:seal_key` needs to be registered as a
+     `Portable` `Item` or else the seal can't be opened.  This should
+     be a warning.~~ **DONE.**
 
 ## Testing
 
