@@ -25,6 +25,8 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler: none
         bundler-cache: false
+      run: |
+        bundle config set --local path 'vendor/bundle'
 
     - name: Install versionary manually in vendor/bundle/ruby/3.0.0
       run: |
