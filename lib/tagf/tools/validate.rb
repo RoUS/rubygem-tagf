@@ -284,7 +284,10 @@ module TAGF
       # Our return value is the worst severity we encountered — minus
       # one, since 'success' is severity 1.
       #
-      return logger.worst_severity - 1
+      estatus		= logger.worst_severity
+      return (estatus == SEVERITY.success) \
+             ? 0 \
+             : estatus
     end                         # def validate(**kwargs)
     module_function(:validate)
 
@@ -313,12 +316,20 @@ locked items with no keys defined, &c.
 The name of the YAML file to check is either passed as an
 argument, or as the value of the `--source` option.  If both
 are specified, the latter overrides the former.
+
+EXIT STATUS
+
+The `validate` command exit status depends on the worst issue
+detected.  Severities are: success (0), informational (3), warning
+(4), error (6), and severe/fatal (8).  See the "Architecture" document
+for more about the meanings of these.
   EOT
 
   cdef.flag(:h, :help, 'Display command help') do |value,cmd|
     puts(cmd.help)
     exit(0)
   end
+
   cdef.flag(:v,
             :verbose,
             'Each occurrence increases detail of reporting',
