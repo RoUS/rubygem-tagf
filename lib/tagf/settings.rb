@@ -182,7 +182,7 @@ module TAGF
       # export hash and remove the individual member flags from
       # further consideration.
       #
-      game_flags	GAME_FLAGS.dup
+      game_flags	= GAME_FLAGS.dup
       GAME_FLAG_GROUPS.each do |cname,group|
         if (group.all? { |f| tflags.include?(f) })
           result[cname.to_s] = true
