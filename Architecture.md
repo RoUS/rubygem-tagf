@@ -5,8 +5,49 @@ different components and how they interact.
 
 ## Definition Files
 
+A TAGF game is typically loaded from a `YAML` definition file, and
+likewise a game in progress can be saved to a `YAML` file.
+Once a game has been built in memory, either by hand or by loading it
+from a definition file, it can be exported back to a `YAML` file.
+
+A TAGF definition file is a hash (or dictionary).  Most of the
+top-level keys are the lowerecased names of element classes, either
+singular or plural.  For example, here is an empty definition file:
+```yaml
+%YAML 1.2
+--- 
+game: {}
+player: {}
+factions: []
+features: []
+items: []
+keywords: []
+locations: []
+paths: []
+npcs: []
+```
+
+The `game` and `player` are singular because there's only one of each
+for any particular game.
+
+The pluralised keys are for arrays of hashes, one *per* component.
+Singular forms are rare, because there can be only one entry in the
+hash with that key, so only one `keyword` (for instance) could be
+defined by itself.  However, additional keywords could be defined in
+the same file by putting them into the `keywords` array, sinc
+`keyword` and `keywords` are different keys in the hash.
+
+I hope that was more clear that it seems on re-reading.
+
+### [Exportable Elements](id:exportable-elements)
+
+
 ### [Exportable Element Fields](id:exportable-fields)
 
+Loading, expoerting, and saving of TAGF games is performed by methods
+in the [`TAGF::Filer`](TAGF/Filer.html) class.  Also in that class is
+the [`Loadables`](TAGF/Filer.html#Loadables-constant), which defines
+the meaningful keys in the
 #### ["Abstracted" Fields](id:abstracted-fields)
 
 ### [Exporting a Game](id:exporting)
@@ -155,10 +196,12 @@ the command line *via* the `tagf` command (supplied in the package as
 
 ### [Item](id:element-Item)
 
+* *May* mix in [*Consumable*](#mixin-Consumable)
 * *May* mix in [*Container*](#mixin-Container)
 * Mixes in [*Element*](#mixin-Element)
 * Mixes in [*Portable*](#mixin-Portable)
 * *May* mix in [*Sealable*](#mixin-Sealable)
+* *May* mix in [*Weapon*](#mixin-Weapon)
 
 ### [Keyword](id:element-Keyword)
 
@@ -202,9 +245,8 @@ panicked).
 
 * Mixes in [*Container*](#mixin-Container)
 
+### [Consumable](id:mixin-Consumable)
 ### [Container](id:mixin-Container)
-
-* Mixes in [*Element*](#mixin-Element)
 
 ### [DTypes](id:mixin-DTypes)
 ### [Element](id:mixin-Element)
@@ -213,6 +255,18 @@ panicked).
 ### [Portable](id:mixin-Portable)
 ### [Sealable](id:mixin-Sealable)
 ### [UniversalMethods](id:mixin-UniversalMethods)
+
+The `UniversalMethods` mixin module declares game-wide constancts,
+methods and attributes that should be available everywhere (such as
+game settings, or the
+[`raise_exception`](TAGF/Mixin/UniversalMethods.html#raise_exception-instance_method)
+method).
+
+When it is mixed in with `include`, it also extends itself into the
+including components' eigenclass (unless it is unnamed, which usually
+means its a singleton class).  So if it is included in class `X`, all
+of its definitions are available to instances of `X` and *also* to
+`X`'s class context and methods.
 
 ## [Things Specific to Actors](id:actor-features)
 

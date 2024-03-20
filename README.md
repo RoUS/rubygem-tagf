@@ -27,13 +27,20 @@ Two advantages of the data-driven nature of TAGF:
 
 ## Usage
 
-### With a Pre-Defined Game Definition File
+There are two points of view for the use of the TAGF package:
+
+1. Users playing an already-developed game.
+1. Game developers using TAGF to create games.
+
+The next two sections deal with the former, and the third gives an
+example of the latter.
+
+### Playing a Game from a Prepared Definition File
 
 If you already have a `YAML` file defining a game, you will be able to
 play it from within Ruby with something like the following:
 
 ```ruby
-
 require('tagf')
 include(TAGF)
 game = Game.load('mytextgame.yaml')
@@ -45,6 +52,50 @@ line with something like:
 
 ```bash
 % tagf run mytextgame.yaml
+```
+
+### Building a Game with the Ruby DSL
+
+However, it is also possible to build a game with Ruby statements
+(*e.g.*,
+
+**Example: Building a TAGF Game in Ruby**:
+
+```ruby
+gmanual     = Game.new(
+  eid:      'gameloctest01',
+  name:     'LocTest01',
+  author:   'theRoUS',
+  copyright_year: '2019-2024',
+  licence:  'Apache 2.0',
+  desc:     'Test 01 of game location connexions.',
+  settings: {
+    NearbyDistance: 12,
+    EnforceCapacities: true,
+    EnforceVolume: false,
+    EnableHitpoints: true,
+  })
+
+kw_up       = Keyword.new(
+  eid:      'kw-up',
+  game:     gmanual,
+  owned_by: gmanual,
+  root:     'up',
+  alii:     [
+    'upward',
+  ],
+  flags:    [
+    :motion,
+  ])
+
+loc0        = Location.new(
+  eid:      'Loc0',
+  game:     gmanual,
+  owned_by: gmanual,
+  name:     'Location 0 - Entrance',
+  shortdesc: 'entrance room.',
+  desc:     ("You're in Location 0, the starting location " +
+             "for players in new games."))
 ```
 
 ## [Contributing to tagf](id:contributing)
