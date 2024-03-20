@@ -167,11 +167,10 @@ module TAGF
         #
         ftype		= __callee__.to_s.capitalize
         ftype		= ftype.sub(%r!_fields!, '_Fields')
-        if (rcvr.nil?)
-          rcvr          = self.kind_of?(Class) \
-                          ? self \
-                          : self.singleton_class
-        end
+        rcvr		= self if (rcvr.nil?)
+        rcvr            = rcvr.kind_of?(Class) \
+                          ? rcvr \
+                          : rcvr.singleton_class
         fieldlist	= nil
         if (__callee__ == :loadable_fields)
           fieldlist       = rcvr.ancestors.select { |k|
@@ -485,12 +484,12 @@ module TAGF
       #
       # @param [Object]         target
       # @return [Boolean]
-      def is_game_element?(target)
+      def game_element?(target)
         result  = target.singleton_class.ancestors.include?(Mixin::Element)
         return result ? true : false
-      end                       # def is_game_element?(target)
-      module_function(:is_game_element?)
-      public(:is_game_element?)
+      end                       # def game_element?(target)
+      module_function(:game_element?)
+      public(:game_element?)
 
       #
       # Given a word (presumably a singular noun) and a count, return

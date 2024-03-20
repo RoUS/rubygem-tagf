@@ -45,9 +45,9 @@ module TAGF
       #
       INSTANCE_VARIABLES	= %i[
                         	     @allow_containers
-				     @is_openable
-                                     @is_open
-                                     @is_transparent
+				     @openable
+                                     @open
+                                     @transparent
                                      @inventory
                                      @capacity_items
                                      @current_items
@@ -61,10 +61,10 @@ module TAGF
       # @!macro TAGF.constant.Loadable_Fields
       Loadable_Fields		= [
         'allow_containers',
-        'is_surface',
-        'is_openable',
-        'is_open',
-        'is_transparent',
+        'surface',
+        'openable',
+        'opened',
+        'transparent',
         'capacity_items',
         'current_items',
         'capacity_mass',
@@ -85,27 +85,27 @@ module TAGF
       #   `true` if the container's inventory has no Item, Container,
       #   or Feature elements in it.
       #
-      def is_empty?(*args, **kwargs)
+      def empty?(*args, **kwargs)
         args = %i[ items containers features ] if (args.empty?)
         args		= args.map { |o| o.to_sym }
         result		= 0
         args.each { |type| result += self.inventory.send(type).count }
         return result.zero? ? true : false
-      end                       # def is_empty?
+      end                       # def empty?
 
       #
       # Is the container a surface, like a desk or table?  If so, it's
       # always open.
       #
       # @!macro doc.TAGF.classmethod.flag.invoke
-      flag(:is_surface)
+      flag(:surface)
 
       #
       # Can you see through the container and identify what's inside?
       # Default is `false`.
       #
       # @!macro doc.TAGF.classmethod.flag.invoke
-      flag(is_transparent: false)
+      flag(transparent: false)
 
       # @!attribute [rw] inventory
       # Instance variable accessor for a container's inventory (list

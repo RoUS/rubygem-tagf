@@ -170,7 +170,7 @@ module TAGF
       unless (owner = kwargs[:owned_by])
         raise_exception(TAGF::Exceptions::NoObjectOwner, self)
       end
-      self.is_static!
+      self.static!
       #
       # Use the inventory key of the owner to make navigation
       # simpler.

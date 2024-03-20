@@ -69,7 +69,7 @@ module TAGF
                                       game:	self.game,
                                       owned_by:	self)
       end
-      self.is_static!
+      self.static!
       self.game.add(self)
     end                         # def initialize
 

@@ -89,6 +89,11 @@ module TAGF
       # @return [Array<Location>]
       attr_reader(:breadcrumbs)
 
+      # @!method perform(*args, **kwargs
+      def perform(*args, **kwargs)
+        
+      end                       # debugger
+
       #
       # @!macro doc.TAGF.formal.kwargs
       # @return [???] self

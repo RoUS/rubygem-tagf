@@ -122,8 +122,8 @@ module TAGF
       #     (#openable), otherwise `false`.
       flag(opened: false)
       def opened
-        if (self.respond_to?(:is_surface) \
-            && self.is_surface?)
+        if (self.respond_to?(:surface) \
+            && self.surface?)
           @opened	= true
         elsif (! self.openable?)
           @opened	= false
@@ -170,8 +170,8 @@ module TAGF
       # @return [Boolean]
       flag(lockable: false)
       def lockable
-        if (self.respond_to?(:is_surface) \
-            && self.is_surface?)
+        if (self.respond_to?(:surface) \
+            && self.surface?)
           #
           # Containers that keep their inventory on a surface (like a
           # desk or a feature or a location) are always open and
@@ -183,8 +183,8 @@ module TAGF
         return @lockable
       end                       # def lockable
       def lockable=(value)
-        if (self.respond_to?(:is_surface) \
-            && self.is_surface?)
+        if (self.respond_to?(:surface) \
+            && self.surface?)
           @lockable	= false
         else
           @lockable	= truthify(value)
@@ -227,8 +227,8 @@ module TAGF
       #     (#lockable), otherwise `false`.
       flag(locked: false)
       def locked
-        if (self.respond_to?(:is_surface) \
-            && self.is_surface?)
+        if (self.respond_to?(:surface) \
+            && self.surface?)
           #
           # Things which keep their inventory on a surface (like a
           # desk or a location (which keeps the inventory on the
@@ -320,12 +320,11 @@ module TAGF
 
       # @!method initialize_sealable(*args, **kwargs)
       def initialize_sealable(*args, **kwargs)
-        if (self.respond_to?(:is_surface?) \
-            && self.is_surface?)
+        if (self.respond_to?(:surface?) \
+            && self.surface?)
           self.openable	= true
           self.opened	= true
         end
-        self.forbidden	= []
         #
         # Propagate any seal-specific attribute values from `kwargs`
         # to the actual attributes of this object.

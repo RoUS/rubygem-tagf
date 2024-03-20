@@ -170,7 +170,7 @@ module TAGF
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
       @paths			= []
-      self.is_static!
+      self.static!
       self.visible!
       self.initialize_element(*args, **kwargs)
       self.initialize_container(*args, **kwargs)

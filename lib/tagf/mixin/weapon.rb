@@ -17,32 +17,47 @@
 
 require('tagf/debugging')
 warn(__FILE__) if (TAGF.debugging?(:file))
-require('tagf/mixin/container')
 require('tagf/mixin/dtypes')
+require('tagf/mixin/universal')
+require('tagf/exceptions')
+require('tagf/mixin/element')
+require('forwardable')
 require('byebug')
 
 # @!macro doc.TAGF.module
 module TAGF
 
-  #
-  class Feature
+  # @!macro doc.TAGF.Mixin.module
+  module Mixin
 
-    #
-    include(Mixin::DTypes)
-    include(Mixin::Container)
+    # Module providing mixed-in aspects for weapons and things that
+    # can deal damage.
+    module Weapon
 
-    #
-    # @!macro doc.TAGF.formal.kwargs
-    # @return [Feature] self
-    #
-    def initialize(*args, **kwargs)
-      TAGF::Mixin::Debugging.invocation
-      self.initialize_element(*args, **kwargs)
-      self.initialize_container(*args, **kwargs)
-      self.static!
-    end                         # def initialize(*args, **kwargs)
+      include(Mixin::DTypes)
+      include(Mixin::UniversalMethods)
 
-  end                           # class Feature
+      # @!macro TAGF.constant.Loadable_Fields
+      Loadable_Fields		= [
+        #
+        # If this element has any lighting attributes, what are they?
+        #
+        'damage',
+      ]
+
+      # @!attribute [rw] damage
+      # @!macro doc.TAGF.classmethod.float.invoke
+      # Amount of damage (in HP) done to an opponent upon a hit.
+      #
+      # @return [Float]
+      #   Amount of damage inflicted on a hit.
+      float_accessor(:damage)
+
+      nil
+    end                         # module Weapon
+
+    nil
+  end                           # module TAGF::Mixin
 
   nil
 end                             # module TAGF

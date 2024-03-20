@@ -108,7 +108,7 @@ module TAGF
         # Mostly for game features, like rooms, furniture, invisible
         # walls, &c.
         #
-        'is_static',
+        'static',
         'visible',
       ]
 
@@ -200,7 +200,7 @@ module TAGF
       # moved using specific semantics.
       #
       # @!macro doc.TAGF.classmethod.flag.invoke
-      flag(:is_static)
+      flag(:static)
 
       # @!attribute [rw] visible
       # @!macro doc.TAGF.classmethod.flag.invoke
@@ -324,7 +324,7 @@ module TAGF
           result	= "\n"
         end
         result		+= (kwargs[:level] * ' ') + self.desc
-        return result unless (self.is_container?)
+        return result unless (self.container?)
 
         self.inventory.features.each do |f|
           next unless (f.visible?)
@@ -334,8 +334,8 @@ module TAGF
           #   This needs to be worked; if the preposition is 'on' then
           #   the container is always open and transparent.
           #
-          if (f.is_open? || f.transparent?)
-            if (f.is_empty?)
+          if (f.opened? || f.transparent?)
+            if (f.empty?)
               if (f.preposition == 'in')
                 result += "  It is empty.\n"
               else
@@ -359,11 +359,11 @@ module TAGF
       # @return [Boolean] `false`
       #   if the object is not a container.
       #
-      def is_container?
+      def container?
         return self.singleton_class.ancestors.include?(Mixin::Container) \
                ? true \
                : false
-      end                       # def is_container?
+      end                       # def container?
 
       # @!attribute [rw] sealable
       # Any class, instance, or module that includes Mixin::Sealable
@@ -382,7 +382,7 @@ module TAGF
       #
       # @return [Boolean]
       def has_inventory?
-        cond		= (self.is_container? \
+        cond		= (self.container? \
                            && self.inventory.kind_of?(Inventory))
         return cond ? true : false
       end                       # def has_inventory?
@@ -414,7 +414,7 @@ module TAGF
           raise_exception(TAGF::Exceptions::MasterInventory,
                           self,
                           **kwargs)
-        elsif (self.is_static?)
+        elsif (self.static?)
           raise_exception(TAGF::Exceptions::ImmovableObject,
                           self,
                           **kwargs)
@@ -733,7 +733,7 @@ module TAGF
                            ? 'an' \
                            : 'a')
         end
-        if (self.is_container?)
+        if (self.container?)
           @pending_inventory ||= []
         end
         self.game.add(self)

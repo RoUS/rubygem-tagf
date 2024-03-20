@@ -47,7 +47,7 @@ module TAGF
         'only_dim_near_player',
       ]
 
-      # @!attribute [rw] is_lit
+      # @!attribute [rw] lit
       # @!macro doc.TAGF.classmethod.flag.invoke
       # Whether or not this light source is actually illuminated and
       # shedding light.  Light sources which are not lit don't consume
@@ -56,7 +56,7 @@ module TAGF
       # @return [Boolean]
       #   `true` if this element is actually currently providing
       #   light.
-      flag(:is_lit)
+      flag(:lit)
 
       # @!attribute [rw] illumination
       # @!macro doc.TAGF.classmethod.float_accessor.invoke

@@ -63,7 +63,7 @@ module TAGF
 
     # @!macro TAGF.constant.Loadable_Fields
     Loadable_Fields		= [
-      'is_living',
+      'living',
     ]
 
     #
@@ -73,12 +73,12 @@ module TAGF
     # therefore not acquirable.
     #
     # @!macro doc.TAGF.classmethod.flag.invoke
-    flag(:is_living)
+    flag(:living)
 
     #
     def initialize(*args, **kwargs)
       TAGF::Mixin::Debugging.invocation
-      self.is_static	= false
+      self.static	= false
       self.initialize_element(*args, **kwargs)
       if (kwargs[:is_container])
         #
@@ -104,8 +104,8 @@ module TAGF
                                  self.eid.to_s,
                                  self.game.eid.to_s,
                                  self.name.to_s,
-                                 self.is_static.inspect,
-                                 (self.is_container? \
+                                 self.static.inspect,
+                                 (self.container? \
                                   ? (self.inventory.empty? \
                                      ? 'container (empty)' \
                                      : 'container ([...])') \

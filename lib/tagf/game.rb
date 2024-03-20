@@ -359,7 +359,7 @@ module TAGF
       kwargs.delete(:name) if (self.name = kwargs[:name])
       @eid		||= format('game-%i', self.object_id.to_i)
       self.name		||= ''
-      self.is_static!
+      self.static!
       self.initialize_element(*args, **kwargs)
       self.initialize_container(*args,
                                 **kwargs,
@@ -430,10 +430,10 @@ module TAGF
     # @raise [TAGF::Exceptions::ImmovableElementDestinationError]
     # @return [void]
     def validate_container(target, newcontent, **kwargs)
-      unless (TAGF.is_game_element?(target))
+      unless (TAGF.game_element?(target))
         raise_exception(NotGameElement, target)
       end
-      unless (target.is_container?)
+      unless (target.container?)
         raise_exception(NotAContainer, target)
       end
       #
@@ -445,10 +445,10 @@ module TAGF
       if ((newcontent == Inventory) && target.has_inventory?)
         raise_exception(AlreadyHasInventory, target)
       end
-      unless (TAGF.is_game_element?(newcontent))
+      unless (TAGF.game_element?(newcontent))
         raise_exception(NotGameElement, newcontent)
       end
-      if (newcontent.is_static? && (! target.is_static?))
+      if (newcontent.static? && (! target.static?))
         raise_exception(ImmovableElementDestinationError,
                         target,
                         newcontent)

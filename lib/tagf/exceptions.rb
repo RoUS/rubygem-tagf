@@ -396,62 +396,62 @@ module TAGF
                 || sev.even?)
       end		        # def failure?
 
-      # @!attribute [r] is_success?
+      # @!attribute [r] success?
       # Tests the receiver's {#severity} value against
       # `SEVERITY.success`.
       # @return [Boolean]
       #   `true` if the exception's severity level is equal to
       #   `SEVERITY.success`.
-      def is_success?
+      def success?
         result		= self.severity == SEVERITY.success
         return result
-      end                       # def is_success?
+      end                       # def success?
 
-      # @!attribute [r] is_warning?
+      # @!attribute [r] warning?
       # Tests the receiver's {#severity} value against
       # `SEVERITY.warning`.
       # @return [Boolean]
       #   `true` if the exception's severity level is equal to
       #   `SEVERITY.warning`.
-      def is_warning?
+      def warning?
         result		= self.severity == SEVERITY.warning
         return result
-      end                       # def is_warning?
+      end                       # def warning?
 
-      # @!attribute [r] is_info?
+      # @!attribute [r] info?
       # Tests the receiver's {#severity} value against
       # `SEVERITY.info`.
       # @return [Boolean]
       #   `true` if the exception's severity level is equal to
       #   `SEVERITY.info`.
-      def is_info?
+      def info?
         result		= self.severity == SEVERITY.info
         return result
-      end                       # def is_info?
-      alias_method(:is_informational?, :is_info?)
+      end                       # def info?
+      alias_method(:informational?, :info?)
 
-      # @!attribute [r] is_error?
+      # @!attribute [r] error?
       # Tests the receiver's {#severity} value against
       # `SEVERITY.error`.
       # @return [Boolean]
       #   `true` if the exception's severity level is equal to
       #   `SEVERITY.error`.
-      def is_error?
+      def error?
         result		= self.severity == SEVERITY.error
         return result
-      end                       # def is_error?
+      end                       # def error?
 
-      # @!attribute [r] is_severe?
+      # @!attribute [r] severe?
       # Tests the receiver's {#severity} value against
       # `SEVERITY.severe`.
       # @return [Boolean]
       #   `true` if the exception's severity level is equal to
       #   `SEVERITY.severe`.
-      def is_severe?
+      def severe?
         result		= self.severity == SEVERITY.severe
         return result
-      end                       # def is_severe?
-      alias_method(:is_fatal?, :is_severe?)
+      end                       # def severe?
+      alias_method(:fatal?, :severe?)
 
       # @!attribute [rw] severity
       #   Per-exception severity level.  Separating this out allows

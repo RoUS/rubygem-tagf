@@ -145,7 +145,7 @@ module TAGF
       self.initialize_element(*args,
                               **kwargs,
                               eid: eid)
-      self.is_static!
+      self.static!
       self.visible	= false
 
     end                         # def initialize(*args, **kwargs)

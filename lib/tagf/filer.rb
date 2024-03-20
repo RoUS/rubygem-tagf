@@ -57,6 +57,9 @@ module TAGF
     include(TAGF::Mixin::DTypes)
     include(TAGF::Mixin::UniversalMethods)
 
+    # Define the keys in a `YAML` game definition file, with a
+    # notation about what the value for each should be (such as an
+    # array of `Location` definitions, *&c.).
     Loadables           = {
       'faction'         => Faction,
       'factions'        => Array[Faction],
