@@ -42,9 +42,13 @@ module TAGF
     include(Exceptions)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
-      'attitude',
-    ]
+    Loadable_Fields		= {
+      'attitude'		=> FieldDef.new(
+        name:			'attitude',
+        datatype:		String,
+        description:		'TBS'
+      ),
+    }
 
     # @!attribute [rw] attitude
     # Provides a default attitude for all members of a faction.

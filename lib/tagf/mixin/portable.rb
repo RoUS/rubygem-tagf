@@ -38,14 +38,22 @@ module TAGF
       include(Mixin::UniversalMethods)
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
+      Loadable_Fields		= {
         #
         # Attributes controlling how the element affects appearance in
         # an inventory.
         #
-        'mass',
-        'volume',
-      ]
+        'mass'			=> FieldDef.new(
+          name:			'mass',
+          datatype:		Float,
+          description:		'Mass of object'
+        ),
+        'volume'		=> FieldDef.new(
+          name:			'volume',
+          datatype:		Float,
+          description:		'Volume of object'
+        ),
+      }
 
       # @!attribute [rw] mass
       # @!macro doc.TAGF.classmethod.float_accessor.invoke

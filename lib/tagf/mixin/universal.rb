@@ -177,7 +177,7 @@ module TAGF
             k.const_defined?(ftype, false)
           }.map { |k|
             k.const_get(ftype, false)
-          }.reduce(&:|)
+          }.reduce(&:merge)
         elsif (__callee__ == :abstracted_fields)
           fieldlist       = rcvr.ancestors.select { |k|
             k.const_defined?(ftype, false)

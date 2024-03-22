@@ -51,6 +51,7 @@ module TAGF
         def included(klass)
           klass.include(TAGF::Mixin::InstanceTypes)
           klass.extend(TAGF::Mixin::ClassTypes)
+          klass.extend(TAGF::Mixin::DTypes)
           return nil
         end                     # def included(klass)
 
@@ -81,22 +82,6 @@ module TAGF
       # as Element ID (EID) values.
       class EID < String ; end
 
-      nil
-    end                         # module TAGF::Mixin::InstanceTypes
-
-    # Module declaring types and classes that should be declared at
-    # the eigenclass level, making them available at the class/module
-    # declaration scope but not inside instances.
-    module ClassTypes
-
-      #
-      include(Mixin::UniversalMethods)
-      #
-      # Ensure that the definitions in this module also appear in its
-      # eigenclass as 'class' methods.
-      #
-      extend(self)
-
       # Class describing an entry in the `Loadable_Fields` constant
       # arrays.  Using an object rather than just a simple string
       # allows metadata to be stored; in the first example, some of
@@ -110,12 +95,30 @@ module TAGF
           shortname
           datatype
           description
+          internal
         ]
 
         # Add an attribute for each of the named fields.
         AttrList.each do |attr_sym|
           attr_accessor(attr_sym)
         end
+
+        # @!attribute [r] list?
+        # Originally added because the Cri gem doesn't turn
+        # multi-value options like `-opt=a,b,c -opt=d` into
+        # `["a","b","c","d"]` but leaves it as `["a,b,c","d"]`, and we
+        # want to easily detect this in case it needs to be fixed.
+        #
+        # However, it may have other uses in the future.
+        #
+        # @return [If]
+        #   `true` if the #datatype field is either an array, or the
+        #   Array class itself.
+        def list?
+          result	= (self.datatype.kind_of?(Array) ||
+                           (self.datatype == Array))
+          return result
+        end                     # def list?
 
         # Constructor for a FieldDef instance.
         #
@@ -145,6 +148,22 @@ module TAGF
 
         nil
       end                       # class FieldDef
+
+      nil
+    end                         # module TAGF::Mixin::InstanceTypes
+
+    # Module declaring types and classes that should be declared at
+    # the eigenclass level, making them available at the class/module
+    # declaration scope but not inside instances.
+    module ClassTypes
+
+      #
+      include(Mixin::UniversalMethods)
+      #
+      # Ensure that the definitions in this module also appear in its
+      # eigenclass as 'class' methods.
+      #
+      extend(self)
 
       # @!macro doc.TAGF.classmethod.flag.declare
       def flag(*args, **kwargs)

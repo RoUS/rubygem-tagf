@@ -23,6 +23,9 @@ require('byebug')
 # @!macro doc.TAGF.module
 module TAGF
 
+  # Declare a class referenced here, to be populated later.
+  class Game ; end
+
   # @!macro doc.TAGF.Refinement.module
   module Refinement
 
@@ -64,38 +67,70 @@ module TAGF
       include(Mixin::UniversalMethods)
       include(Mixin::DTypes)
 
-      #
-      if (TAGF.debugging?(:include))
-        warn(format('%s extending itself with %s',
-                    self.name,
-                    Mixin::DTypes.name))
-      end
-      include(Mixin::DTypes)
-
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
+      Loadable_Fields		= {
         #
         # Unique fields tying an element record to a particular game
         # instance.  When stored in YAML, what's actually stored is
         # the EID of any relevant object rather than the object
         # itself.
         #
-        'eid',
-        'game',
-        'owned_by',
+        'eid'			=> FieldDef.new(
+          name:			'eid',
+          datatype:		String,
+          description:		'Unique element ID'
+        ),
+        'game'			=> FieldDef.new(
+          name:			'game',
+          datatype:		TAGF::Game,
+          description:		'Game object',
+          internal:		true
+        ),
+        'owned_by'		=> FieldDef.new(
+          name:			'owned_by',
+          datatype:		TAGF::Mixin::Element,
+          description:		'Game element owning this object',
+          internal:		true
+        ),
         #
         # Modules that potentially should be mixed in to instances.
         #
-        'mixins',
+        'mixins'		=> FieldDef.new(
+          name:			'mixins',
+          datatype:		Array[String],
+          description:		'Features to be mixed in'
+        ),
         #
         # Attributes describing the element (description,
         # singular/plural article, &c.).
         #
-        'name',
-        'desc',
-        'shortdesc',
-        'article',
-        'preposition',
+        'name'			=> FieldDef.new(
+          name:			'name',
+          shortname:		'n',
+          datatype:		String,
+          description:		'Human-readable object name'
+        ),
+        'desc'			=> FieldDef.new(
+          name:			'desc',
+          datatype:		String,
+          description:		'Full description'
+        ),
+        'shortdesc'		=> FieldDef.new(
+          name:			'shortdesc',
+          datatype:		String,
+          description:		'Brief description'
+        ),
+        'article'		=> FieldDef.new(
+          name:			'article',
+          datatype:		String,
+          description:		'Indefinite article (a or an)'
+        ),
+        'preposition'		=> FieldDef.new(
+          name:			'preposition',
+          datatype:		String,
+          description:		'TBS',
+          internal:		true
+        ),
         #
         # Array of identifers for marking relationships between
         # elements.  For example, if keyword `"xyzzy"` is supposed to
@@ -103,14 +138,26 @@ module TAGF
         # location's element would include `"xyzzy"` as one of its
         # tags so that the interpreter could find it.
         #
-        'tags',
+        'tags'			=> FieldDef.new(
+          name:			'tags',
+          datatype:		Array[String],
+          description:		'Reference tags'
+        ),
         #
         # Mostly for game features, like rooms, furniture, invisible
         # walls, &c.
         #
-        'static',
-        'visible',
-      ]
+        'static'		=> FieldDef.new(
+          name:			'static',
+          datatype:		Boolean,
+          description:		'Static object, cannot be affected'
+        ),
+        'visible'		=> FieldDef.new(
+          name:			'visible',
+          datatype:		Boolean,
+          description:		'Object can be seen'
+        ),
+      }
 
       # @!macro TAGF.constant.Abstracted_Fields
       Abstracted_Fields		= {
@@ -565,7 +612,7 @@ module TAGF
         rescue NoMethodError
           result		= {}
         end
-        flist			= self.loadable_fields
+        flist			= self.loadable_fields.keys
         alist			= self.abstracted_fields.keys
         flist.each do |fname|
           #
@@ -611,7 +658,7 @@ module TAGF
         # method that calls this <em>via</em> `super` and merges its
         # result into that return value.
         #
-        flist			= self.loadable_fields
+        flist			= self.loadable_fields.keys
         ahash			= self.abstracted_fields
         ahash			= ahash.select { |k,v|
           (v == EID) \

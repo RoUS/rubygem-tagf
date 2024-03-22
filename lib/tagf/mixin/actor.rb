@@ -39,13 +39,35 @@ module TAGF
       include(Mixin::Container)
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
-        'maxhp',
-        'hp',
-        'faction',
-        'attitude',
-        'breadcrumbs',
-      ]
+      Loadable_Fields		= {
+        'maxhp'			=> FieldDef.new(
+          name:			'maxhp',
+          datatype:		Float,
+          description:		"Actor's maximum/starting hitpoints"
+        ),
+        'hp'			=> FieldDef.new(
+          name:			'hp',
+          datatype:		Float,
+          description:		"Actor's current hitpoints"
+        ),
+        'faction'		=> FieldDef.new(
+          name:			'faction',
+          datatype:		String,
+          description:		'Faction to which actor belongs'
+        ),
+        'attitude'		=> FieldDef.new(
+          name:			'attitude',
+          datatype:		String,
+          description:		'TBS',
+          internal:		true
+        ),
+        'breadcrumbs'		=> FieldDef.new(
+          name:			'breadcrumbs',
+          datatype:		Array[TAGF::Location],
+          description:		'Locations actor has visited',
+          internal:		true
+        ),
+      }
 
       # @!macro TAGF.constant.Abstracted_Fields
       Abstracted_Fields		= {

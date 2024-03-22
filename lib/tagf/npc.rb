@@ -37,9 +37,13 @@ module TAGF
     include(Mixin::Actor)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
-      'light_tolerance',
-    ]
+    Loadable_Fields		= {
+      'light_tolerance'		=> FieldDef.new(
+        name:			'light_tolerance',
+        datatype:		Float,
+        description:		'Degree of light tolerance (0-100)'
+      ),
+    }
 
     # @!attribute [rw] light_tolerance
     # Highest value for the current Location#light_level that the NPC

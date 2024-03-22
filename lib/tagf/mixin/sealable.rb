@@ -41,20 +41,76 @@ module TAGF
       include(Mixin::UniversalMethods)
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
-        'desc_open',
-        'desc_closed',
-        'shortdesc_open',
-        'shortdesc_closed',
-        'openable',
-        'opened',
-        'autoclose',
-        'lockable',
-        'locked',
-        'relock',
-        'seal_key',
-        'seal_name',
-      ]
+      Loadable_Fields		= {
+        'desc_open'		=> FieldDef.new(
+          name:			'desc_open',
+          datatype:		String,
+          description:		'Full description when open'
+        ),
+        'desc_closed'		=> FieldDef.new(
+          name:			'desc_closed',
+          datatype:		String,
+          description:		'Full description when closed'
+        ),
+        'shortdesc_open'	=> FieldDef.new(
+          name:			'shortdesc_open',
+          datatype:		String,
+          description:		'Brief description when open'
+        ),
+        'shortdesc_closed'	=> FieldDef.new(
+          name:			'shortdesc_closed',
+          datatype:		String,
+          description:		'Brief description when closed'
+        ),
+        # @todo
+        #   Does this conflict with Mixin::Container?
+        'openable'		=> FieldDef.new(
+          name:			'openable',
+          datatype:		Boolean,
+          description:		'Can be opened'
+        ),
+        # @todo
+        #   Does this conflict with Mixin::Container?
+        'opened'		=> FieldDef.new(
+          name:			'opened',
+          datatype:		Boolean,
+          description:		'Item is opened'
+        ),
+        # @todo
+        #   Does this conflict with Mixin::Container?
+        'autoclose'		=> FieldDef.new(
+          name:			'autoclose',
+          datatype:		Boolean,
+          description:		'Automatically closes'
+        ),
+        # @todo
+        #   Should 'lock' words be renamed to 'seal'?
+        'lockable'		=> FieldDef.new(
+          name:			'lockable',
+          datatype:		Boolean,
+          description:		'Item can be locked'
+        ),
+        'locked'		=> FieldDef.new(
+          name:			'locked',
+          datatype:		Boolean,
+          description:		'Item is locked'
+        ),
+        'relock'		=> FieldDef.new(
+          name:			'relock',
+          datatype:		Boolean,
+          description:		'Item automatically relocks'
+        ),
+        'seal_key'		=> FieldDef.new(
+          name:			'seal_key',
+          datatype:		String,
+          description:		'Item required to unseal item'
+        ),
+        'seal_name'		=> FieldDef.new(
+          name:			'seal_name',
+          datatype:		String,
+          description:		'Shared name for same seal'
+        ),
+      }
 
       # @!macro TAGF.constant.Abstracted_Fields
       Abstracted_Fields		= {

@@ -39,10 +39,19 @@ module TAGF
     include(Mixin::Graphable)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
-      'paths',
-      'light_level',
-    ]
+    Loadable_Fields		= {
+      'paths'			=> FieldDef.new(
+        name:			'paths',
+        datatype:		Array[TAGF::Path],
+        description:		'Paths to/from this location',
+        internal:		true
+      ),
+      'light_level'		=> FieldDef.new(
+        name:			'light_level',
+        datatype:		Float,
+        description:		'Light level for location'
+      ),
+    }
 
     # @!macro TAGF.constant.Abstracted_Fields
     Abstracted_Fields		= {

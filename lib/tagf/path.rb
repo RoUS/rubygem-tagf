@@ -25,6 +25,9 @@ require('byebug')
 # @!macro doc.TAGF.module
 module TAGF
 
+  # Declare a class referenced here, to be populated later.
+  class Location ; end
+
   #
   class Path
 
@@ -35,17 +38,33 @@ module TAGF
     include(Mixin::Graphable)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
-      'origin',
-      'destination',
-      'tooltip',
-      'via',
-      'reversible',
-      'sealable',
-      'seal_key',
-      'must_possess',
-      'forbidden',
-    ]
+    Loadable_Fields		= {
+      'origin'			=> FieldDef.new(
+        name:			'origin',
+        datatype:		TAGF::Location,
+        description:		'Where path starts'
+      ),
+      'destination'		=> FieldDef.new(
+        name:			'destination',
+        datatype:		TAGF::Location,
+        description:		'Where path ends'
+      ),
+      'via'			=> FieldDef.new(
+        name:			'via',
+        datatype:		String,
+        description:		'Keyword to enter path from origin'
+      ),
+      'reversible'		=> FieldDef.new(
+        name:			'reversible',
+        datatype:		Boolean,
+        description:		'Whether "go back" works'
+      ),
+      'forbidden'		=> FieldDef.new(
+        name:			'forbidden',
+        datatype:		Array[String],
+        description:		'EIDs that cannot be carried'
+      ),
+    }
 
     # @!macro TAGF.constant.Abstracted_Fields
     Abstracted_Fields		= {

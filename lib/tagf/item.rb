@@ -62,9 +62,13 @@ module TAGF
          }.flatten.uniq)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
-      'living',
-    ]
+    Loadable_Fields		= {
+      'living'			=> FieldDef.new(
+        name:			'living',
+        datatype:		Boolean,
+        description:		'Item is a living creature'
+      ),
+    }
 
     #
     # Is this item alive, like a bird or lizard?  If so, it may leave

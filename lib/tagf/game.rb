@@ -44,15 +44,45 @@ module TAGF
     include(Mixin::Graphable)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
-      'author',
-      'copyright',
-      'copyright_year',
-      'licence',
-      'version',
-      'date',
-      'start',
-    ]
+    Loadable_Fields		= {
+      'author'			=> FieldDef.new(
+        name:			'author',
+        datatype:		String,
+        description:		"Author's name"
+      ),
+      'copyright'		=> FieldDef.new(
+        name:			'copyright',
+        datatype:		String,
+        description:		('Explicit copyright ' +
+                                 '(else calculated)')
+      ),
+      'copyright_year'		=> FieldDef.new(
+        name:			'copyright_year',
+        datatype:		String,
+        description:		('Explicit copyright year or years ' +
+                                 '(else calculated)')
+      ),
+      'licence'			=> FieldDef.new(
+        name:			'licence',
+        datatype:		String,
+        description:		'Name of the licence for the game'
+      ),
+      'version'			=> FieldDef.new(
+        name:			'version',
+        datatype:		String,
+        description:		"This game's version"
+      ),
+      'date'			=> FieldDef.new(
+        name:			'date',
+        datatype:		String,
+        description:		'Date or version release'
+      ),
+      'start_pos'		=> FieldDef.new(
+        name:			'start_pos',
+        datatype:		String,
+        description:		'EID of starting location'
+      ),
+    }
 
     # @!macro TAGF.constant.Abstracted_Fields
     Abstracted_Fields		= {

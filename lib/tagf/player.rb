@@ -37,10 +37,20 @@ module TAGF
     include(Mixin::Actor)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields		= [
-      'locations',
-      'facing',
-    ]
+    Loadable_Fields		= {
+      'locations'		=> FieldDef.new(
+        name:			'locations',
+        datatype:		Array[TAGF::Location],
+        description:		'Places the player has been',
+        internal:		true
+      ),
+      'facing'			=> FieldDef.new(
+        name:			'facing',
+        datatype:		String,
+        description:		'Which way the player is facing',
+        internal:		true
+      ),
+    }
 
     # @!macro TAGF.constant.Abstracted_Fields
     Abstracted_Fields		= {

@@ -99,13 +99,24 @@ module TAGF
 
       # @!method find_command(cmdname)
       #
+      # Search the CLI::Commands hash for the given command, returning
+      # the matching Cri::Command object if found.  Either the full
+      # command or an alias can be used as the search term.
+      #
       # @return [Cri::Command]
       # @return [nil]
       def find_command(cmdname)
+        segments	= cmdname.split(%r!\s+!)
+        keyed		= CLI::Commands[segments.join('~')]
+        return keyed unless (keyed.nil?)
+        # @todo
+        #   This is incomplete and might break
+        segment		= segments.shift
         cmd		= CLI::Commands.values.find { |obj|
           (obj.supercommand.nil? \
            && [obj.name,*obj.aliases].compact.include?(cmdname))
         }
+
         return cmd
       end                       # def find_command
 
@@ -134,6 +145,57 @@ module TAGF
 	result		= segments.join(' ')
 	return result
       end                       # def cmdpath
+
+      # @!method refine_verbosity(**kwargs)
+      # Cri treats multiple flag occurrences on the command line as an
+      # array of one-per-occurrence items.  Hence `-vvv` returns
+      # `[true,true,true]`.  This method replaces any such
+      # `[:verbose]` entry with a `[:verbosity]` with a value of 3.
+      # Any `[:verbose]` element is deleted from the result hash.
+      #
+      # @return [Hash]
+      #   A copy of `kwargs` with `[:verbosity]` updated to account
+      #   for any multi-valued entry for `[:verbose]` (which is
+      #   deleted from the hash).
+      def refine_verbosity(**kwargs)
+        result		= kwargs.dup
+        result[:verbosity] ||= [*kwargs.delete(:verbose)].count
+        return result
+      end                       # def refine_verbosity(**kwargs)
+
+      # @!method refine_lists(attrlist, opts)
+      # Cri doesn't split comma-joined values for 'multiple', so we
+      # need to do it.  This method makes a copy of the `opts` hash,
+      # looks through the options for any that are labeled as being
+      # arrays, and merges any values with embedded commas (possibly
+      # with additional separate single values) into a single array,
+      # storing the normalised result back into the hash
+      #
+      # @example
+      #   Given a `opts` hash `{:mixins=>["a,b","c","d,e"]}`, the
+      #   returned hash will have `{:mixins=["a","b","c","d","e"]}`
+      #
+      # @param [Array<TAGF::FieldDef>] attrlist
+      #   The array of FieldDef objects used in the various
+      #   `Loadable_Fields` constants in element and mixin files.
+      # @param [Hash] opts
+      #   The options hash from the Cri command processing.
+      #
+      # @return [Hash]
+      #   a copy of `opts`; any entries whose keys are labeled as
+      #   lists have their values normalised into a flat array of
+      #   individual elements.
+      def refine_lists(attrlist, opts)
+        attrlist	= attrlist.values if (attrlist.kind_of?(Hash))
+        result		= opts.dup
+        result.each do |k,v|
+          next unless (fdef = attrlist.find { |f| f.name == k.to_s })
+          if (fdef.list?)
+            opts[k]	= [ *v ].join(',').split(',')
+          end
+        end
+        return result
+      end                       # def refine_lists(attrlist, **opts)
 
       nil
     end                         # Eigenclass for TAGF::CLI module

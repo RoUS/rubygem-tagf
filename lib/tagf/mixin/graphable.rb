@@ -330,9 +330,13 @@ module TAGF
       end                       # class GraphInfo
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
-        'tooltip',
-      ]
+      Loadable_Fields		= {
+        'tooltip'		=> FieldDef.new(
+          name:			'tooltip',
+          datatype:		String,
+          description:		'Image mouseover tooltip'
+        ),
+      }
 
       #
       # Default visual attributes to apply to graph components,

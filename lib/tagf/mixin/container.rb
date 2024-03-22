@@ -59,19 +59,74 @@ module TAGF
 				    ]
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
-        'allow_containers',
-        'surface',
-        'openable',
-        'opened',
-        'transparent',
-        'capacity_items',
-        'current_items',
-        'capacity_mass',
-        'current_mass',
-        'capacity_volume',
-        'current_volume',
-      ]
+      Loadable_Fields		= {
+        'allow_containers'	=> FieldDef.new(
+          name:			'allow_containers',
+          datatype:		Boolean,
+          description:		'Container can contain others'
+        ),
+        'surface'		=> FieldDef.new(
+          name:			'surface',
+          datatype:		Boolean,
+          description:		"Contents are on item's surface"
+        ),
+        'openable'		=> FieldDef.new(
+          name:			'openable',
+          datatype:		Boolean,
+          description:		'Container can be opened'
+        ),
+        'opened'		=> FieldDef.new(
+          name:			'opened',
+          datatype:		Boolean,
+          description:		'Container is currently open'
+        ),
+        # @todo
+        #   Does 'transparent' really belong *here*?
+        'transparent'		=> FieldDef.new(
+          name:			'transparent',
+          datatype:		Boolean,
+          description:		'Container is see-through'
+        ),
+        'capacity_items'	=> FieldDef.new(
+          name:			'capacity_items',
+          datatype:		Integer,
+          description:		'Max items that can be contained'
+        ),
+        # @todo
+        #   'current_items' should be calculated
+        'current_items'		=> FieldDef.new(
+          name:			'current_items',
+          datatype:		Integer,
+          description:		'Number of items in container',
+          internal:		true
+        ),
+        'capacity_mass'		=> FieldDef.new(
+          name:			'capacity_mass',
+          datatype:		Float,
+          description:		'Max mass that can be contained'
+        ),
+        # @todo
+        #   Should be calculated, and what about recursive?
+        'current_mass'		=> FieldDef.new(
+          name:			'current_mass',
+          datatype:		Float,
+          description:		'Total mass of contained items',
+          internal:		true
+        ),
+        'capacity_volume'	=> FieldDef.new(
+          name:			'capacity_volume',
+          datatype:		Float,
+          description:		'Max volume of container'
+        ),
+        # @todo
+        #   'current_volume' should be calculated
+        'current_volume'	=> FieldDef.new(
+          name:			'current_volume',
+          datatype:		Float,
+          description:		'Currently-used volume of container',
+          internal:		true
+        ),
+      }
 
       #
       # Whether or not this container is permitted to have others

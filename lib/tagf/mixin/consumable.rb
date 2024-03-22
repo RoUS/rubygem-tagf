@@ -39,15 +39,31 @@ module TAGF
       include(Mixin::UniversalMethods)
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
+      Loadable_Fields		= {
         #
         # If this element has any lighting attributes, what are they?
         #
-        'durability',
-        'cost_per_use',
-        'max_uses',
-        'uses',
-      ]
+        'durability'		=> FieldDef.new(
+          name:			'durability',
+          datatype:		Float,
+          description:		'Current/starting durability (0-100)'
+        ),
+        'cost_per_use'		=> FieldDef.new(
+          name:			'cost_per_use',
+          datatype:		Float,
+          description:		'Durability decrease per use'
+        ),
+        'max_uses'		=> FieldDef.new(
+          name:			'max_uses',
+          datatype:		Integer,
+          description:		'Maximum number os  uses'
+        ),
+        'uses'			=> FieldDef.new(
+          name:			'uses',
+          datatype:		Integer,
+          description:		'Uses remaining'
+        ),
+      }
 
       # @!attribute [rw] durability
       # @!macro doc.TAGF.classmethod.float.invoke

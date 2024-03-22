@@ -38,12 +38,21 @@ module TAGF
       include(Mixin::UniversalMethods)
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
+      Loadable_Fields		= {
         #
         # If this element has any lighting attributes, what are they?
         #
-        'damage',
-      ]
+        'damage'		=> FieldDef.new(
+          name:			'damage',
+          datatype:		Float,
+          description:		'Amount of damage done per hit'
+        ),
+        'ranged'		=> FieldDef.new(
+          name:			'ranged',
+          datatype:		Boolean,
+          description:		'Weapon is ranged, not mêlée'
+        ),
+      }
 
       # @!attribute [rw] damage
       # @!macro doc.TAGF.classmethod.float.invoke
@@ -52,6 +61,15 @@ module TAGF
       # @return [Float]
       #   Amount of damage inflicted on a hit.
       float_accessor(:damage)
+
+      # @!attribute [rw] ranged
+      # @!macro doc.TAGF.classmethod.float.invoke
+      # Whether weapon can be used at range (like a bow, throwing axe,
+      # <em>&c.</em>) or only in mêlée.
+      #
+      # @return [Boolean]
+      #   Whether or not the weapon is ranged.
+      flag(ranged: false)
 
       nil
     end                         # module Weapon

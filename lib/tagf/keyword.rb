@@ -34,12 +34,23 @@ module TAGF
     include(Mixin::Element)
 
     # @!macro TAGF.constant.Loadable_Fields
-    Loadable_Fields	= [
-      'root',
-      'alii',
-      'flags',
-      'uses',
-    ]
+    Loadable_Fields	= {
+      'root'		=> FieldDef.new(
+        name:		'root',
+        datatype:	String,
+        description:	'Root word to which alii are translated'
+      ),
+      'alii'		=> FieldDef.new(
+        name:		'alii',
+        datatype:	Array[String],
+        description:	'Alias for the root keyword'
+      ),
+      'flags'		=> FieldDef.new(
+        name:		'flags',
+        datatype:	Array[Symbol],
+        description:	'Flags (motion, shortcut, ...)'
+      ),
+    }
 
     # @!method check_keyword(word)
     # Ensure that the `word` argument obeys our simple syntax
@@ -113,10 +124,6 @@ module TAGF
     #
     # @return [Set<Symbol>]
     attr_accessor(:flags)
-
-    # @!attribute [rw] uses
-    # @return [Integer]
-    int_accessor(:uses)
 
     # @!method includes?(word)
     def includes?(word)

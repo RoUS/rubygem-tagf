@@ -38,14 +38,28 @@ module TAGF
       include(Mixin::UniversalMethods)
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
+      Loadable_Fields		= {
         #
         # If this element has any lighting attributes, what are they?
         #
-        'illumination',
-        'pct_dim_per_turn',
-        'only_dim_near_player',
-      ]
+        # @todo
+        #   Should this be 'max_illumination'?
+        'illumination'		=> FieldDef.new(
+          name:			'illumination',
+          datatype:		Float,
+          description:		'Current illumination (0-100)'
+        ),
+        'pct_dim_per_turn'	=> FieldDef.new(
+          name:			'pct_dim_per_turn',
+          datatype:		Float,
+          description:		'How much the light dims per turn'
+        ),
+        'only_dim_near_player'	=> FieldDef.new(
+          name:			'only_dim_per_player',
+          datatype:		Boolean,
+          description:		'Dim only where player can see'
+        ),
+      }
 
       # @!attribute [rw] lit
       # @!macro doc.TAGF.classmethod.flag.invoke

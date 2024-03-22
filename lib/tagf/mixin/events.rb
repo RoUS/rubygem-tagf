@@ -56,10 +56,19 @@ module TAGF
       }
 
       # @!macro TAGF.constant.Loadable_Fields
-      Loadable_Fields		= [
-        'events_heard',
-        'event_queue',
-      ]
+      Loadable_Fields		= {
+        'events_heard'		=> FieldDef.new(
+          name:			'events_heard',
+          datatype:		Array[Symbol],
+          description:		'Events to hear'
+        ),
+        'event_queue'		=> FieldDef.new(
+          name:			'event_queue',
+          datatype:		Array[Symbol],
+          description:		'List of pending events',
+          internal:		true
+        ),
+      }
 
       #
       attr_accessor(:events_heard)
