@@ -106,6 +106,17 @@
   - How does ADVENT do it?  If there's a dwarf in the room and the
     player moves, the dwarf follows it.  It then gets to attack,
     right?  How does that sequence work?  Check it out..
+* Redo inventories to be based on `Set`
+  - Extend current `Game#filter` functionality down to `inventory` and
+    delegate `Game#filter` to it.
+  - Change inventories such that:
+    * The master (game) inventory is the *only* one that contains
+      anything other than `Item` elements, but contains *everything*.
+    * Make `initialize_element` call `game.register_element` so add
+      the new element to the master inventory.
+    * Update all element creations to not add anything to their own
+      inventories; they get repurposed to only include their actual
+      contents.
 
 ### Completed coding/concept items
 
@@ -121,6 +132,10 @@
     Graphable, and Sealable, for starters.&*
 * ~~Re-integrate `Mixin::Location` (*et alia*?) to `Location` if that's
   the only actual element that reference it.~~
+* ~~Change processing of `Loadable_Fields` constant arrays so that they
+  are more than just the field names, but also contain information
+  for auto-building command-line syntax (flag or option, datatype,
+  short form, and brief description).~~
 
 ## Tools
 
