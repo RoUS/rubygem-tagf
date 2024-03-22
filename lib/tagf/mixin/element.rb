@@ -595,9 +595,10 @@ module TAGF
       # @!method abstractify
       # Use the return values from #loadable_fields and
       # #abstracted_fields to determine what attributes require
-      # special processing for exporting.  {Loadable_Fields} and {Abstracted_Fields} constants to
-      # record all of the exportable details of the receiver in a hash
-      # that can  be used to re-create it later.
+      # special processing for exporting.  {Loadable_Fields} and
+      # {Abstracted_Fields} constants to record all of the exportable
+      # details of the receiver in a hash that can be used to
+      # re-create it later.
       #
       # @see #export
       #

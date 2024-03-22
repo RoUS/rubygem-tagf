@@ -24,6 +24,11 @@ require('byebug')
 # @!macro doc.TAGF.module
 module TAGF
 
+  module Boolean ; end
+
+  TrueClass.include(TAGF::Boolean)
+  FalseClass.include(TAGF::Boolean)
+
   # @!macro doc.TAGF.Mixin.module
   module Mixin
 
@@ -48,8 +53,8 @@ module TAGF
           klass.extend(TAGF::Mixin::ClassTypes)
           return nil
         end                     # def included(klass)
-        
-        # @!method included(klass)
+
+        # @!method extended(klass)
         # This method is invoked every time the `TAGF::Mixin::DTypes`
         # module is included in a class or other module.  It makes
         # sure that the instance-type declarations go into the
@@ -92,6 +97,54 @@ module TAGF
       #
       extend(self)
 
+      # Class describing an entry in the `Loadable_Fields` constant
+      # arrays.  Using an object rather than just a simple string
+      # allows metadata to be stored; in the first example, some of
+      # the fields are used to automatically construct aspects of
+      # command-line tools.
+      class FieldDef
+
+        # List of the attributes for a loadable field
+        AttrList	= %i[
+          name
+          shortname
+          datatype
+          description
+        ]
+
+        # Add an attribute for each of the named fields.
+        AttrList.each do |attr_sym|
+          attr_accessor(attr_sym)
+        end
+
+        # Constructor for a FieldDef instance.
+        #
+        # @params [Hash<Symbol=>Any>] kwargs
+        # @option kwargs [String]	name
+        #   The (string) name of the attribute in the object, and the
+        #   long-form option on the shell command line.
+        # @option kwargs [String]	shortname
+        #   The short-form (single letter) option for the command
+        #   line.  `nil` means no short form.
+        # @option kwargs [Class]	datatype
+        #   Primarily for use with the command-line interface;
+        #   `Boolean` gets it exposed as a flag, otherwise its a
+        #   valued option.  By default, command-line options require
+        #   values.
+        # @option kwargs [String]	description
+        #   Short description for the command-line interface.
+        # @option kwargs [Boolean]	internal
+        #   `true` to keep the attribute from being exposed on the
+        #   command-line.
+        def initialize(**kwargs)
+          AttrList.each do |attr_sym|
+            setter	= format('%s=', attr_sym.to_s).to_sym
+            self.send(setter, kwargs[attr_sym])
+          end
+        end                     # def initialize(**kwargs)
+
+        nil
+      end                       # class FieldDef
 
       # @!macro doc.TAGF.classmethod.flag.declare
       def flag(*args, **kwargs)
